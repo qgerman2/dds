@@ -4,6 +4,8 @@
 #include "main.h"
 #include "parse.h"
 #include "play.h"
+#include <bitset>
+#include <cmath>
 
 //indice memoria
 #define sprites ((spriteEntry*) OAM)
@@ -14,17 +16,23 @@
 #define tile2objram(t) (SPRITE_GFX + (t) * 16)
 #define pal2objram(p) (SPRITE_PALETTE + (p) * 16)
 
-//timer
-#define MINUTE 201083892 / 10;
+#define NDSFREQ 32.7284 //khz
+#define BPMFRAC 6 //bits
+#define MINUTEFRAC 12
 
 using namespace std;
 
 songdata song;
 vector<step> steps;
+bool freesprites[128];
 
 void setup(songdata s){
-	dmaCopyHalfWords( 3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
-	dmaCopyHalfWords( 3, tapPal, pal2objram(pal_tap), tapPalLen);
+	dmaCopyHalfWords(3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
+	dmaCopyHalfWords(3, tapPal, pal2objram(pal_tap), tapPalLen);
+	for (int i = 0; i < 128; i++)
+		freesprites[i] = TRUE;
+	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
+	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	song = s;
     /*int n;
     for( n = 0; n < 50; n++ )
@@ -52,24 +60,86 @@ void setup(songdata s){
     }*/
 }
 
+u32 millis() {
+	return (timerTick(0) + (timerTick(1) << 16)) / NDSFREQ;
+}
+
 void loop(){
-	TIMER0_CR = TIMER_ENABLE|TIMER_DIV_1024;
-	TIMER1_CR = TIMER_ENABLE|TIMER_CASCADE;;
 	while (1) {
 		swiWaitForVBlank();
 		updateSteps();
 	}
 }
 
-int vblanks = 0;
-int bpm = 100;
-int beat;
-int t0;
-int t1;
-u32 millis;
+u32 time;
+u32 bpmf = 100.999999 * pow(2, BPMFRAC);
+u32 minutef;
+u32 beatf;
+int beat;					//beat global
+int firstbeat = -1; 		//primer beat del measure global
+int count = 0; 				//beat relativo al primer beat de measure global
+int sets;					//cantidad de sets en measure
+int cursor = 0;
+int measurecursor = -1;
+u16 *set;
+measure m;
 void updateSteps() {
-	t0 =  timerTick(0);
-	t1 =  timerTick(1);
-	millis = (t0 + (t1 << 16)) / 32.7284;
-	cout << "\n" << millis;
+	time = millis();
+	minutef = (time * (1 << MINUTEFRAC)) / 60000;
+	beatf = (bpmf * minutef);
+	beat = beatf >> (MINUTEFRAC + BPMFRAC);
+	//cursor puede ir delante del beat global
+	for (int i = cursor; i < beat + 10; i++) {
+		if ((i / 4) > measurecursor) {
+			cout << "\nmeasure " << i / 4;
+			firstbeat = i;
+			m = getMeasure(i);
+			sets = m.size();
+			measurecursor = i / 4;
+		}
+		count = i - firstbeat;
+		switch (sets) {
+			case 1: //1 set, 1 linea por beat
+				cout << "\n" << "set ";
+				set = m.at(0);
+				cout << '\n' << bitset<16>(set[count]);
+				break;
+			case 2: //2 sets, 2 lineas por beat
+				cout << "\n" << "set ";
+				if ((count == 0) || (count == 1))
+					set = m.at(0);
+				else
+					set = m.at(1);
+				cout << '\n' << bitset<16>(set[count * 2]);
+				cout << '\n' << bitset<16>(set[count * 2 + 1]);
+				break;
+			default: //sets sets, sets / 4 sets por beat
+				for (int k = 0; k < sets / 4; k++) {
+					cout << "\n" << "set " << count * (sets / 4) + k;
+					set = m.at(count * (sets / 4) + k);
+					for (int ii = 0; ii < 4; ii++) {
+						cout << '\n' << bitset<16>(set[ii]);
+					}
+				}
+				break;
+		}
+		cursor = i + 1;
+	}
+}
+
+int popSprite() {
+	for (int i = 0; i < 128; i++) {
+		if (freesprites[i]) {
+			freesprites[i] = FALSE;
+			return i;
+		}
+	}
+}
+
+void pushSprite(int i) {
+	freesprites[i] = TRUE;
+}
+
+measure getMeasure(int beat) {
+	return song.notes.at(beat / 4);
 }
