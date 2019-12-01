@@ -76,7 +76,7 @@ u32 bpmf = 100.999999 * pow(2, BPMFRAC);
 u32 minutef;
 u32 beatf;
 int beat;					//beat global
-int firstbeat = -1; 		//primer beat del measure global
+int firstbeat = -1;			//primer beat del measure global
 int count = 0; 				//beat relativo al primer beat de measure global
 int sets;					//cantidad de sets en measure
 int cursor = 0;
