@@ -14,7 +14,8 @@ using namespace std;
 static const struct t_pair empty_tag;
 static const measure empty_measure;
 
-void parseSong(string path) {
+songdata parseSong(string path) {
+	songdata song;
 	enum class state {IDLE, KEY, VALUE};
 	FILE *fp = fopen(path.c_str(), "r");
 	int p;
@@ -22,7 +23,6 @@ void parseSong(string path) {
 	bool skip = FALSE;
 	state task = state::IDLE;
 	string buffer = "";
-	vector<struct t_pair> tags;
 	struct t_pair tag = empty_tag;
 	do {
 		p = fgetc(fp);
@@ -62,7 +62,7 @@ void parseSong(string path) {
 					if (task == state::VALUE) {
 						task = state::IDLE;
 						tag.value = buffer;
-						tags.push_back(tag);
+						song.tags.push_back(tag);
 						tag = empty_tag;
 						buffer = "";
 					}
@@ -76,14 +76,15 @@ void parseSong(string path) {
 		}
 	} while (1);
 	fclose(fp);
-	for (auto i = tags.begin(); i != tags.end(); i++) {
+	for (auto i = song.tags.begin(); i != song.tags.end(); i++) {
 		if (i->key == "NOTES") {
-			parseNotes(i->value);
+			song.notes = parseNotes(i->value);
 		}
 	}
+	return song;
 }
 
-vector<measure> parseNotes(string data) {
+notedata parseNotes(string data) {
 	size_t s = data.find(':');
 	size_t e = data.find(';');
 	for (int v = 0; v <= 3; v++){
@@ -91,7 +92,7 @@ vector<measure> parseNotes(string data) {
 	}
 	string rawnotes = data.substr(s, e - s);
 	char c;
-	vector<measure> notes;
+	notedata notes;
 	measure m = empty_measure;
 	int fourcount = 0;
 	int count = -1;
@@ -144,5 +145,6 @@ vector<measure> parseNotes(string data) {
 			}
 		}
 	}*/
+	cout << "tamo";
 	return notes;
 } 
