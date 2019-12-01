@@ -1,6 +1,8 @@
 #include <nds.h>
 #include <tap.h>
+#include <iostream>
 #include "main.h"
+#include "parse.h"
 #include "play.h"
 
 //indice memoria
@@ -12,13 +14,17 @@
 #define tile2objram(t) (SPRITE_GFX + (t) * 16)
 #define pal2objram(p) (SPRITE_PALETTE + (p) * 16)
 
+using namespace std;
 
-void setup(){
-	// code to test out the sprite engine
-	//cargar graficos
+int bpm = 100;
+songdata song;
+vector<step> steps;
+
+void setup(songdata s){
 	dmaCopyHalfWords( 3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
 	dmaCopyHalfWords( 3, tapPal, pal2objram(pal_tap), tapPalLen);
-    int n;
+	song = s;
+    /*int n;
     for( n = 0; n < 50; n++ )
     {
         // attribute0: set vertical position 0->screen_height-sprite_height, 
@@ -41,5 +47,17 @@ void setup(){
 		affine[4] = s;
 		affine[8] = -s;
 		affine[12] = c;
-    }
+    }*/
+}
+
+void loop(){
+	cpuStartTiming(1);
+	while (1) {
+		swiWaitForVBlank();
+		updateSteps();
+	}
+}
+
+void updateSteps() {
+	cout << "\n" << cpuGetTiming();
 }
