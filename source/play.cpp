@@ -14,9 +14,11 @@
 #define tile2objram(t) (SPRITE_GFX + (t) * 16)
 #define pal2objram(p) (SPRITE_PALETTE + (p) * 16)
 
+//timer
+#define MINUTE 201083892 / 10;
+
 using namespace std;
 
-int bpm = 100;
 songdata song;
 vector<step> steps;
 
@@ -51,13 +53,23 @@ void setup(songdata s){
 }
 
 void loop(){
-	cpuStartTiming(1);
+	TIMER0_CR = TIMER_ENABLE|TIMER_DIV_1024;
+	TIMER1_CR = TIMER_ENABLE|TIMER_CASCADE;;
 	while (1) {
 		swiWaitForVBlank();
 		updateSteps();
 	}
 }
 
+int vblanks = 0;
+int bpm = 100;
+int beat;
+int t0;
+int t1;
+u32 millis;
 void updateSteps() {
-	cout << "\n" << cpuGetTiming();
+	t0 =  timerTick(0);
+	t1 =  timerTick(1);
+	millis = (t0 + (t1 << 16)) / 32.7284;
+	cout << "\n" << millis;
 }

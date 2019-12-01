@@ -16,8 +16,6 @@ int main(){
 	} else {
 		iprintf("fatInitDefault failure: terminating\n");
 	}
-	irqInit();
-	irqEnable(IRQ_VBLANK);
 
 	vramSetBankA(VRAM_A_MAIN_SPRITE);
 	videoSetMode( MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_1D_LAYOUT );
