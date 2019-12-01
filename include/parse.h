@@ -1,15 +1,14 @@
 #include <string>
 #include <vector>
 
+typedef std::vector<u16 *> measure;
 void parseSong(std::string path);
-void parseNotes(std::string data);
+std::vector<measure> parseNotes(std::string data);
 
 struct t_pair {
 	std::string key;
 	std::string value;
 };
-
-typedef std::vector<u16 *> measure;
 
 static const u16 normal[4] {
 	0b0001000000000000,
