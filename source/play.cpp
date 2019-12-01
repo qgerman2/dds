@@ -66,8 +66,8 @@ u32 millis() {
 
 void loop(){
 	while (1) {
-		swiWaitForVBlank();
 		updateSteps();
+		swiWaitForVBlank();
 	}
 }
 
@@ -106,12 +106,15 @@ void updateSteps() {
 				break;
 			case 2: //2 sets, 2 lineas por beat
 				cout << "\n" << "set ";
-				if ((count == 0) || (count == 1))
+				if ((count == 0) || (count == 1)) {
 					set = m.at(0);
-				else
+					cout << '\n' << bitset<16>(set[count * 2]) << " " << count * 2;
+					cout << '\n' << bitset<16>(set[count * 2 + 1]) << " " << count * 2 + 1;
+				} else {
 					set = m.at(1);
-				cout << '\n' << bitset<16>(set[count * 2]);
-				cout << '\n' << bitset<16>(set[count * 2 + 1]);
+					cout << '\n' << bitset<16>(set[(count - 2) * 2]) << " " << (count - 2) * 2;
+					cout << '\n' << bitset<16>(set[(count - 2) * 2 + 1]) << " " << (count - 2) * 2 + 1;
+				}
 				break;
 			default: //sets sets, sets / 4 sets por beat
 				for (int k = 0; k < sets / 4; k++) {
