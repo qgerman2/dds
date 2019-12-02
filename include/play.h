@@ -1,10 +1,11 @@
 void setup(songdata song); 
 void loop();
+void setRotData();
 void updateSteps();
 void renderSteps();
 typedef struct step {
-	u32 x;
-	u32 y;
+	int x;
+	int y;
 	u8 type;
 	u32 beatf;
 	u8 sprite;
@@ -22,4 +23,4 @@ void newSteps(u16 data, u32 beatf, u8 type);
 u8 popSprite();
 void pushSprite(u8 i);
 
-measure getMeasure(u32 beat);
+measure getMeasureAtBeat(u32 beat);
