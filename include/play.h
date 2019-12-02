@@ -1,11 +1,14 @@
 void setup(songdata song); 
 void loop();
 void updateSteps();
+void renderSteps();
 typedef struct step {
-	int x;
-	int y;
-	int fourths;
-	int sprite;
+	u32 x;
+	u32 y;
+	u8 type;
+	u32 beatf;
+	u8 sprite;
+	u8 col;
 } step;
 
 typedef struct t_spriteEntry {
@@ -15,7 +18,8 @@ typedef struct t_spriteEntry {
     u16 affine_data;
 } spriteEntry;
 
-int popSprite();
-void pushSprite(int i);
+void newSteps(u16 data, u32 beatf, u8 type);
+u8 popSprite();
+void pushSprite(u8 i);
 
-measure getMeasure(int beat);
+measure getMeasure(u32 beat);
