@@ -1,3 +1,6 @@
+#define NDSFREQ 32.7284	//khz
+#define BPMFRAC 8
+#define MINUTEFRAC 12
 void setup(songdata song); 
 void loop();
 void setRotData();
@@ -24,3 +27,4 @@ u8 popSprite();
 void pushSprite(u8 i);
 
 measure getMeasureAtBeat(u32 beat);
+u32 millis();

@@ -2,23 +2,27 @@
 #include <vector>
 #include <variant>
 
-typedef std::vector<u16 *> measure;
-typedef std::vector<measure> notedata;
-notedata parseNotes(std::string data);
-
 struct t_pair {
 	std::string key;
 	std::string value;
 };
-
+typedef std::vector<u16 *> measure;
+typedef std::vector<measure> notedata;
+struct t_bpm {
+	u32 beat = 0;
+	u32 bpm = 0;
+};
+typedef std::vector<struct t_bpm> bpmdata;
 typedef std::vector<struct t_pair> metadata;
 class songdata {
 	public:
 		notedata notes;
 		metadata tags;
+		bpmdata bpms;
 };
+notedata parseNotes(std::string data);
+bpmdata parseBPMS(std::string data);
 songdata parseSong(std::string path);
-
 static const u16 normal[4] {
 	0b0001000000000000,
 	0b0000000100000000,

@@ -16,42 +16,13 @@
 #define tile2objram(t) (SPRITE_GFX + (t) * 16)
 #define pal2objram(p) (SPRITE_PALETTE + (p) * 16)
 
-#define NDSFREQ 32.7284 //khz
-#define BPMFRAC 8 //bits
-#define MINUTEFRAC 12
-
 using namespace std;
 
 static u8 notetype[] = {4, 8, 12, 16, 24, 32, 48, 64, 192};
+bool freesprites[128];
 static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC)) - 1; 
 songdata song;
 vector<step> steps;
-bool freesprites[128];
-
-void setup(songdata s){
-	dmaCopyHalfWords(3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
-	dmaCopyHalfWords(3, tapPal, pal2objram(pal_tap), tapPalLen);
-	setRotData();
-	for (int i = 0; i < 128; i++) {
-		pushSprite(i);
-	}
-	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
-	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
-	song = s;
-}
-
-u32 millis() {
-	return (timerTick(0) + (timerTick(1) << 16)) / NDSFREQ;
-}
-
-void loop(){
-	while (1) {
-		updateSteps();
-		swiWaitForVBlank();
-		renderSteps();
-	}
-}
-
 u32 time;
 u32 bpmf = 200 * pow(2, BPMFRAC);
 u32 minutef;
@@ -66,12 +37,33 @@ int stepbeatf = 0;			//beat preciso en el cursor
 int relbeatf = 0;			//beat preciso relativo al cursor a x set
 u16 *set;
 measure m;
+
+void setup(songdata s){
+	dmaCopyHalfWords(3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
+	dmaCopyHalfWords(3, tapPal, pal2objram(pal_tap), tapPalLen);
+	setRotData();
+	for (int i = 0; i < 128; i++) {
+		pushSprite(i);
+	}
+	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
+	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
+	song = s;
+}
+
+void loop(){
+	while (1) {
+		updateSteps();
+		swiWaitForVBlank();
+		renderSteps();
+	}
+}
+
 void updateSteps() {
 	time = millis();
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = (bpmf * minutef);
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
-	//cursor puede ir delante del beat global
+	//crear nuevos steps
 	for (int i = cursor; i < beat + 4; i++) {
 		if ((i / 4) > measurecursor) {
 			cout << "\nmeasure " << i / 4;
@@ -110,6 +102,7 @@ void updateSteps() {
 		}
 		cursor = i + 1;
 	}
+	//actualizar steps existentes
 	for (auto i = steps.begin(); i != steps.end(); i++) {
 		i->y = ((i->beatf >> 13) - (beatf >> 13));
 		if (i->beatf < beatf) {
@@ -147,6 +140,29 @@ void renderSteps() {
 			sprites[i->sprite].attr0 = ATTR0_DISABLED;
 		}
 	}
+}
+
+u8 popSprite() {
+	for (u8 i = 0; i < 128; i++) {
+		if (freesprites[i]) {
+			freesprites[i] = FALSE;
+			return i;
+		}
+	}
+	sassert(0, "out of sprites");
+	return 0;
+}
+
+void pushSprite(u8 i) {
+	freesprites[i] = TRUE;
+	sprites[i].attr0 = ATTR0_DISABLED;
+}
+
+measure getMeasureAtBeat(u32 beat) {
+	if (beat / 4 > song.notes.size() - 1) {
+		sassert(0, "attempted to get nonexistant measure");
+	}
+	return song.notes.at(beat / 4);
 }
 
 void setRotData() {
@@ -187,23 +203,6 @@ void setRotData() {
 	affine[12] = c;
 }
 
-u8 popSprite() {
-	for (u8 i = 0; i < 128; i++) {
-		if (freesprites[i]) {
-			freesprites[i] = FALSE;
-			return i;
-		}
-	}
-}
-
-void pushSprite(u8 i) {
-	freesprites[i] = TRUE;
-	sprites[i].attr0 = ATTR0_DISABLED;
-}
-
-measure getMeasureAtBeat(u32 beat) {
-	if (beat / 4 > song.notes.size() - 1) {
-		sassert(0, "attempted to get nonexistant measure");
-	}
-	return song.notes.at(beat / 4);
+u32 millis() {
+	return (timerTick(0) + (timerTick(1) << 16)) / NDSFREQ;
 }

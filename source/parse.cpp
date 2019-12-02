@@ -8,11 +8,15 @@
 #include <iostream>
 #include <bitset>
 #include "parse.h"
+#include "play.h"
+#include <cmath>
 
 using namespace std;
 
 static const struct t_pair empty_tag;
+static const struct t_bpm empty_bpm;
 static const measure empty_measure;
+static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC)) - 1; 
 
 songdata parseSong(string path) {
 	songdata song;
@@ -79,15 +83,63 @@ songdata parseSong(string path) {
 	for (auto i = song.tags.begin(); i != song.tags.end(); i++) {
 		if (i->key == "NOTES") {
 			song.notes = parseNotes(i->value);
+			continue;
+		}
+		if (i->key == "BPMS") {
+			cout << "bpms";
+			song.bpms = parseBPMS(i->value);
+			continue;
 		}
 	}
 	return song;
 }
 
+bpmdata parseBPMS(string data) {
+	bpmdata bpms;
+	struct t_bpm bpm = empty_bpm;
+	string buffer;
+	enum class state {IDLE, KEY, VALUE};
+	state task = state::IDLE;
+	char c;
+	for (uint i = 0; i < data.size(); i++) {
+		c = data[i];
+		switch (task) {
+			case state::KEY:
+				if (c != '=') {
+					buffer.append(1, c);
+				} else {
+					task = state::VALUE;
+					bpm.beat = stod(buffer) * beatfperiod;
+					cout << "\nbeat " << bpm.beat;
+					buffer = "";
+				}
+				break;
+			case state::VALUE:
+				if (c != ',' && c != '\n') {
+					buffer.append(1, c);
+				} else {
+					task = state::IDLE;
+					bpm.bpm = stod(buffer) * pow(2, BPMFRAC);
+					cout << "\nbpm " << bpm.bpm;
+					buffer = "";
+				}
+				break;
+			case state::IDLE:
+				if (c != ' ' && c != '\n' && c != ',') {
+					task = state::KEY;
+					buffer.append(1, c);
+				}
+				break;
+		}
+	}
+	return bpms;
+}
+
+
 notedata parseNotes(string data) {
 	size_t s = data.find(':');
 	size_t e = data.find(';');
-	for (int v = 0; v <= 3; v++){
+	for (int v = 0; v <= 3; v++) {
 		s = data.find(':', s + 1);
 	}
 	string rawnotes = data.substr(s, e - s);
@@ -129,22 +181,5 @@ notedata parseNotes(string data) {
 		}
 	}
 	notes.push_back(m);
-	//debug print all
-	/*int size;
-	u16* set;
-	int cc = 0; 
-	for (auto m = notes.begin(); m != notes.end(); m++) {
-		cout << "\n" << "measure " << cc;
-		cc++;
-		size = m->size();
-		for (int s = 0; s < size; s++) {
-			cout << "\n" << "set " << s;
-			set = m->at(s);
-			for (int i = 0; i < 4; i++) {
-				cout << '\n' << bitset<16>(set[i]);
-			}
-		}
-	}*/
-	cout << "tamo";
 	return notes;
 } 
