@@ -19,9 +19,10 @@ class songdata {
 		notedata notes;
 		metadata tags;
 		bpmdata bpms;
+		bpmdata stops;
 };
 notedata parseNotes(std::string data);
-bpmdata parseBPMS(std::string data);
+bpmdata parseBPMS(std::string data, bool isStops);
 songdata parseSong(std::string path);
 static const u16 normal[4] {
 	0b0001000000000000,

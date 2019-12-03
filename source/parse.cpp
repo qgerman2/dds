@@ -86,14 +86,18 @@ songdata parseSong(string path) {
 			continue;
 		}
 		if (i->key == "BPMS") {
-			song.bpms = parseBPMS(i->value);
+			song.bpms = parseBPMS(i->value, FALSE);
+			continue;
+		}
+		if (i->key == "STOPS") {
+			song.stops = parseBPMS(i->value, TRUE); //mismo formato que bpms
 			continue;
 		}
 	}
 	return song;
 }
 
-bpmdata parseBPMS(string data) {
+bpmdata parseBPMS(string data, bool isStops) {
 	bpmdata bpms;
 	struct t_bpm bpm = empty_bpm;
 	string buffer;
@@ -117,7 +121,10 @@ bpmdata parseBPMS(string data) {
 					buffer.append(1, c);
 				} else {
 					task = state::IDLE;
-					bpm.bpmf = stod(buffer) * pow(2, BPMFRAC);
+					if (isStops)
+						bpm.bpmf = stod(buffer) * pow(2, MINUTEFRAC);
+					else
+						bpm.bpmf = stod(buffer) * pow(2, BPMFRAC);
 					buffer = "";
 					bpms.push_back(bpm);
 					bpm = empty_bpm;

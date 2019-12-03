@@ -76,7 +76,7 @@ void updateBeat() {
 		}
 		//si tiempo minutef ya se paso de largo lo que dura ese bpm, sumarlo
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
-			beatf =  song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
+			beatf = song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
 			continue;
 		//minutef esta dentro del rango de ese bpm, sumarlo parcialmente
