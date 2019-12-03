@@ -63,29 +63,50 @@ void loop(){
 
 u32 minutefbpm;	//tiempo que dura ese bpm
 u32 minutefsum;
+bool lostbeatsbpm;
 void updateBeat() {
 	time = millis();
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
-	u32 minutefsum = 0;
+	minutefsum = 0;
 	for (uint i = 0; i < song.bpms.size(); i++) {
+		lostbeatsbpm = FALSE;
 		if (i < song.bpms.size() - 1) {
 			minutefbpm = (song.bpms[i + 1].beatf - song.bpms[i].beatf) / song.bpms[i].bpmf;
+			for (uint s = 0; s < song.stops.size(); s++) {
+				if ((song.stops[s].beatf > song.bpms[i].beatf) && (song.stops[s].beatf < song.bpms[i + 1].beatf)) {
+					minutefbpm = minutefbpm + song.stops[s].bpmf;
+					lostbeatsbpm = TRUE;
+				}
+			}
 		} else {
-			minutefbpm = 0; //ultimo bpm no tiene final
+			minutefbpm = 0;
 		}
-		//si tiempo minutef ya se paso de largo lo que dura ese bpm, sumarlo
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
 			beatf = song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
 			continue;
-		//minutef esta dentro del rango de ese bpm, sumarlo parcialmente
 		} else {
 			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
+			if (lostbeatsbpm) {
+				for (uint s = 0; s < song.stops.size(); s++) {
+					if ((song.stops[s].beatf > song.bpms[i].beatf) && (song.stops[s].beatf < song.bpms[i + 1].beatf)) {
+						if (beatf > song.stops[s].beatf) {
+							u32 offset = song.stops[s].bpmf * song.bpms[i].bpmf;
+							if (beatf - song.stops[s].beatf < offset){
+								beatf = song.stops[s].beatf;
+							} else {
+								beatf = beatf - offset;
+							}
+						}
+					}
+				}
+			}
 			break;
 		}
 	}
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
+	cout << "\n" << beat;
 }
 
 void updateSteps() {

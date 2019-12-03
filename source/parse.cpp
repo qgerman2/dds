@@ -90,7 +90,7 @@ songdata parseSong(string path) {
 			continue;
 		}
 		if (i->key == "STOPS") {
-			song.stops = parseBPMS(i->value, TRUE); //mismo formato que bpms
+			song.stops = parseBPMS(i->value, TRUE);
 			continue;
 		}
 	}
@@ -122,7 +122,7 @@ bpmdata parseBPMS(string data, bool isStops) {
 				} else {
 					task = state::IDLE;
 					if (isStops)
-						bpm.bpmf = stod(buffer) * pow(2, MINUTEFRAC);
+						bpm.bpmf = (stod(buffer) * (1 << MINUTEFRAC)) / 60;
 					else
 						bpm.bpmf = stod(buffer) * pow(2, BPMFRAC);
 					buffer = "";
