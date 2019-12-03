@@ -109,8 +109,7 @@ bpmdata parseBPMS(string data) {
 					buffer.append(1, c);
 				} else {
 					task = state::VALUE;
-					bpm.beat = stod(buffer) * beatfperiod;
-					cout << "\nbeat " << bpm.beat;
+					bpm.beatf = stod(buffer) * beatfperiod;
 					buffer = "";
 				}
 				break;
@@ -119,9 +118,10 @@ bpmdata parseBPMS(string data) {
 					buffer.append(1, c);
 				} else {
 					task = state::IDLE;
-					bpm.bpm = stod(buffer) * pow(2, BPMFRAC);
-					cout << "\nbpm " << bpm.bpm;
+					bpm.bpmf = stod(buffer) * pow(2, BPMFRAC);
 					buffer = "";
+					bpms.push_back(bpm);
+					bpm = empty_bpm;
 				}
 				break;
 			case state::IDLE:

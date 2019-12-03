@@ -9,8 +9,8 @@ struct t_pair {
 typedef std::vector<u16 *> measure;
 typedef std::vector<measure> notedata;
 struct t_bpm {
-	u32 beat = 0;
-	u32 bpm = 0;
+	u32 beatf = 0;
+	u32 bpmf = 0;
 };
 typedef std::vector<struct t_bpm> bpmdata;
 typedef std::vector<struct t_pair> metadata;

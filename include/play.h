@@ -3,7 +3,7 @@
 #define MINUTEFRAC 12
 void setup(songdata song); 
 void loop();
-void setRotData();
+void updateBeat();
 void updateSteps();
 void renderSteps();
 typedef struct step {
@@ -27,4 +27,5 @@ u8 popSprite();
 void pushSprite(u8 i);
 
 measure getMeasureAtBeat(u32 beat);
+void setRotData();
 u32 millis();

@@ -20,11 +20,13 @@ using namespace std;
 
 static u8 notetype[] = {4, 8, 12, 16, 24, 32, 48, 64, 192};
 bool freesprites[128];
-static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC)) - 1; 
+static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
+static u32 minutefperiod = 1 << MINUTEFRAC;
 songdata song;
 vector<step> steps;
 u32 time;
-u32 bpmf = 200 * pow(2, BPMFRAC);
+u32 bpmf = 0;
+int bpmindex = -1;
 u32 minutef;
 u32 beatf;
 int beat;					//beat global
@@ -35,6 +37,7 @@ int cursor = 0;
 int measurecursor = -1;
 int stepbeatf = 0;			//beat preciso en el cursor
 int relbeatf = 0;			//beat preciso relativo al cursor a x set
+
 u16 *set;
 measure m;
 
@@ -52,19 +55,43 @@ void setup(songdata s){
 
 void loop(){
 	while (1) {
+		updateBeat();
 		updateSteps();
 		swiWaitForVBlank();
 		renderSteps();
 	}
 }
 
-void updateSteps() {
+u32 beatfsum;
+u32 minutefbpm;	//tiempo que dura ese bpm
+u32 minutefsum;
+void updateBeat() {
 	time = millis();
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
-	beatf = (bpmf * minutef);
+	u32 beatfsum = 0;
+	u32 minutefsum = 0;
+	for (uint i = 0; i < song.bpms.size(); i++) {
+		if (i < song.bpms.size() - 1) {
+			minutefbpm = (song.bpms[i + 1].beatf - song.bpms[i].beatf) / song.bpms[i].bpmf;
+		} else {
+			minutefbpm = 0;
+		}
+		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
+			beatfsum = beatfsum + (minutefbpm * song.bpms[i].bpmf);
+			minutefsum = minutefsum + minutefbpm;
+			continue;
+		} else {
+			beatfsum = beatfsum + ((minutef - minutefsum) * song.bpms[i].bpmf);
+			break;
+		}
+	}
+	beatf = beatfsum;
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
+}
+
+void updateSteps() {
 	//crear nuevos steps
-	for (int i = cursor; i < beat + 4; i++) {
+	for (int i = cursor; i < beat + 8; i++) {
 		if ((i / 4) > measurecursor) {
 			cout << "\nmeasure " << i / 4;
 			firstbeat = i;
@@ -104,7 +131,7 @@ void updateSteps() {
 	}
 	//actualizar steps existentes
 	for (auto i = steps.begin(); i != steps.end(); i++) {
-		i->y = ((i->beatf >> 13) - (beatf >> 13));
+		i->y = ((i->beatf >> 14) - (beatf >> 14));
 		if (i->beatf < beatf) {
 			pushSprite(i->sprite);
 			steps.erase(i--);
