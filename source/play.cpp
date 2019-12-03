@@ -21,7 +21,6 @@ using namespace std;
 static u8 notetype[] = {4, 8, 12, 16, 24, 32, 48, 64, 192};
 bool freesprites[128];
 static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
-static u32 minutefperiod = 1 << MINUTEFRAC;
 songdata song;
 vector<step> steps;
 u32 time;
@@ -62,30 +61,30 @@ void loop(){
 	}
 }
 
-u32 beatfsum;
 u32 minutefbpm;	//tiempo que dura ese bpm
 u32 minutefsum;
 void updateBeat() {
 	time = millis();
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
-	u32 beatfsum = 0;
+	beatf = 0;
 	u32 minutefsum = 0;
 	for (uint i = 0; i < song.bpms.size(); i++) {
 		if (i < song.bpms.size() - 1) {
 			minutefbpm = (song.bpms[i + 1].beatf - song.bpms[i].beatf) / song.bpms[i].bpmf;
 		} else {
-			minutefbpm = 0;
+			minutefbpm = 0; //ultimo bpm no tiene final
 		}
+		//si tiempo minutef ya se paso de largo lo que dura ese bpm, sumarlo
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
-			beatfsum = beatfsum + (minutefbpm * song.bpms[i].bpmf);
+			beatf =  song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
 			continue;
+		//minutef esta dentro del rango de ese bpm, sumarlo parcialmente
 		} else {
-			beatfsum = beatfsum + ((minutef - minutefsum) * song.bpms[i].bpmf);
+			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
 			break;
 		}
 	}
-	beatf = beatfsum;
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
 }
 

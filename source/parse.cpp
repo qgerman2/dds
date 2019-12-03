@@ -86,7 +86,6 @@ songdata parseSong(string path) {
 			continue;
 		}
 		if (i->key == "BPMS") {
-			cout << "bpms";
 			song.bpms = parseBPMS(i->value);
 			continue;
 		}
