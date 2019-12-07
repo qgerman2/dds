@@ -85,7 +85,6 @@ void updateBeat() {
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
 			beatf = song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
-			continue;
 		} else {
 			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
 			if (lostbeatsbpm) {
@@ -106,7 +105,6 @@ void updateBeat() {
 		}
 	}
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
-	cout << "\n" << beat;
 }
 
 void updateSteps() {
