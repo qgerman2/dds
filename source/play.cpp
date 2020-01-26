@@ -6,6 +6,7 @@
 #include "play.h"
 #include <bitset>
 #include <cmath>
+#include <maxmod9.h>
 
 //indice memoria
 #define sprites ((spriteEntry*) OAM)
@@ -56,6 +57,7 @@ void loop(){
 	while (1) {
 		updateBeat();
 		updateSteps();
+		mmStreamUpdate();
 		swiWaitForVBlank();
 		renderSteps();
 	}
