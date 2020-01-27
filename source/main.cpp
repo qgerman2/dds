@@ -21,10 +21,17 @@ int main(){
 	bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0, 0);
 
 	if (fatInitDefault()) {
-		song = parseSong("/ddr/Inkh 5 - dream's destination/G.O.A.T/GOAT.SM");
+		song = parseSong("/ddr/song.sm");
 		playSong();
 	} else {
 		iprintf("fatInitDefault failure: terminating\n");
+	}
+	if (isDSiMode()) {
+		cout << "dsimode";
+	}
+	else 
+	{
+		cout << "nodsimode";
 	}
 
 	imagetobg("/ddr/bg5.png");

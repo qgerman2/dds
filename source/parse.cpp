@@ -119,7 +119,11 @@ bpmdata parseBPMS(string data, bool isStops) {
 			case state::VALUE:
 				if (c != ',' && c != '\n') {
 					buffer.append(1, c);
-				} else {
+				} 
+				if ((c == ',' && c == '\n') || i == data.length() - 1) {
+					if (i == data.length() - 1) {
+						buffer.append(1, c);
+					}
 					task = state::IDLE;
 					if (isStops)
 						bpm.bpmf = (stod(buffer) * (1 << MINUTEFRAC)) / 60;
@@ -143,6 +147,7 @@ bpmdata parseBPMS(string data, bool isStops) {
 
 
 notedata parseNotes(string data) {
+	cout << "size of data " << data.length() << "\n";
 	size_t s = data.find(':');
 	size_t e = data.find(';');
 	for (int v = 0; v <= 3; v++) {
@@ -187,5 +192,10 @@ notedata parseNotes(string data) {
 		}
 	}
 	notes.push_back(m);
+	size_t size = 0;
+	for ( auto i = notes.begin(); i != notes.end(); i++ ) {
+		size = size + i->size();
+	}
+	cout << "size of notedata" << size;
 	return notes;
 } 

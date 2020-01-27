@@ -57,6 +57,7 @@ void loop(){
 	while (1) {
 		updateBeat();
 		updateSteps();
+		scanKeys();
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		renderSteps();
