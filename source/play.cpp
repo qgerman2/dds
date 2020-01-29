@@ -138,18 +138,7 @@ void updateSteps() {
 		}
 		cursor = i + 1;
 	}
-	//actualizar steps existentes
-	for (auto i = steps.begin(); i != steps.end(); i++) {
-		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
-		if (i->type == 5) { //holds
-			i->y += 16 + 32 * i->stepcount;
-		}
-		if (i->y < -32) {
-			pushSprite(i->sprite);
-			steps.erase(i--);
-		}
-	}
-	//actualizar steps creados por holds
+	//crear steps por holds
 	int ystart;
 	int yend;
 	u32 height;
@@ -172,12 +161,23 @@ void updateSteps() {
 			h->stepcount = h->stepcount + 1;
 			s.type = 5;
 			s.x = (10 + 30 * h->col);
-			s.y = ystart + (32 * (h->stepcount - 1));
+			s.y = 0;
 			s.col = h->col;
 			s.sprite = popSprite();
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
 			steps.push_back(s);
+		}
+	}
+	//actualizar steps existentes
+	for (auto i = steps.begin(); i != steps.end(); i++) {
+		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
+		if (i->type == 5) { //holds
+			i->y += 16 + 32 * i->stepcount;
+		}
+		if (i->y < -32) {
+			pushSprite(i->sprite);
+			steps.erase(i--);
 		}
 	}
 }
