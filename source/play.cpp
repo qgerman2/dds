@@ -48,6 +48,7 @@ void loop(){
 		swiWaitForVBlank();
 		renderSteps(steps);
 		renderHolds(holds);
+		oamUpdate(&oamMain);
 	}
 }
 
