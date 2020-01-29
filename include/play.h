@@ -1,11 +1,16 @@
 #define NDSFREQ 32.7284	//khz
 #define BPMFRAC 8
 #define MINUTEFRAC 12
+
 void setup(songdata song); 
 void loop();
 void updateBeat();
 void updateSteps();
-void renderSteps();
+typedef struct hold {
+	int col;
+	u32 startbeatf;
+	u32 endbeatf;
+} hold;
 typedef struct step {
 	int x;
 	int y;
@@ -22,10 +27,7 @@ typedef struct t_spriteEntry {
     u16 affine_data;
 } spriteEntry;
 
-void newSteps(u16 data, u32 beatf, u8 type);
-u8 popSprite();
-void pushSprite(u8 i);
+void newSteps(u16 data, u32 beatf);
 
 measure getMeasureAtBeat(u32 beat);
-void setRotData();
 u32 millis();

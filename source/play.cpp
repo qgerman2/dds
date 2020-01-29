@@ -1,5 +1,4 @@
 #include <nds.h>
-#include <tap.h>
 #include <iostream>
 #include "main.h"
 #include "parse.h"
@@ -7,23 +6,15 @@
 #include <bitset>
 #include <cmath>
 #include <maxmod9.h>
-
-//indice memoria
-#define sprites ((spriteEntry*) OAM)
-#define tiles_tap 0
-#define pal_tap 0
-
-//macros para acceso a memoria
-#define tile2objram(t) (SPRITE_GFX + (t) * 16)
-#define pal2objram(p) (SPRITE_PALETTE + (p) * 16)
+#include <vector>
+#include "play_render.h"
 
 using namespace std;
 
-static u8 notetype[] = {4, 8, 12, 16, 24, 32, 48, 64, 192};
-bool freesprites[128];
 static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 songdata song;
 vector<step> steps;
+vector<hold> holds;
 u32 time;
 u32 bpmf = 0;
 int bpmindex = -1;
@@ -42,12 +33,7 @@ u16 *set;
 measure m;
 
 void setup(songdata s){
-	dmaCopyHalfWords(3, tapTiles, tile2objram(tiles_tap), tapTilesLen);
-	dmaCopyHalfWords(3, tapPal, pal2objram(pal_tap), tapPalLen);
-	setRotData();
-	for (int i = 0; i < 128; i++) {
-		pushSprite(i);
-	}
+	pr_setup();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	song = s;
@@ -60,7 +46,8 @@ void loop(){
 		scanKeys();
 		mmStreamUpdate();
 		swiWaitForVBlank();
-		renderSteps();
+		renderSteps(steps);
+		renderHolds(holds);
 	}
 }
 
@@ -125,17 +112,17 @@ void updateSteps() {
 		switch (sets) {
 			case 1: //1 set, 1 linea por beat
 				set = m.at(0);
-				newSteps(set[count], stepbeatf, 0);
+				newSteps(set[count], stepbeatf);
 				break;
 			case 2: //2 sets, 2 lineas por beat
 				if ((count == 0) || (count == 1)) {
 					set = m.at(0);
-					newSteps(set[count * 2], stepbeatf, 0);
-					newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2), 1);
+					newSteps(set[count * 2], stepbeatf);
+					newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2));
 				} else {
 					set = m.at(1);
-					newSteps(set[(count - 2) * 2], stepbeatf, 0);
-					newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2) , 1);
+					newSteps(set[(count - 2) * 2], stepbeatf);
+					newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2));
 				}
 				break;
 			default: //sets sets, sets / 4 lineas por beat
@@ -143,7 +130,7 @@ void updateSteps() {
 					set = m.at(count * (sets / 4) + k);
 					relbeatf = ((k * beatfperiod) / (sets / 4));
 					for (int ii = 0; ii < 4; ii++) {
-						newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)), 0);
+						newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)));
 					}
 				}
 				break;
@@ -160,50 +147,46 @@ void updateSteps() {
 	}
 }
 
-void newSteps(u16 data, u32 beatf, u8 type) {
+void newSteps(u16 data, u32 beatf) {
 	if (data == 0)
 		return;
+	bool newstep = false;
 	//normal steps
+	step s;
 	for (int i = 0; i < 4; i++) {
+		newstep = false;
 		if (data & normal[i]) {
-			step s;
+			s.type = 1;
+			newstep = true;
+		}
+		if (data & holdhead[i]) {
+			s.type = 2;
+			newstep = true;
+			hold h;
+			h.col = i;
+			h.startbeatf = beatf;
+			h.endbeatf = 0;
+			holds.push_back(h);
+		}
+		if (data & holdtail[i]) {
+			s.type = 3;
+			newstep = true;
+			for (auto k = holds.begin(); k != holds.end(); k++) {
+				if ((k->col == i) && (k->endbeatf == 0)) {
+					k->endbeatf = beatf;
+					break;
+				}
+			}
+		}
+		if (newstep) {
 			s.x = (10 + 30 * i);
 			s.y = 100;
-			s.type = 0;
-			s.beatf = beatf;
-			s.sprite = popSprite();
 			s.col = i;
+			s.sprite = popSprite();
+			s.beatf = beatf;
 			steps.push_back(s);
 		}
 	}
-}
-
-void renderSteps() {
-	for (auto i = steps.begin(); i != steps.end(); i++) {
-		if (i->y < 160) {
-			sprites[i->sprite].attr0 = i->y | ATTR0_ROTSCALE_DOUBLE;
-			sprites[i->sprite].attr1 = i->x | ATTR1_SIZE_32 | ATTR1_ROTDATA(i->col);
-			sprites[i->sprite].attr2 = tiles_tap + (pal_tap << 12);
-		} else {
-			sprites[i->sprite].attr0 = ATTR0_DISABLED;
-		}
-	}
-}
-
-u8 popSprite() {
-	for (u8 i = 0; i < 128; i++) {
-		if (freesprites[i]) {
-			freesprites[i] = FALSE;
-			return i;
-		}
-	}
-	sassert(0, "out of sprites");
-	return 0;
-}
-
-void pushSprite(u8 i) {
-	freesprites[i] = TRUE;
-	sprites[i].attr0 = ATTR0_DISABLED;
 }
 
 measure getMeasureAtBeat(u32 beat) {
@@ -211,44 +194,6 @@ measure getMeasureAtBeat(u32 beat) {
 		sassert(0, "attempted to get nonexistant measure");
 	}
 	return song.notes.at(beat / 4);
-}
-
-void setRotData() {
-	s16 s;
-	s16 c;
-	u16* affine;
-	//left
-	s = sinLerp(degreesToAngle(270)) >> 4;
-	c = cosLerp(degreesToAngle(270)) >> 4;
-	affine = OAM + 3;
-	affine[0] = c;
-	affine[4] = s;
-	affine[8] = -s;
-	affine[12] = c;
-	//up
-	s = sinLerp(degreesToAngle(0)) >> 4;
-	c = cosLerp(degreesToAngle(0)) >> 4;
-	affine = OAM + 16 + 3;
-	affine[0] = c;
-	affine[4] = s;
-	affine[8] = -s;
-	affine[12] = c;
-	//down
-	s = sinLerp(degreesToAngle(180)) >> 4;
-	c = cosLerp(degreesToAngle(180)) >> 4;
-	affine = OAM + 32 + 3;
-	affine[0] = c;
-	affine[4] = s;
-	affine[8] = -s;
-	affine[12] = c;
-	//right
-	s = sinLerp(degreesToAngle(90)) >> 4;
-	c = cosLerp(degreesToAngle(90)) >> 4;
-	affine = OAM + 48 + 3;
-	affine[0] = c;
-	affine[4] = s;
-	affine[8] = -s;
-	affine[12] = c;
 }
 
 u32 millis() {

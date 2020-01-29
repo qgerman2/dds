@@ -182,6 +182,12 @@ notedata parseNotes(string data) {
 			case '1':
 				m.back()[fourcount] |= normal[count];
 				break;
+			case '2':
+				m.back()[fourcount] |= holdhead[count];
+				break;
+			case '3':
+				m.back()[fourcount] |= holdtail[count];
+				break;
 			case 'M':
 				m.back()[fourcount] |= mine[count];
 				break;

@@ -19,9 +19,9 @@ void playSong() {
 	sys.fifo_channel		= FIFO_MAXMOD;
 	mmInit( &sys );
 
-	file = fopen("Veracocha - CarteBlanche.raw", "rb");
+	file = fopen("/ddr/song.wav", "rb");
 
-    mystream.sampling_rate = 22050;
+    mystream.sampling_rate = 8000;
     mystream.buffer_length = 800;
     mystream.callback = stream;
     mystream.format = MM_STREAM_16BIT_STEREO;
