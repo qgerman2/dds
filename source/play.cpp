@@ -15,6 +15,7 @@ static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 songdata song;
 vector<step> steps;
 vector<hold> holds;
+u8 parseaheadbeats = 12;
 u32 time;
 u32 bpmf = 0;
 int bpmindex = -1;
@@ -46,8 +47,7 @@ void loop(){
 		scanKeys();
 		mmStreamUpdate();
 		swiWaitForVBlank();
-		renderSteps(steps);
-		renderHolds(holds);
+		renderSteps();
 		oamUpdate(&oamMain);
 	}
 }
@@ -100,7 +100,7 @@ void updateBeat() {
 
 void updateSteps() {
 	//crear nuevos steps
-	for (int i = cursor; i < beat + 8; i++) {
+	for (int i = cursor; i < beat + parseaheadbeats; i++) {
 		if ((i / 4) > measurecursor) {
 			cout << "\nmeasure " << i / 4;
 			firstbeat = i;
@@ -140,10 +140,44 @@ void updateSteps() {
 	}
 	//actualizar steps existentes
 	for (auto i = steps.begin(); i != steps.end(); i++) {
-		i->y = ((i->beatf >> 14) - (beatf >> 14));
-		if (i->beatf < beatf) {
+		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
+		if (i->type == 5) { //holds
+			i->y += 16 + 32 * i->stepcount;
+		}
+		if (i->y < -32) {
 			pushSprite(i->sprite);
 			steps.erase(i--);
+		}
+	}
+	//actualizar steps creados por holds
+	int ystart;
+	int yend;
+	u32 height;
+	step s;
+	for (auto h = holds.begin(); h != holds.end(); h++) {
+		ystart = ((h->startbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
+		if (ystart > NDSHEIGHT) {
+			continue;
+		}
+		height = NDSHEIGHT - ystart;
+		if (h->endbeatf > 0) {
+			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
+			if (yend < -32) {
+				holds.erase(h--);
+				continue;
+			}
+			height = yend - ystart;
+		} 
+		if ((height / 32) + 1 > h->stepcount) {
+			h->stepcount = h->stepcount + 1;
+			s.type = 5;
+			s.x = (10 + 30 * h->col);
+			s.y = ystart + (32 * (h->stepcount - 1));
+			s.col = h->col;
+			s.sprite = popSprite();
+			s.beatf = h->startbeatf;
+			s.stepcount = h->stepcount - 1;
+			steps.push_back(s);
 		}
 	}
 }
@@ -167,7 +201,9 @@ void newSteps(u16 data, u32 beatf) {
 			h.col = i;
 			h.startbeatf = beatf;
 			h.endbeatf = 0;
+			h.stepcount = 0;
 			holds.push_back(h);
+			cout << "\nnew hold";
 		}
 		if (data & holdtail[i]) {
 			s.type = 3;
