@@ -151,10 +151,10 @@ void updateSteps() {
 		}
 		height = NDSHEIGHT - ystart;
 		if (h->endbeatf > 0) {
-			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
+			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
 			height = yend - ystart;
-		} 
-		while ((height / 32) + 1 > h->stepcount) {
+		}
+		while (((height + 32 - 1) / 32) > h->stepcount) {
 			h->stepcount = h->stepcount + 1;
 			s.type = 5;
 			s.x = (10 + 30 * h->col);
@@ -168,12 +168,15 @@ void updateSteps() {
 		}
 		//cortar sprite de ultimo hold
 		if (h->endbeatf > 0) {
-			h->laststep->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
-			dmaCopyHalfWords(3, holdBitmap, h->laststep->gfx, holdBitmapLen / 2);
+			u8 mod = height % 32;
+			if (mod > 0) {
+				h->laststep->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+				dmaCopyHalfWords(3, holdBitmap, h->laststep->gfx, holdBitmapLen / 32 * mod);
+			}
 			holds.erase(h--);
 		}
 	}
-	//actualizar steps existentes
+	//actualizar posicion
 	for (auto i = steps.begin(); i != steps.end(); i++) {
 		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
 		if (i->type == 5) { //holds
