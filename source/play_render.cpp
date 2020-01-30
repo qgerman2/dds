@@ -43,47 +43,18 @@ void renderSteps() {
 					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tailMemory, 1, false, false, false, false, false);
 					break;
 				case (5):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 1, false, false, false, false, false);
+					if (i->gfx != NULL) {
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 1, false, false, false, false, false);
+					}
+					else {
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 1, false, false, false, false, false);
+					}
 					break;
 			}
 		} else {
 			oamClearSprite(&oamMain, i->sprite);
 		}
 	}
-}
-
-void renderHolds() {
-	int ystart;
-	int yend;
-	u32 height;
-	step s;
-	for (auto h = holds.begin(); h != holds.end(); h++) {
-		ystart = ((h->startbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
-		if (ystart > NDSHEIGHT) {
-			continue;
-		}
-		height = NDSHEIGHT - ystart;
-		if (h->endbeatf > 0) {
-			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
-			if (yend < -32) {
-				holds.erase(h--);
-				continue;
-			}
-			height = yend - ystart;
-		} 
-		if ((height / 32) + 1 > h->stepcount) {
-			h->stepcount = h->stepcount + 1;
-			s.type = 5;
-			s.x = (10 + 30 * h->col);
-			s.y = ystart + (32 * (h->stepcount - 1));
-			s.col = h->col;
-			s.sprite = popSprite();
-			s.beatf = h->startbeatf;
-			s.stepcount = h->stepcount - 1;
-			steps.push_back(s);
-		}
-	}
-
 }
 
 u8 popSprite() {

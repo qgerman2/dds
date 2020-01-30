@@ -3,6 +3,7 @@
 #include "main.h"
 #include "parse.h"
 #include "play.h"
+#include <hold.h>
 #include <bitset>
 #include <cmath>
 #include <maxmod9.h>
@@ -151,13 +152,9 @@ void updateSteps() {
 		height = NDSHEIGHT - ystart;
 		if (h->endbeatf > 0) {
 			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
-			if (yend < -32) {
-				holds.erase(h--);
-				continue;
-			}
 			height = yend - ystart;
 		} 
-		if ((height / 32) + 1 > h->stepcount) {
+		while ((height / 32) + 1 > h->stepcount) {
 			h->stepcount = h->stepcount + 1;
 			s.type = 5;
 			s.x = (10 + 30 * h->col);
@@ -167,6 +164,13 @@ void updateSteps() {
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
 			steps.push_back(s);
+			h->laststep = &steps.back();
+		}
+		//cortar sprite de ultimo hold
+		if (h->endbeatf > 0) {
+			h->laststep->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+			dmaCopyHalfWords(3, holdBitmap, h->laststep->gfx, holdBitmapLen / 2);
+			holds.erase(h--);
 		}
 	}
 	//actualizar steps existentes
@@ -177,6 +181,9 @@ void updateSteps() {
 		}
 		if (i->y < -32) {
 			pushSprite(i->sprite);
+			if (i->gfx != NULL) {
+				oamFreeGfx(&oamMain, i->gfx);
+			} 
 			steps.erase(i--);
 		}
 	}
@@ -203,7 +210,6 @@ void newSteps(u16 data, u32 beatf) {
 			h.endbeatf = 0;
 			h.stepcount = 0;
 			holds.push_back(h);
-			cout << "\nnew hold";
 		}
 		if (data & holdtail[i]) {
 			s.type = 3;

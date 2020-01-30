@@ -9,12 +9,6 @@ void setup(songdata song);
 void loop();
 void updateBeat();
 void updateSteps();
-typedef struct hold {
-	int col;
-	u32 startbeatf;
-	u32 endbeatf;
-	u32 stepcount;
-} hold;
 typedef struct step {
 	int x;
 	int y;
@@ -23,14 +17,15 @@ typedef struct step {
 	u8 sprite;
 	u8 col;
 	u8 stepcount;
+	u16* gfx = NULL;
 } step;
-
-typedef struct t_spriteEntry {
-    u16 attr0;
-    u16 attr1;
-    u16 attr2;
-    u16 affine_data;
-} spriteEntry;
+typedef struct hold {
+	int col;
+	u32 startbeatf;
+	u32 endbeatf;
+	u32 stepcount;
+	step* laststep;
+} hold;
 
 void newSteps(u16 data, u32 beatf);
 
