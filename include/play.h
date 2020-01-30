@@ -23,7 +23,7 @@ typedef struct hold {
 	int col;
 	u32 startbeatf;
 	u32 endbeatf;
-	u32 stepcount;
+	u8 stepcount;
 	step* laststep;
 } hold;
 

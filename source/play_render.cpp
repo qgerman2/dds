@@ -40,14 +40,14 @@ void renderSteps() {
 					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tapMemory, i->col, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tailMemory, 1, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tapMemory, i->col, false, false, false, false, false);
 					break;
 				case (5):
 					if (i->gfx != NULL) {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 1, false, false, false, false, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 1, false, false, false, false, false);
 					}
 					else {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 1, false, false, false, false, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 1, false, false, false, false, false);
 					}
 					break;
 			}

@@ -43,11 +43,11 @@ void setup(songdata s){
 
 void loop(){
 	while (1) {
-		updateBeat();
-		updateSteps();
 		scanKeys();
 		mmStreamUpdate();
 		swiWaitForVBlank();
+		updateBeat();
+		updateSteps();
 		renderSteps();
 		oamUpdate(&oamMain);
 	}
