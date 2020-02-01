@@ -9,16 +9,19 @@
 #include <maxmod9.h>
 #include <vector>
 #include "play_render.h"
+#include "play_input.h"
+
 
 using namespace std;
 
-static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
+u32 bpmf = 0;
+
+u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 songdata song;
 vector<step> steps;
 vector<hold> holds;
 u8 parseaheadbeats = 12;
 u32 time;
-u32 bpmf = 0;
 int bpmindex = -1;
 u32 minutef;
 u32 beatf;
@@ -43,12 +46,13 @@ void setup(songdata s){
 
 void loop(){
 	while (1) {
-		scanKeys();
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		updateBeat();
+		scanKeys();
+		updateInput();
 		updateSteps();
-		renderSteps();
+		renderPlay();
 		oamUpdate(&oamMain);
 	}
 }
@@ -79,6 +83,10 @@ void updateBeat() {
 			minutefsum = minutefsum + minutefbpm;
 		} else {
 			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
+			if (bpmf != song.bpms[i].bpmf) {
+				bpmf = song.bpms[i].bpmf;
+				updateJudgesWindow();
+			}
 			if (lostbeatsbpm) {
 				for (uint s = 0; s < song.stops.size(); s++) {
 					if ((song.stops[s].beatf > song.bpms[i].beatf) && (song.stops[s].beatf < song.bpms[i + 1].beatf)) {
@@ -183,11 +191,7 @@ void updateSteps() {
 			i->y += 16 + 32 * i->stepcount;
 		}
 		if (i->y < -32) {
-			pushSprite(i->sprite);
-			if (i->gfx != NULL) {
-				oamFreeGfx(&oamMain, i->gfx);
-			} 
-			steps.erase(i--);
+			removeStep(&i);
 		}
 	}
 }
@@ -233,6 +237,15 @@ void newSteps(u16 data, u32 beatf) {
 			steps.push_back(s);
 		}
 	}
+}
+
+void removeStep(vector<step>::iterator* s) {
+	pushSprite((*s)->sprite);
+	if ((*s)->gfx != NULL) {
+		oamFreeGfx(&oamMain, (*s)->gfx);
+	}
+	steps.erase((*s));
+	(*s)--;
 }
 
 measure getMeasureAtBeat(u32 beat) {

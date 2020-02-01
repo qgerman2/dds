@@ -10,8 +10,6 @@ mm_stream mystream;
 mm_word stream(mm_word length, mm_addr dest, mm_stream_formats format);
 
 void playSong() {
-	cout << "playsong";
-
 	mm_ds_system sys;
 	sys.mod_count 			= 0;
 	sys.samp_count			= 0;
@@ -29,8 +27,6 @@ void playSong() {
     mystream.manual = 1;
     
     mmStreamOpen( &mystream );
-    mmStreamUpdate();
-    mmStreamUpdate();
 }
 
 mm_word stream(mm_word length, mm_addr dest, mm_stream_formats format) {

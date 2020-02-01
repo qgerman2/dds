@@ -4,6 +4,7 @@
 #include <tap.h>
 #include <tail.h>
 #include <hold.h>
+#include <hit.h>
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
@@ -15,6 +16,7 @@ bool sprites[128];
 u16* tapMemory;
 u16* tailMemory;
 u16* holdMemory;
+u16* hitMemory;
 
 void pr_setup() {
 	for (int i = 0; i < 128; i++) {
@@ -24,11 +26,33 @@ void pr_setup() {
 	tapMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	tailMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	holdMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+	hitMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+
 	dmaCopy(tapTiles, tapMemory, tapTilesLen);
 	dmaCopy(tailTiles, tailMemory, tailTilesLen);
 	dmaCopyHalfWords(3, holdBitmap, holdMemory, holdBitmapLen);
+	dmaCopy(hitTiles, hitMemory, hitTilesLen);
+
 	dmaCopy(tapPal, SPRITE_PALETTE, 512);
+	dmaCopy(hitPal, SPRITE_PALETTE + 16, 512);
 	setRotData();
+
+	u8 left = popSprite();
+	u8 up = popSprite();
+	u8 down = popSprite();
+	u8 right = popSprite();
+	oamSet(&oamMain, left, 10, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
+	oamSet(&oamMain, up, 10 + 30, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
+	oamSet(&oamMain, down, 10 + 60, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
+	oamSet(&oamMain, right, 10 + 90, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
+	oamSetPalette(&oamMain, left, 1);
+	oamSetPalette(&oamMain, down, 1);
+	oamSetPalette(&oamMain, up, 1);
+	oamSetPalette(&oamMain, right, 1);
+}
+
+void renderPlay() {
+	renderSteps();
 }
 
 void renderSteps() {
@@ -75,7 +99,7 @@ void pushSprite(u8 i) {
 
 void setRotData() {
 	oamRotateScale(&oamMain, 0, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamMain, 1, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamMain, 2, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 1, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 2, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 3, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
 }

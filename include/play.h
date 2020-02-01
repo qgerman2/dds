@@ -28,10 +28,13 @@ typedef struct hold {
 } hold;
 
 void newSteps(u16 data, u32 beatf);
+void removeStep(std::vector<step>::iterator* s);
 
 measure getMeasureAtBeat(u32 beat);
 u32 millis();
 
 extern u32 beatf;
+extern u32 bpmf;
+extern u32 beatfperiod;
 extern std::vector<step> steps;
 extern std::vector<hold> holds;

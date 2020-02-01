@@ -11,6 +11,9 @@
 using namespace std;
 u16* bg = (u16*)0x026C8000;
 
+#include <iostream>
+#include <vector>
+
 int main(){
 	videoSetMode(MODE_3_2D | DISPLAY_BG3_ACTIVE | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_1D_LAYOUT);
 	vramSetBankA(VRAM_A_MAIN_BG);
@@ -31,7 +34,6 @@ int main(){
 
 	setup(song);
 	loop();
-
 	return 0;
 }
 
@@ -39,7 +41,6 @@ void imagetobg(string path) {
 	vector<unsigned char> image;
 	unsigned width, height;
 	unsigned error = lodepng::decode(image, width, height, path);
-	cout << width << "\n" << height;
 	for(unsigned i = 0; i < image.size() / 4; i++) {
   		bg[i] = image[i*4]>>3 | (image[(i*4)+1]>>3)<<5 | (image[(i*4)+2]>>3)<<10 | BIT(15);
 	}

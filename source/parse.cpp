@@ -16,7 +16,6 @@ using namespace std;
 static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
-static u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC)) - 1; 
 
 songdata parseSong(string path) {
 	songdata song;
@@ -120,7 +119,7 @@ bpmdata parseBPMS(string data, bool isStops) {
 				if (c != ',' && c != '\n') {
 					buffer.append(1, c);
 				} 
-				if ((c == ',' && c == '\n') || i == data.length() - 1) {
+				if ((c == ',') || (c == '\n') || i == data.length() - 1) {
 					if (i == data.length() - 1) {
 						buffer.append(1, c);
 					}
@@ -147,7 +146,6 @@ bpmdata parseBPMS(string data, bool isStops) {
 
 
 notedata parseNotes(string data) {
-	cout << "size of data " << data.length() << "\n";
 	size_t s = data.find(':');
 	size_t e = data.find(';');
 	for (int v = 0; v <= 3; v++) {
@@ -202,6 +200,5 @@ notedata parseNotes(string data) {
 	for ( auto i = notes.begin(); i != notes.end(); i++ ) {
 		size = size + i->size();
 	}
-	cout << "size of notedata" << size;
 	return notes;
 } 
