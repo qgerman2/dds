@@ -41,10 +41,10 @@ void pr_setup() {
 	u8 up = popSprite();
 	u8 down = popSprite();
 	u8 right = popSprite();
-	oamSet(&oamMain, left, 10, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
-	oamSet(&oamMain, up, 10 + 30, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
-	oamSet(&oamMain, down, 10 + 60, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
-	oamSet(&oamMain, right, 10 + 90, 20, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
+	oamSet(&oamMain, left, 10, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
+	oamSet(&oamMain, up, 10 + 30, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
+	oamSet(&oamMain, down, 10 + 60, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
+	oamSet(&oamMain, right, 10 + 90, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
 	oamSetPalette(&oamMain, left, 1);
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);

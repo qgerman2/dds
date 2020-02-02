@@ -186,7 +186,7 @@ void updateSteps() {
 	}
 	//actualizar posicion
 	for (auto i = steps.begin(); i != steps.end(); i++) {
-		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC));
+		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + HITYOFFSET;
 		if (i->type == 5) { //holds
 			i->y += 16 + 32 * i->stepcount;
 		}
