@@ -33,6 +33,8 @@ void removeStep(std::vector<step>::iterator* s);
 measure getMeasureAtBeat(u32 beat);
 u32 millis();
 
+extern std::vector<step>::iterator holdCol[4];
+
 extern u32 beatf;
 extern u32 bpmf;
 extern u32 beatfperiod;

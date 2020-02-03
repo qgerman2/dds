@@ -150,6 +150,8 @@ void updateSteps() {
 	//crear steps por holds
 	int ystart;
 	int yend;
+	int pos = 0;
+	vector<step>::iterator it;
 	u32 height;
 	step s;
 	for (auto h = holds.begin(); h != holds.end(); h++) {
@@ -157,6 +159,13 @@ void updateSteps() {
 		if (ystart > NDSHEIGHT) {
 			continue;
 		}
+		it = steps.begin();
+		for (auto i = steps.begin(); i != steps.end(); i++) {
+			if (((i->col == h->col) && (i->beatf == h->startbeatf)) && ((i->type == 2) || (i->type == 5))) {
+				pos = i - steps.begin() + 1;
+			} 
+		}
+		advance(it, pos);
 		height = NDSHEIGHT - ystart;
 		if (h->endbeatf > 0) {
 			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
@@ -171,7 +180,13 @@ void updateSteps() {
 			s.sprite = popSprite();
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
-			steps.push_back(s);
+			for (int i = 0; i < 4; i++) {
+				if (holdCol[i] >= it) {
+					holdCol[i]++;
+				}
+			}
+			steps.insert(it, s);
+			it++;
 			h->laststep = &steps.back();
 		}
 		//cortar sprite de ultimo hold
@@ -229,6 +244,11 @@ void newSteps(u16 data, u32 beatf) {
 			}
 		}
 		if (newstep) {
+			for (int i = 0; i < 4; i++) {
+				if (holdCol[i] == steps.end()) {
+					holdCol[i]++;
+				}
+			}
 			s.x = (10 + 30 * i);
 			s.y = 100;
 			s.col = i;
@@ -243,6 +263,11 @@ void removeStep(vector<step>::iterator* s) {
 	pushSprite((*s)->sprite);
 	if ((*s)->gfx != NULL) {
 		oamFreeGfx(&oamMain, (*s)->gfx);
+	}
+	for (int i = 0; i < 4; i++) {
+		if (holdCol[i] > (*s)) {
+			holdCol[i]--;
+		}
 	}
 	steps.erase((*s));
 	(*s)--;
