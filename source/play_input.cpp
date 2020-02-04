@@ -90,6 +90,12 @@ void updateInput() {
 							if (s->type == 3) {
 								removeStep(&holdCol[s->col]);
 								s--;
+								for (auto n = next(holdCol[s->col], 0); n != s; n++) {
+									if ((n->type == 5) && (n->col == s->col)) {
+										removeStep(&n);
+										s--;
+									}
+								}
 								holdCol[s->col] = steps.end();
 								stateCol[s->col] = 2;
 								removeStep(&s);
