@@ -35,7 +35,6 @@ void updateInput() {
 	keysPressed = keysDown();
 	keysReleased = keysUp();
 	keysHeldd = keysHeld();
-
 	if (((keysPressed & stepKeys) > 0) || ((keysReleased & stepKeys) > 0) || ((keysHeldd & stepKeys) > 0)) {
 		for (auto s = steps.begin(); s != steps.end(); s++) {
 			if (stateCol[s->col] == 2) {continue;}

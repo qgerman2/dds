@@ -55,7 +55,18 @@ void renderPlay() {
 	renderSteps();
 }
 
+u8 diff;
 void renderSteps() {
+	for (auto i = 0; i < 4; i++) {
+		if (holdCol[i]->y < (HITYOFFSET + 16)) {
+			if (holdCol[i]->gfx == NULL) {
+				holdCol[i]->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+				dmaCopyHalfWords(3, holdBitmap, holdCol[i]->gfx, holdBitmapLen);
+			}
+			diff = HITYOFFSET + 16 - holdCol[i]->y;
+			dmaFillHalfWords(ARGB16(0,0,0,0), holdCol[i]->gfx, 32*diff*2);
+		}
+	}
 	for (auto i = steps.begin(); i != steps.end(); i++) {
 		if (i->y < 224) {
 			switch (i->type) {
@@ -68,10 +79,10 @@ void renderSteps() {
 					break;
 				case (5):
 					if (i->gfx != NULL) {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 1, false, false, false, false, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 2, false, false, false, true, false);
 					}
 					else {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 1, false, false, false, false, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 2, false, false, false, true, false);
 					}
 					break;
 			}
