@@ -159,19 +159,19 @@ void updateSteps() {
 		if (ystart > NDSHEIGHT) {
 			continue;
 		}
-		it = steps.begin();
 		for (auto i = steps.begin(); i != steps.end(); i++) {
 			if (((i->col == h->col) && (i->beatf == h->startbeatf)) && ((i->type == 2) || (i->type == 5))) {
-				pos = i - steps.begin() + 1;
+				pos = distance(steps.begin(), i) + 1;
 			} 
 		}
-		advance(it, pos);
 		height = NDSHEIGHT - ystart;
 		if (h->endbeatf > 0) {
 			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
 			height = yend - ystart;
 		}
 		while (((height + 32 - 1) / 32) > h->stepcount) {
+			it = steps.begin();
+			advance(it, pos);
 			h->stepcount = h->stepcount + 1;
 			s.type = 5;
 			s.x = (10 + 30 * h->col);
@@ -186,7 +186,7 @@ void updateSteps() {
 				}
 			}
 			steps.insert(it, s);
-			it++;
+			pos++;
 			h->laststep = &steps.back();
 		}
 		//cortar sprite de ultimo hold
