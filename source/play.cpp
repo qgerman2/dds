@@ -187,14 +187,18 @@ void updateSteps() {
 			}
 			steps.insert(it, s);
 			pos++;
-			h->laststep = &steps.back();
 		}
 		//cortar sprite de ultimo hold
 		if (h->endbeatf > 0) {
 			u8 mod = height % 32;
 			if (mod > 0) {
-				h->laststep->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
-				dmaCopyHalfWords(3, holdBitmap, h->laststep->gfx, holdBitmapLen / 32 * mod);
+				for (auto n = steps.end() - 1; n != steps.begin() - 1; n--) {
+					if ((n->col == h->col) && (n->type == 5)) {
+						n->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+						dmaCopyHalfWords(3, holdBitmap, n->gfx, holdBitmapLen / 32 * mod);
+						break;
+					}
+				}
 			}
 			holds.erase(h--);
 		}

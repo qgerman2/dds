@@ -24,7 +24,6 @@ typedef struct hold {
 	u32 startbeatf;
 	u32 endbeatf;
 	u8 stepcount;
-	step* laststep;
 } hold;
 
 void newSteps(u16 data, u32 beatf);
