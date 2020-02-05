@@ -5,15 +5,14 @@
 #include "play.h"
 #include "play_input.h"
 #include "play_render.h"
+#include "play_score.h"
 
 using namespace std;
 
 u32 keysPressed;
 u32 keysReleased;
 u32 keysHeldd;
-u32 msperbeat;
 u32 beatfdiff;
-u32 judgesWindow[5];
 
 u32 colToKeys[4] = {
 	bitset<32> ("101000100000").to_ulong(), //left (Y, L BUMPER, DPAD LEFT)
@@ -112,13 +111,4 @@ void updateInput() {
 			}
 		}
 	}
-}
-
-void updateJudgesWindow() {
-	msperbeat = (60000 << BPMFRAC) / bpmf;
-	judgesWindow[0] = beatfperiod * MARVELOUSJUDGE / msperbeat;
-	judgesWindow[1] = beatfperiod * PERFECTJUDGE / msperbeat;
-	judgesWindow[2] = beatfperiod * GREATJUDGE / msperbeat;
-	judgesWindow[3] = beatfperiod * GOODJUDGE / msperbeat;
-	judgesWindow[4] = beatfperiod * BOOJUDGE / msperbeat;
 }

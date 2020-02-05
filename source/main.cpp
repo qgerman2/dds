@@ -18,9 +18,8 @@ int main(){
 	videoSetMode(MODE_3_2D | DISPLAY_BG3_ACTIVE | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_1D_LAYOUT);
 	vramSetBankA(VRAM_A_MAIN_BG);
 	vramSetBankF(VRAM_F_MAIN_SPRITE);
-
 	songdata song;
-	consoleDemoInit();
+	
 	bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0, 0);
 
 	if (fatInitDefault()) {
@@ -33,6 +32,7 @@ int main(){
 	imagetobg("/ddr/bg5.png");
 
 	setup(song);
+	consoleDemoInit();
 	loop();
 	return 0;
 }

@@ -10,6 +10,7 @@
 #include <vector>
 #include "play_render.h"
 #include "play_input.h"
+#include "play_score.h"
 
 
 using namespace std;
@@ -39,6 +40,7 @@ measure m;
 
 void setup(songdata s){
 	pr_setup();
+	ps_setup();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	song = s;
@@ -53,6 +55,7 @@ void loop(){
 		updateInput();
 		updateSteps();
 		renderPlay();
+		renderScore();
 		oamUpdate(&oamMain);
 	}
 }
@@ -193,7 +196,7 @@ void updateSteps() {
 			u8 mod = height % 32;
 			if (mod > 0) {
 				for (auto n = steps.end() - 1; n != steps.begin() - 1; n--) {
-					if ((n->col == h->col) && (n->type == 5)) {
+					if ((n->col == h->col) && (n->type == 5) && (n->beatf == h->startbeatf)) {
 						n->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 						dmaCopyHalfWords(3, holdBitmap, n->gfx, holdBitmapLen / 32 * mod);
 						break;
