@@ -4,55 +4,67 @@
 #include "play.h"
 #include "play_render.h"
 #include "play_score.h"
-#include <bar0.h>
-#include <bar1.h>
-#include <bar2.h>
-#include <bar3.h>
-#include <bar4.h>
 #include <tail.h>
+#include <bar.h>
+#include <barBot.h>
+#include <barTop.h>
 u32 msperbeat;
 u32 judgesWindow[5];
-u16* barGfx[5];
+
+u16* barTopGfx;
+u8 barTopSprite;
+u16* barBotGfx;
+u8 barBotSprite;
 
 using namespace std;
 
-int life;
-u8 barSprite[5];
+u8 segments = 0; //27 total
+u16* barGfx;
 void ps_setup() {
-	for (int i = 0; i < 5; i++) {
-		barSprite[i] = popSprite();
-		barGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-	}
-	dmaCopy(bar0Tiles, barGfx[0], bar0TilesLen);
-	dmaCopy(bar1Tiles, barGfx[1], bar1TilesLen);
-	dmaCopy(bar2Tiles, barGfx[2], bar2TilesLen);
-	dmaCopy(bar3Tiles, barGfx[3], bar3TilesLen);
-	dmaCopy(bar4Tiles, barGfx[4], bar4TilesLen);
-	dmaCopy(bar0Pal, SPRITE_PALETTE + 16 * 2, bar0PalLen);
-	dmaCopy(bar1Pal, SPRITE_PALETTE + 16 * 3, bar1PalLen);
-	dmaCopy(bar2Pal, SPRITE_PALETTE + 16 * 4, bar2PalLen);
-	dmaCopy(bar3Pal, SPRITE_PALETTE + 16 * 5, bar3PalLen);
-	dmaCopy(bar4Pal, SPRITE_PALETTE + 16 * 6, bar4PalLen);
-	life = 50;
+	barTopGfx = oamAllocateGfx(&oamMain, SpriteSize_16x8, SpriteColorFormat_16Color);
+	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
+	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
+	barTopSprite = popSprite();
+	oamSet(&oamMain, barTopSprite, 232, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
+	
+	barBotGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	dmaCopy(barBotTiles, barBotGfx, barBotTilesLen);
+	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
+	barBotSprite = popSprite();
+	oamSet(&oamMain, barBotSprite, 224, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
+
+	int id = bgInit(2, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
+	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
+	dmaCopy(barPal, BG_PALETTE, barPalLen);
+	dmaCopy(barMap, bgGetMapPtr(id),  barMapLen);
+	barGfx = bgGetMapPtr(id);
 }
 
-int d = 10;
 void renderScore() {
-	d++;
-	if (d > 19) {
-		d = 0;
+	u8 t;
+	segments++;
+	if (segments > 28) {
+		segments = 0;
 	}
-	int i = d / 4;
-	int y = 16 + ((4 - i) * 32);
-	for (int x = 4; x >= 0; x--) {
-		if (x < i) {
-			oamSet(&oamMain, barSprite[x], 150, 16 + (x * 32), 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, barGfx[0], 2, false, false, false, false, false);
+	for (int y = 0; y < 9; y++) {
+		if (y > 8 - ((segments - 1) / 3)) {
+			barGfx[29 + (y*2+3)*32] = 1;
+			barGfx[30 + (y*2+3)*32] = 2;
+			barGfx[29 + (y*2+4)*32] = 3;
+			barGfx[30 + (y*2+4)*32] = 4;
 		}
-		else if (x == i) {
-			oamSet(&oamMain, barSprite[x], 150, 16 + (x * 32), 0, (4 - d%4 + 2), SpriteSize_32x32, SpriteColorFormat_16Color, barGfx[4 - d%4], 2, false, false, false, false, false);
+		else if ((y == 8 - ((segments - 1) / 3)) && (segments != 0)) {
+			t = 2 - (segments+2)%3;
+			barGfx[29 + (y*2+3)*32] = 5 + t*4;
+			barGfx[30 + (y*2+3)*32] = 6 + t*4;
+			barGfx[29 + (y*2+4)*32] = 7 + t*4;
+			barGfx[30 + (y*2+4)*32] = 8 + t*4;
 		}
 		else {
-			oamSet(&oamMain, barSprite[x], 150, 16 + (x * 32), 0, 6, SpriteSize_32x32, SpriteColorFormat_16Color, barGfx[4], 2, false, false, false, false, false);
+			barGfx[29 + (y*2+3)*32] = 17;
+			barGfx[30 + (y*2+3)*32] = 18;
+			barGfx[29 + (y*2+4)*32] = 19;
+			barGfx[30 + (y*2+4)*32] = 20;
 		}
 	}
 }
