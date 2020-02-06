@@ -36,7 +36,6 @@ void ps_setup() {
 	int id = bgInit(2, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
 	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
 	dmaCopy(barPal, BG_PALETTE, barPalLen);
-	dmaCopy(barMap, bgGetMapPtr(id),  barMapLen);
 	barGfx = bgGetMapPtr(id);
 }
 
