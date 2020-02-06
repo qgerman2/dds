@@ -16,6 +16,9 @@ u8 barTopSprite;
 u16* barBotGfx;
 u8 barBotSprite;
 
+u32 score;
+u32 combo;
+
 using namespace std;
 
 u8 segments = 0; //27 total
@@ -66,6 +69,14 @@ void renderScore() {
 			barGfx[30 + (y*2+4)*32] = 20;
 		}
 	}
+}
+
+void addScore(step* s) {
+
+}
+
+void dropCombo() {
+	cout << "\ndrop combo";
 }
 
 void updateJudgesWindow() {

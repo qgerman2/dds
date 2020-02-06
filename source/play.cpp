@@ -41,6 +41,7 @@ measure m;
 void setup(songdata s){
 	pr_setup();
 	ps_setup();
+	pi_setup();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	song = s;
@@ -154,6 +155,7 @@ void updateSteps() {
 	int ystart;
 	int yend;
 	int pos = 0;
+	u8 push[4];
 	vector<step>::iterator it;
 	u32 height;
 	step s;
@@ -183,12 +185,19 @@ void updateSteps() {
 			s.sprite = popSprite();
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
-			for (int i = 0; i < 4; i++) {
-				if (holdCol[i] >= it) {
-					holdCol[i]++;
+			for (int c = 0; c < 4; c++) {
+				push[c] = 0;
+				if (holdCol[c] >= it) {
+					push[c] = distance(steps.begin(), holdCol[c]) + 1;
 				}
 			}
 			steps.insert(it, s);
+			for (int c = 0; c < 4; c++) {
+				if (push[c] > 0) {
+					holdCol[c] = steps.begin();
+					advance(holdCol[c], push[c]);
+				}
+			}
 			pos++;
 		}
 		//cortar sprite de ultimo hold
@@ -208,6 +217,14 @@ void updateSteps() {
 	}
 	//actualizar posicion
 	for (auto i = steps.begin(); i != steps.end(); i++) {
+		if (((i->type == 1) || (i->type == 2)) && !i->disabled && (i->beatf < beatf)) {
+			u32 beatfdiff = beatf - i->beatf;
+			if (beatfdiff > judgesWindow[4]) {
+				//se paso una nota
+				dropCombo();
+				i->disabled = true;
+			}
+		}
 		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + HITYOFFSET;
 		if (i->type == 5) { //holds
 			i->y += 16 + 32 * i->stepcount;
@@ -222,6 +239,7 @@ void newSteps(u16 data, u32 beatf) {
 	if (data == 0)
 		return;
 	bool newstep = false;
+	bool push[4] = {false};
 	//normal steps
 	step s;
 	for (int i = 0; i < 4; i++) {
@@ -251,9 +269,9 @@ void newSteps(u16 data, u32 beatf) {
 			}
 		}
 		if (newstep) {
-			for (int i = 0; i < 4; i++) {
-				if (holdCol[i] == steps.end()) {
-					holdCol[i]++;
+			for (int c = 0; c < 4; c++) {
+				if (holdCol[c] == steps.end()) {
+					push[c] = true;
 				}
 			}
 			s.x = (10 + 30 * i);
@@ -262,6 +280,11 @@ void newSteps(u16 data, u32 beatf) {
 			s.sprite = popSprite();
 			s.beatf = beatf;
 			steps.push_back(s);
+			for (int c = 0; c < 4; c++) {
+				if (push[c]) {
+					holdCol[c] = steps.end();
+				}
+			}
 		}
 	}
 }

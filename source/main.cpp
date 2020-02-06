@@ -34,6 +34,12 @@ int main(){
 
 	setup(song);
 	consoleDemoInit();
+	if (isDSiMode()) {
+		cout << "running in dsi mode";
+	}
+	else {
+		cout << "running on ds mode";
+	}
 	loop();
 	return 0;
 }

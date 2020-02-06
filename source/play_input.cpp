@@ -27,6 +27,12 @@ bool pressed = false;	//se apreto/solto teclas durante el frame
 bool released = false;
 bool held = false;
 
+void pi_setup() {
+	for (int c = 0; c < 4; c++) {
+		holdCol[c] = steps.end();
+	}
+}
+
 void updateInput() {
 	for (int i = 0; i < 4; i++) {
 		stateCol[i] = 0;
@@ -107,6 +113,8 @@ void updateInput() {
 	for (int i = 0; i < 4; i++) {
 		if (holdCol[i] != steps.end()) {
 			if ((keysHeldd & colToKeys[i]) == 0) {
+				//hold soltado
+				dropCombo();
 				holdCol[i] = steps.end();
 			}
 		}

@@ -18,6 +18,7 @@ typedef struct step {
 	u8 col;
 	u8 stepcount;
 	u16* gfx = NULL;
+	bool disabled = false;
 } step;
 typedef struct hold {
 	int col;
