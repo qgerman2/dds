@@ -5,9 +5,11 @@
 #include <tail.h>
 #include <hold.h>
 #include <hit.h>
+#include <numbers.h>
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
+#include "play_score.h"
 
 using namespace std;
 
@@ -17,10 +19,15 @@ u16* tapMemory;
 u16* tailMemory;
 u16* holdMemory;
 u16* hitMemory;
+u16* numberGfx[10];
+u8 comboSprite[3];
 
 void pr_setup() {
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
+	}
+	for (int i = 0; i < 3; i++) {
+		comboSprite[i] = popSprite();
 	}
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	tapMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
@@ -49,10 +56,22 @@ void pr_setup() {
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
 	oamSetPalette(&oamMain, right, 1);
+	//cargar numeros
+	for (int n = 0; n < 10; n++) {
+		int k = n / 4;
+		int p = n % 4;
+		numberGfx[n] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+		dmaCopy(numbersTiles + (k * 512) + (p * 32), numberGfx[n], 128);
+		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 128, numberGfx[n] + 64, 128);
+		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 256, numberGfx[n] + 128, 128);
+		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 384, numberGfx[n] + 192, 128);
+	}
+	dmaCopy(numbersPal, SPRITE_PALETTE + 64, 64);
 }
 
 void renderPlay() {
 	renderSteps();
+	renderCombo();
 }
 
 u8 diff;
@@ -89,6 +108,32 @@ void renderSteps() {
 		} else {
 			oamClearSprite(&oamMain, i->sprite);
 		}
+	}
+}
+
+void renderCombo() {
+	int u;
+	int d;
+	int c;
+	if (combo < 10) {
+		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
+		oamClearSprite(&oamMain, comboSprite[0]);
+		oamClearSprite(&oamMain, comboSprite[1]);
+	}
+	else if (combo < 100) {
+		u = combo % 10;
+		d = combo / 10;
+		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], 90 - 20, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamClearSprite(&oamMain, comboSprite[0]);
+	}
+	else if (combo < 1000) {
+		u = (combo % 100) % 10;
+		d = (combo % 100) / 10;
+		c = combo / 100;
+		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], 90 - 20, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[0], 90 - 40, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 

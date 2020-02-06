@@ -31,9 +31,8 @@ int main(){
 	}
 
 	imagetobg("/ddr/bg5.png");
-
-	setup(song);
 	consoleDemoInit();
+	setup(song);
 	if (isDSiMode()) {
 		cout << "running in dsi mode";
 	}

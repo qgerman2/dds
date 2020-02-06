@@ -24,6 +24,7 @@ using namespace std;
 u8 segments = 0; //27 total
 u16* barGfx;
 void ps_setup() {
+	combo = 0;
 	barTopGfx = oamAllocateGfx(&oamMain, SpriteSize_16x8, SpriteColorFormat_16Color);
 	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
 	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
@@ -72,11 +73,11 @@ void renderScore() {
 }
 
 void addScore(step* s) {
-
+	combo++;
 }
 
 void dropCombo() {
-	cout << "\ndrop combo";
+	combo = 0;
 }
 
 void updateJudgesWindow() {
