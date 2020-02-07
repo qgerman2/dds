@@ -140,7 +140,7 @@ void renderPlay() {
 u8 diff;
 void renderSteps() {
 	for (auto i = 0; i < 4; i++) {
-		if (holdCol[i]->y < (HITYOFFSET + 16)) {
+		if ((holdCol[i] != steps.end()) && (holdCol[i]->y < (HITYOFFSET + 16))) {
 			if (holdCol[i]->gfx == NULL) {
 				holdCol[i]->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 				dmaCopyHalfWords(3, holdBitmap, holdCol[i]->gfx, holdBitmapLen);
