@@ -72,8 +72,25 @@ void renderScore() {
 	}
 }
 
-void addScore(step* s) {
-	combo++;
+void addScore(step* s, u32 beatfdiff) {
+	for (int i = 0; i < 5; i++) {
+		if (beatfdiff <= judgesWindow[i]) {
+			if (i < 3) {
+				combo++;
+			}
+			else {
+				dropCombo();
+			}
+			u8 anim = i * 2;
+			if (s->beatf < beatf) {
+				anim++;
+			}
+			if (s->type != 3) {
+				playJudgmentAnim(anim);
+			}
+			return;
+		}
+	}
 }
 
 void dropCombo() {

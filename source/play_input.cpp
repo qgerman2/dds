@@ -58,12 +58,12 @@ void updateInput() {
 					if (pressed) {
 						if (s->type == 2) { //hold
 							stateCol[s->col] = 1;
-							addScore(&(*s));
+							addScore(&(*s), beatfdiff);
 							removeStep(&s);
 						}
 						else if ((s->type != 3) && (s->type != 5)) {
 							stateCol[s->col] = 2;
-							addScore(&(*s));
+							addScore(&(*s), beatfdiff);
 							removeStep(&s);
 						}
 					}
@@ -86,7 +86,7 @@ void updateInput() {
 									}
 									holdCol[s->col] = steps.end();
 									stateCol[s->col] = 2;
-									addScore(&(*s));
+									addScore(&(*s), beatfdiff);
 									removeStep(&s);
 								}
 							}
@@ -105,7 +105,7 @@ void updateInput() {
 								}
 								holdCol[s->col] = steps.end();
 								stateCol[s->col] = 2;
-								addScore(&(*s));
+								addScore(&(*s), beatfdiff);
 								removeStep(&s);
 							}
 						}
