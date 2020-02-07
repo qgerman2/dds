@@ -221,6 +221,7 @@ void updateSteps() {
 			u32 beatfdiff = beatf - i->beatf;
 			if (beatfdiff > judgesWindow[4]) {
 				//se paso una nota
+				playJudgmentAnim(11);
 				dropCombo();
 				i->disabled = true;
 			}

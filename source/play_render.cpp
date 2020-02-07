@@ -79,7 +79,11 @@ void pr_setup() {
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
 	oamSetPalette(&oamMain, right, 1);
-	//cargar numeros
+	loadNumberGfx();
+	loadJudgmentGfx();
+}
+
+void loadNumberGfx() {
 	for (int n = 0; n < 10; n++) {
 		int k = n / 4;
 		int p = n % 4;
@@ -90,8 +94,6 @@ void pr_setup() {
 		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 384, numberGfx[n] + 192, 128);
 	}
 	dmaCopy(numbersPal, SPRITE_PALETTE + 64, 64);
-	loadJudgmentGfx();
-	dmaCopy(judgePal[0], SPRITE_PALETTE + 64 + 16, 64);
 }
 
 void loadJudgmentGfx() {
@@ -175,28 +177,30 @@ void renderSteps() {
 }
 
 void renderCombo() {
+	int x = 100;
+	int y = 150;
 	int u;
 	int d;
 	int c;
 	if (combo < 10) {
-		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 		oamClearSprite(&oamMain, comboSprite[1]);
 	}
 	else if (combo < 100) {
 		u = combo % 10;
 		d = combo / 10;
-		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], 90 - 20, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], x - 20, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 	}
 	else if (combo < 1000) {
 		u = (combo % 100) % 10;
 		d = (combo % 100) / 10;
 		c = combo / 100;
-		oamSet(&oamMain, comboSprite[2], 90, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], 90 - 20, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[0], 90 - 40, 90, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], x - 20, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[0], x - 40, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 
@@ -208,16 +212,86 @@ void renderJudgment() {
 	u32 size;
 	u32 offset;
 	judgeFrame--;
-	if (judgeFrame > 60) {
-		size = 256 + (judgeFrame - 60) * 6;
-	}
-	else if (judgeFrame > 0) {
-		size = 256;
+	if (judgeAnim < 11) {
+		if (judgeFrame > 60) {
+			size = 256 + (judgeFrame - 60) * 6;
+		}
+		else if (judgeFrame > 0) {
+			size = 256;
+		}
+		else {
+			oamClearSprite(&oamMain, judgeSprite[0]);
+			oamClearSprite(&oamMain, judgeSprite[1]);
+			return;
+		}
 	}
 	else {
-		oamClearSprite(&oamMain, judgeSprite[0]);
-		oamClearSprite(&oamMain, judgeSprite[1]);
-		return;
+		size = 256;
+		switch (judgeFrame) {
+			case 69:
+				y = y - 10;
+				break;
+			case 68:
+				y = y - 9;
+				break;
+			case 67:
+				y = y - 8;
+				break;
+			case 66:
+				y = y - 7;
+				break;
+			case 65:
+				y = y - 6;
+				break;
+			case 64:
+				y = y - 5;
+				break;
+			case 63:
+				y = y - 4;
+				break;
+			case 62:
+				y = y - 3;
+				break;
+			case 61:
+				y = y - 2;
+				break;
+			case 60:
+				y = y - 1;
+				break;
+			case 59:
+			case 58:
+				y = y;
+				break;
+			case 57:
+			case 56:
+				y = y + 1;
+				break;
+			case 55:
+			case 54:
+				y = y + 2;
+				break;
+			case 53:
+			case 52:
+				y = y + 3;
+				break;
+			case 51:
+			case 50:
+				y = y + 4;
+				break;
+			case 49:
+			case 48:
+			case 47:
+				y = y + 5;
+				break;
+			case 46:
+			case 45:
+			case 44:
+				y = y + 6;
+				break;
+			default:
+				y = y + 7;
+				break;
+		}
 	}
 	if (size == 256) {f = 1;}
 	oamRotateScale(&oamMain, 5, 0, (1 << 16) / size, (1 << 16) / size);

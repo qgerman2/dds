@@ -5,6 +5,7 @@ extern u16* tailMemory;
 extern u16* holdMemory;
 
 void pr_setup();
+void loadNumberGfx();
 void loadJudgmentGfx();
 void renderPlay();
 void renderSteps();
