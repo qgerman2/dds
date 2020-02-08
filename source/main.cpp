@@ -16,9 +16,11 @@ u16* bg = (u16*)0x026C8000;
 int idd;
 int main(){
 	videoSetMode(MODE_3_2D | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_1D_LAYOUT);
+	bgExtPaletteEnable();
 	vramSetBankA(VRAM_A_MAIN_BG_0x06040000);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
 	vramSetBankE(VRAM_E_MAIN_BG);
+	vramSetBankF(VRAM_F_LCD); //ext palette
 	songdata song;
 	
 	idd = bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
@@ -33,6 +35,7 @@ int main(){
 	imagetobg("/ddr/bg5.png");
 	consoleDemoInit();
 	setup(song);
+	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	if (isDSiMode()) {
 		cout << "running in dsi mode";
 	}

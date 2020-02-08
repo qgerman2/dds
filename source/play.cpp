@@ -56,7 +56,6 @@ void loop(){
 		updateInput();
 		updateSteps();
 		renderPlay();
-		renderScore();
 		oamUpdate(&oamMain);
 	}
 }
@@ -179,7 +178,7 @@ void updateSteps() {
 			advance(it, pos);
 			h->stepcount = h->stepcount + 1;
 			s.type = 5;
-			s.x = (10 + 30 * h->col);
+			s.x = (HITXOFFSET + 32 * h->col);
 			s.y = 0;
 			s.col = h->col;
 			s.sprite = popSprite();
@@ -275,7 +274,7 @@ void newSteps(u16 data, u32 beatf) {
 					push[c] = true;
 				}
 			}
-			s.x = (10 + 30 * i);
+			s.x = (HITXOFFSET + 32 * i);
 			s.y = 100;
 			s.col = i;
 			s.sprite = popSprite();

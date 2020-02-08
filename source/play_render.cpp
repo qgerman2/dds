@@ -1,16 +1,18 @@
 #include <nds.h>
 #include <iostream>
 #include <vector>
-#include <tap.h>
-#include <tail.h>
-#include <hold.h>
-#include <hit.h>
-#include <numbers.h>
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
 #include "play_score.h"
 #include <math.h>
+
+#include <tap.h>
+#include <tail.h>
+#include <hold.h>
+#include <hit.h>
+#include <numbers.h>
+#include <font.h>
 
 #include <marvelous.h>
 #include <perfect.h>
@@ -18,6 +20,10 @@
 #include <good.h>
 #include <boo.h>
 #include <miss.h>
+
+#include <bar.h>
+#include <barBot.h>
+#include <barTop.h>
 
 using namespace std;
 
@@ -27,6 +33,14 @@ u16* tapMemory;
 u16* tailMemory;
 u16* holdMemory;
 u16* hitMemory;
+
+u16* barTopGfx;
+u8 barTopSprite;
+u16* barBotGfx;
+u8 barBotSprite;
+u8 segments = 0;
+u16* barGfx;
+
 u16* numberGfx[10];
 u16* judgeGfx[24];
 const u16* judgePal[6] = {
@@ -71,16 +85,37 @@ void pr_setup() {
 	u8 up = popSprite();
 	u8 down = popSprite();
 	u8 right = popSprite();
-	oamSet(&oamMain, left, 10, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
-	oamSet(&oamMain, up, 10 + 30, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
-	oamSet(&oamMain, down, 10 + 60, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
-	oamSet(&oamMain, right, 10 + 90, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
+	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
+	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
+	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
+	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
 	oamSetPalette(&oamMain, left, 1);
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
 	oamSetPalette(&oamMain, right, 1);
+	loadLifebarGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
+	//loadFontGfx();
+}
+
+void loadLifebarGfx() {
+	barTopGfx = oamAllocateGfx(&oamMain, SpriteSize_16x8, SpriteColorFormat_16Color);
+	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
+	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
+	barTopSprite = popSprite();
+	oamSet(&oamMain, barTopSprite, 232, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
+	
+	barBotGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	dmaCopy(barBotTiles, barBotGfx, barBotTilesLen);
+	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
+	barBotSprite = popSprite();
+	oamSet(&oamMain, barBotSprite, 224, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
+
+	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
+	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
+	dmaCopy(barPal, &VRAM_F[1*16*256], barPalLen);
+	barGfx = bgGetMapPtr(id);
 }
 
 void loadNumberGfx() {
@@ -133,7 +168,50 @@ void loadJudgmentGfx() {
 	}
 }
 
+void loadFontGfx() {
+	PrintConsole *console = consoleInit(0, 2, BgType_Text4bpp, BgSize_T_256x256, 4, 1, true, false);
+	ConsoleFont font;
+	font.gfx = (u16*)fontTiles;
+	font.pal = (u16*)fontPal;
+	font.numChars = 95;
+	font.numColors = fontPalLen / 2;
+	font.bpp = 4;
+	font.asciiOffset = 32;
+	font.convertSingleColor = false;
+	consoleSetFont(console, &font);
+}
+
+void renderLifebar() {
+	u8 t;
+	segments++;
+	if (segments > 28) {
+		segments = 0;
+	}
+	for (int y = 0; y < 9; y++) {
+		if (y > 8 - ((segments - 1) / 3)) {
+			barGfx[29 + (y*2+3)*32] = 1;
+			barGfx[30 + (y*2+3)*32] = 2;
+			barGfx[29 + (y*2+4)*32] = 3;
+			barGfx[30 + (y*2+4)*32] = 4;
+		}
+		else if ((y == 8 - ((segments - 1) / 3)) && (segments != 0)) {
+			t = 2 - (segments+2)%3;
+			barGfx[29 + (y*2+3)*32] = 5 + t*4;
+			barGfx[30 + (y*2+3)*32] = 6 + t*4;
+			barGfx[29 + (y*2+4)*32] = 7 + t*4;
+			barGfx[30 + (y*2+4)*32] = 8 + t*4;
+		}
+		else {
+			barGfx[29 + (y*2+3)*32] = 17;
+			barGfx[30 + (y*2+3)*32] = 18;
+			barGfx[29 + (y*2+4)*32] = 19;
+			barGfx[30 + (y*2+4)*32] = 20;
+		}
+	}
+}
+
 void renderPlay() {
+	renderLifebar();
 	renderSteps();
 	renderCombo();
 	renderJudgment();
@@ -212,17 +290,17 @@ void renderJudgment() {
 	u32 size;
 	u32 offset;
 	judgeFrame--;
+	if (judgeFrame == 0) {
+		oamClearSprite(&oamMain, judgeSprite[0]);
+		oamClearSprite(&oamMain, judgeSprite[1]);
+		return;
+	}
 	if (judgeAnim < 11) {
 		if (judgeFrame > 60) {
 			size = 256 + (judgeFrame - 60) * 6;
 		}
 		else if (judgeFrame > 0) {
 			size = 256;
-		}
-		else {
-			oamClearSprite(&oamMain, judgeSprite[0]);
-			oamClearSprite(&oamMain, judgeSprite[1]);
-			return;
 		}
 	}
 	else {
