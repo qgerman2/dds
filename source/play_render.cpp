@@ -59,6 +59,8 @@ u8 judgeAnim = 0;
 u8 comboSprite[3];
 u8 judgeSprite[2];
 
+u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
+
 void pr_setup() {
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
@@ -104,12 +106,39 @@ void pr_setup() {
 }
 
 void loadStepGfx() {
+	int colors[7][3] = {{0,0,31},{31,0,0},{0,31,0},{0,31,31},{31,0,15},{0,17,31},{24,8,24}};
+	int output[3];
 	for (int i = 0; i < 8; i++) {
 		stepGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 		dmaCopy(stepTiles, stepGfx[i], 128);
 		dmaCopy(stepTiles + i * 32 + 256, stepGfx[i] + 64, 128);
 		dmaCopy(stepTiles + i * 32 + 512, stepGfx[i] + 128, 128);
 		dmaCopy(stepTiles + i * 32 + 768, stepGfx[i] + 192, 128);
+	}
+	for (int i = 0; i < 7; i++) {
+		for (int g = 1; g < 16; g++) {
+			u16 gray = stepPal[g] & 31;
+			output[0] = colors[i][0];
+			output[1] = colors[i][1];
+			output[2] = colors[i][2];
+			for (int c = 0; c < 3; c++) {
+				if (colors[i][c] != 0) {
+					if (gray > 15) {
+						output[c] = colors[i][c] + (((31 - colors[i][c]) * (gray - 15)) / 16);
+					}
+					else if (gray < 15) {
+						output[c] = colors[i][c] * gray / 15;
+					}
+				}
+				else {
+					if (gray > 15) {
+						output[c] = (gray - 15) * 2 - 1;
+					}
+				}
+			}
+			SPRITE_PALETTE[128 + i * 16] = 0;
+			SPRITE_PALETTE[128 + i * 16 + g] = 1024 * output[0] + 32 * output[1] + output[2];
+		}
 	}
 	dmaCopy(stepPal, SPRITE_PALETTE + 16 * 15, stepPalLen);
 }
@@ -249,10 +278,10 @@ void renderSteps() {
 			switch (i->type) {
 				case (1):
 				case (2):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
 					break;
 				case (5):
 					if (i->gfx != NULL) {

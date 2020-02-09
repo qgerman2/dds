@@ -136,7 +136,6 @@ void updateSteps() {
 			sets = m.size();
 			measurecursor = i / 4;
 			rowspermeasure = sets * 4;
-			cout << "\nrows: " << rowspermeasure;
 		}
 		count = i - firstbeat;
 		stepbeatf = i * beatfperiod;
