@@ -7,6 +7,7 @@
 
 void setup(songdata song); 
 void loop();
+u8 getNoteType(u32 row);
 void updateBeat();
 void updateSteps();
 typedef struct step {
@@ -17,6 +18,7 @@ typedef struct step {
 	u8 sprite;
 	u8 col;
 	u8 stepcount;
+	u8 notetype;
 	u16* gfx = NULL;
 	bool disabled = false;
 } step;
@@ -27,7 +29,7 @@ typedef struct hold {
 	u8 stepcount;
 } hold;
 
-void newSteps(u16 data, u32 beatf);
+void newSteps(u16 data, u32 beatf, u8 notetype);
 void removeStep(std::vector<step>::iterator* s);
 
 measure getMeasureAtBeat(u32 beat);

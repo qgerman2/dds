@@ -6,6 +6,7 @@ extern u16* tailMemory;
 extern u16* holdMemory;
 
 void pr_setup();
+void loadStepGfx();
 void loadLifebarGfx();
 void loadNumberGfx();
 void loadJudgmentGfx();

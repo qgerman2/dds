@@ -34,6 +34,7 @@ int cursor = 0;
 int measurecursor = -1;
 int stepbeatf = 0;			//beat preciso en el cursor
 int relbeatf = 0;			//beat preciso relativo al cursor a x set
+u32 rowspermeasure = 0;
 
 u16 *set;
 measure m;
@@ -58,6 +59,21 @@ void loop(){
 		renderPlay();
 		oamUpdate(&oamMain);
 	}
+}
+
+u8 getNoteType(u32 row) {
+	u8 notetype = 9; //192
+	u32 rowf = row << 8;
+	u32 rpmf = rowspermeasure << 8;
+	if (rowf % (rpmf / 4) == 0) {notetype = 1;}
+	else if (rowf % (rpmf / 8) == 0) {notetype = 2;}
+	else if (rowf % (rpmf / 12) == 0) {notetype = 3;}
+	else if (rowf % (rpmf / 16) == 0) {notetype = 4;}
+	else if (rowf % (rpmf / 24) == 0) {notetype = 5;}
+	else if (rowf % (rpmf / 32) == 0) {notetype = 6;}
+	else if (rowf % (rpmf / 48) == 0) {notetype = 7;}
+	else if (rowf % (rpmf / 64) == 0) {notetype = 8;}
+	return notetype;
 }
 
 u32 minutefbpm;	//tiempo que dura ese bpm
@@ -119,31 +135,65 @@ void updateSteps() {
 			m = getMeasureAtBeat(i);
 			sets = m.size();
 			measurecursor = i / 4;
+			rowspermeasure = sets * 4;
+			cout << "\nrows: " << rowspermeasure;
 		}
 		count = i - firstbeat;
 		stepbeatf = i * beatfperiod;
 		switch (sets) {
 			case 1: //1 set, 1 linea por beat
 				set = m.at(0);
-				newSteps(set[count], stepbeatf);
+				newSteps(set[count], stepbeatf, 1);
 				break;
 			case 2: //2 sets, 2 lineas por beat
 				if ((count == 0) || (count == 1)) {
 					set = m.at(0);
-					newSteps(set[count * 2], stepbeatf);
-					newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2));
+					newSteps(set[count * 2], stepbeatf, 1);
+					newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2), 2);
 				} else {
 					set = m.at(1);
-					newSteps(set[(count - 2) * 2], stepbeatf);
-					newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2));
+					newSteps(set[(count - 2) * 2], stepbeatf, 1);
+					newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2), 2);
 				}
 				break;
-			default: //sets sets, sets / 4 lineas por beat
+			case 3: //3 sets, 3 lineas por beat
+				switch (count) {
+					case 0:
+						set = m.at(0);
+						newSteps(set[0], stepbeatf, 1);
+						newSteps(set[1], stepbeatf + (beatfperiod / 3), 3);
+						newSteps(set[2], stepbeatf + (beatfperiod / 3) * 2, 3);
+						break;
+					case 1:
+						set = m.at(0);
+						newSteps(set[3], stepbeatf, 1);
+						set = m.at(1);
+						newSteps(set[0], stepbeatf + (beatfperiod / 3), 3);
+						newSteps(set[1], stepbeatf + (beatfperiod / 3) * 2, 3);
+						break;
+					case 2:
+						set = m.at(1);
+						newSteps(set[2], stepbeatf, 1);
+						newSteps(set[3], stepbeatf + (beatfperiod / 3), 3);
+						set = m.at(2);
+						newSteps(set[0], stepbeatf + (beatfperiod / 3) * 2, 3);
+						break;
+					case 3:
+						set = m.at(2);
+						newSteps(set[1], stepbeatf, 1);
+						newSteps(set[2], stepbeatf + (beatfperiod / 3), 3);
+						newSteps(set[3], stepbeatf + (beatfperiod / 3) * 2, 3);
+						break;
+
+				}
+				break;
+			default: //sets sets, sets lineas por beat
 				for (int k = 0; k < sets / 4; k++) {
-					set = m.at(count * (sets / 4) + k);
+					int seti = count * (sets / 4) + k;
+					set = m.at(seti);
 					relbeatf = ((k * beatfperiod) / (sets / 4));
 					for (int ii = 0; ii < 4; ii++) {
-						newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)));
+						newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)), getNoteType(seti * 4 + ii));
 					}
 				}
 				break;
@@ -235,7 +285,7 @@ void updateSteps() {
 	}
 }
 
-void newSteps(u16 data, u32 beatf) {
+void newSteps(u16 data, u32 beatf, u8 notetype) {
 	if (data == 0)
 		return;
 	bool newstep = false;
@@ -279,6 +329,7 @@ void newSteps(u16 data, u32 beatf) {
 			s.col = i;
 			s.sprite = popSprite();
 			s.beatf = beatf;
+			s.notetype = notetype;
 			steps.push_back(s);
 			for (int c = 0; c < 4; c++) {
 				if (push[c]) {

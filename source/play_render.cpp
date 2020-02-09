@@ -7,6 +7,7 @@
 #include "play_score.h"
 #include <math.h>
 
+#include <step.h>
 #include <tap.h>
 #include <tail.h>
 #include <hold.h>
@@ -28,6 +29,8 @@
 using namespace std;
 
 bool sprites[128];
+
+u16* stepGfx[8];
 
 u16* tapMemory;
 u16* tailMemory;
@@ -93,10 +96,22 @@ void pr_setup() {
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
 	oamSetPalette(&oamMain, right, 1);
+	loadStepGfx();
 	loadLifebarGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
 	//loadFontGfx();
+}
+
+void loadStepGfx() {
+	for (int i = 0; i < 8; i++) {
+		stepGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+		dmaCopy(stepTiles, stepGfx[i], 128);
+		dmaCopy(stepTiles + i * 32 + 256, stepGfx[i] + 64, 128);
+		dmaCopy(stepTiles + i * 32 + 512, stepGfx[i] + 128, 128);
+		dmaCopy(stepTiles + i * 32 + 768, stepGfx[i] + 192, 128);
+	}
+	dmaCopy(stepPal, SPRITE_PALETTE + 16 * 15, stepPalLen);
 }
 
 void loadLifebarGfx() {
@@ -104,13 +119,13 @@ void loadLifebarGfx() {
 	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
 	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
 	barTopSprite = popSprite();
-	oamSet(&oamMain, barTopSprite, 232, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
+	oamSet(&oamMain, barTopSprite, 16, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
 	
 	barBotGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	dmaCopy(barBotTiles, barBotGfx, barBotTilesLen);
 	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
 	barBotSprite = popSprite();
-	oamSet(&oamMain, barBotSprite, 224, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
+	oamSet(&oamMain, barBotSprite, 8, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
 
 	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
 	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
@@ -189,23 +204,23 @@ void renderLifebar() {
 	}
 	for (int y = 0; y < 9; y++) {
 		if (y > 8 - ((segments - 1) / 3)) {
-			barGfx[29 + (y*2+3)*32] = 1;
-			barGfx[30 + (y*2+3)*32] = 2;
-			barGfx[29 + (y*2+4)*32] = 3;
-			barGfx[30 + (y*2+4)*32] = 4;
+			barGfx[2 + (y*2+3)*32] = 1;
+			barGfx[3 + (y*2+3)*32] = 2;
+			barGfx[2 + (y*2+4)*32] = 3;
+			barGfx[3 + (y*2+4)*32] = 4;
 		}
 		else if ((y == 8 - ((segments - 1) / 3)) && (segments != 0)) {
 			t = 2 - (segments+2)%3;
-			barGfx[29 + (y*2+3)*32] = 5 + t*4;
-			barGfx[30 + (y*2+3)*32] = 6 + t*4;
-			barGfx[29 + (y*2+4)*32] = 7 + t*4;
-			barGfx[30 + (y*2+4)*32] = 8 + t*4;
+			barGfx[2 + (y*2+3)*32] = 5 + t*4;
+			barGfx[3 + (y*2+3)*32] = 6 + t*4;
+			barGfx[2 + (y*2+4)*32] = 7 + t*4;
+			barGfx[3 + (y*2+4)*32] = 8 + t*4;
 		}
 		else {
-			barGfx[29 + (y*2+3)*32] = 17;
-			barGfx[30 + (y*2+3)*32] = 18;
-			barGfx[29 + (y*2+4)*32] = 19;
-			barGfx[30 + (y*2+4)*32] = 20;
+			barGfx[2 + (y*2+3)*32] = 17;
+			barGfx[3 + (y*2+3)*32] = 18;
+			barGfx[2 + (y*2+4)*32] = 19;
+			barGfx[3 + (y*2+4)*32] = 20;
 		}
 	}
 }
@@ -234,10 +249,10 @@ void renderSteps() {
 			switch (i->type) {
 				case (1):
 				case (2):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tapMemory, i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, tapMemory, i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
 					break;
 				case (5):
 					if (i->gfx != NULL) {
