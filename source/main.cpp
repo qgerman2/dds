@@ -16,32 +16,36 @@ u16* bg = (u16*)0x026C8000;
 int idd;
 int main(){
 	videoSetMode(MODE_3_2D | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_1D_LAYOUT);
+	videoSetModeSub(MODE_0_2D | DISPLAY_SPR_ACTIVE);
 	bgExtPaletteEnable();
+	bgExtPaletteEnableSub();
 	vramSetBankA(VRAM_A_MAIN_BG_0x06040000);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
+	vramSetBankC(VRAM_C_SUB_BG_0x06200000);
+	vramSetBankD(VRAM_D_SUB_SPRITE);
 	vramSetBankE(VRAM_E_MAIN_BG);
-	vramSetBankF(VRAM_F_LCD); //ext palette
+	vramSetBankF(VRAM_F_LCD); //bg ext palette
+	vramSetBankH(VRAM_H_LCD); //bg ext palette sub
 	songdata song;
 	
 	idd = bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
 
 	if (fatInitDefault()) {
 		song = parseSong("/ddr/song.sm");
-		playSong();
 	} else {
 		iprintf("fatInitDefault failure: terminating\n");
 	}
 
-	imagetobg("/ddr/bg5.png");
-	consoleDemoInit();
+	imagetobg("/ddr/bg.png");
 	setup(song);
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
-	if (isDSiMode()) {
-		cout << "running in dsi mode";
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
+	for (int i = 0; i < 60; i++) {
+		swiWaitForVBlank();
 	}
-	else {
-		cout << "running on ds mode";
-	}
+	playSong();
+	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
+	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	loop();
 	return 0;
 }

@@ -15,13 +15,20 @@ using namespace std;
 
 void ps_setup() {
 	combo = 0;
+	score = 0;
 }
 
 void addScore(step* s, u32 beatfdiff) {
+	int worth;
 	for (int i = 0; i < 5; i++) {
 		if (beatfdiff <= judgesWindow[i]) {
 			if (i < 3) {
 				combo++;
+				if (i == 0) {worth = 777;} //marvelous
+				else if (i == 1) {worth = 555;} //perfect
+				else if (i == 2) {worth = 333;} //great
+				prevscore = score;
+				score = score + worth * combo;
 			}
 			else {
 				dropCombo();
@@ -36,6 +43,7 @@ void addScore(step* s, u32 beatfdiff) {
 			return;
 		}
 	}
+	if (score > 999999999) {score = 999999999;}
 }
 
 void dropCombo() {

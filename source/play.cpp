@@ -43,21 +43,20 @@ void setup(songdata s){
 	pr_setup();
 	ps_setup();
 	pi_setup();
-	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
-	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	song = s;
 }
 
 void loop(){
 	while (1) {
-		mmStreamUpdate();
-		swiWaitForVBlank();
 		updateBeat();
 		scanKeys();
 		updateInput();
+		mmStreamUpdate();
+		swiWaitForVBlank();
 		updateSteps();
 		renderPlay();
 		oamUpdate(&oamMain);
+		oamUpdate(&oamSub);
 	}
 }
 
@@ -130,7 +129,6 @@ void updateSteps() {
 	//crear nuevos steps
 	for (int i = cursor; i < beat + parseaheadbeats; i++) {
 		if ((i / 4) > measurecursor) {
-			cout << "\nmeasure " << i / 4;
 			firstbeat = i;
 			m = getMeasureAtBeat(i);
 			sets = m.size();

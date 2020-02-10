@@ -19,8 +19,8 @@ void playSong() {
 
 	file = fopen("/ddr/song.wav", "rb");
 
-    mystream.sampling_rate = 8000;
-    mystream.buffer_length = 800;
+    mystream.sampling_rate = 44100;
+    mystream.buffer_length = 1600;
     mystream.callback = stream;
     mystream.format = MM_STREAM_16BIT_STEREO;
     mystream.timer = MM_TIMER2;

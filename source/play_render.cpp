@@ -1,5 +1,6 @@
 #include <nds.h>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "parse.h"
 #include "play.h"
@@ -26,9 +27,15 @@
 #include <barBot.h>
 #include <barTop.h>
 
+#include <sub_bg.h>
+#include <score.h>
+
 using namespace std;
 
+u32 prevscore = 0;
+
 bool sprites[128];
+bool spritesSub[128];
 
 u16* stepGfx[8];
 
@@ -55,21 +62,19 @@ const u16* judgePal[6] = {
 	missPal,
 };
 u8 judgeFrame = 0;
-u8 judgeAnim = 0;
+u8 judgeAnim = 254;
 u8 comboSprite[3];
 u8 judgeSprite[2];
 
 u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
 
+u16* scoreGfx[11];
+u8 scoreSprite[11];
+
 void pr_setup() {
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
-	}
-	for (int i = 0; i < 3; i++) {
-		comboSprite[i] = popSprite();
-	}
-	for (int i = 0; i < 2; i++) {
-		judgeSprite[i] = popSprite();
+		pushSpriteSub(i);
 	}
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	tapMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
@@ -102,12 +107,17 @@ void pr_setup() {
 	loadLifebarGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
-	//loadFontGfx();
+
+	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
+	loadSubBackground();
+	loadSubScore();
+	loadFontGfx();
 }
 
 void loadStepGfx() {
 	int colors[7][3] = {{0,0,31},{31,0,0},{0,31,0},{0,31,31},{31,0,15},{0,17,31},{24,8,24}};
 	int output[3];
+	u16 gray;
 	for (int i = 0; i < 8; i++) {
 		stepGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 		dmaCopy(stepTiles, stepGfx[i], 128);
@@ -117,7 +127,7 @@ void loadStepGfx() {
 	}
 	for (int i = 0; i < 7; i++) {
 		for (int g = 1; g < 16; g++) {
-			u16 gray = stepPal[g] & 31;
+			gray = stepPal[g] & 31;
 			output[0] = colors[i][0];
 			output[1] = colors[i][1];
 			output[2] = colors[i][2];
@@ -163,6 +173,9 @@ void loadLifebarGfx() {
 }
 
 void loadNumberGfx() {
+	for (int i = 0; i < 3; i++) {
+		comboSprite[i] = popSprite();
+	}
 	for (int n = 0; n < 10; n++) {
 		int k = n / 4;
 		int p = n % 4;
@@ -176,6 +189,9 @@ void loadNumberGfx() {
 }
 
 void loadJudgmentGfx() {
+	for (int i = 0; i < 2; i++) {
+		judgeSprite[i] = popSprite();
+	}
 	const uint* tiles[6] {
 		marvelousTiles,
 		perfectTiles,
@@ -225,6 +241,29 @@ void loadFontGfx() {
 	consoleSetFont(console, &font);
 }
 
+void loadSubBackground() {
+	int id = bgInitSub(3, BgType_Text8bpp, BgSize_T_256x256, 0, 1);
+	dmaCopy(sub_bgTiles, bgGetGfxPtr(id), sub_bgTilesLen);
+	dmaCopy(sub_bgMap, bgGetMapPtr(id), sub_bgMapLen);
+	dmaCopy(sub_bgPal, &VRAM_H[3*16*256], sub_bgPalLen);
+}
+
+void loadSubScore() {
+	for (int i = 0; i < 11; i++) {
+		scoreSprite[i] = popSpriteSub();
+	}
+	for (int i = 0; i < 11; i++) {
+		scoreGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
+		dmaCopy(scoreTiles + i * 16, scoreGfx[i], 64);
+		dmaCopy(scoreTiles + 176 + i * 16, scoreGfx[i] + 32, 64);
+	}
+	dmaCopy(scorePal, SPRITE_PALETTE_SUB, scorePalLen);
+	oamSet(&oamSub, scoreSprite[9], 216 - 4 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
+	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
+	
+
+}
+
 void renderLifebar() {
 	u8 t;
 	segments++;
@@ -259,9 +298,9 @@ void renderPlay() {
 	renderSteps();
 	renderCombo();
 	renderJudgment();
+	renderSubScore();
 }
 
-u8 diff;
 void renderSteps() {
 	for (auto i = 0; i < 4; i++) {
 		if ((holdCol[i] != steps.end()) && (holdCol[i]->y < (HITYOFFSET + 16))) {
@@ -269,7 +308,7 @@ void renderSteps() {
 				holdCol[i]->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 				dmaCopyHalfWords(3, holdBitmap, holdCol[i]->gfx, holdBitmapLen);
 			}
-			diff = HITYOFFSET + 16 - holdCol[i]->y;
+			u8 diff = HITYOFFSET + 16 - holdCol[i]->y;
 			dmaFillHalfWords(ARGB16(0,0,0,0), holdCol[i]->gfx, 32*diff*2);
 		}
 	}
@@ -278,10 +317,10 @@ void renderSteps() {
 			switch (i->type) {
 				case (1):
 				case (2):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[3], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col, false, false, false, false, false);
 					break;
 				case (5):
 					if (i->gfx != NULL) {
@@ -299,30 +338,28 @@ void renderSteps() {
 }
 
 void renderCombo() {
-	int x = 100;
-	int y = 150;
 	int u;
 	int d;
 	int c;
 	if (combo < 10) {
-		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 		oamClearSprite(&oamMain, comboSprite[1]);
 	}
 	else if (combo < 100) {
 		u = combo % 10;
 		d = combo / 10;
-		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], x - 20, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 	}
 	else if (combo < 1000) {
 		u = (combo % 100) % 10;
 		d = (combo % 100) / 10;
 		c = combo / 100;
-		oamSet(&oamMain, comboSprite[2], x, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], x - 20, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[0], x - 40, y, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[0], COMBOX - 40, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 
@@ -422,6 +459,32 @@ void renderJudgment() {
 	oamSet(&oamMain, judgeSprite[1], x - f + 81 + offset, y, 0, 5, SpriteSize_32x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2 + 1], 5, true, false, false, false, false);
 }
 
+void renderSubScore() {
+	string n;
+	if (prevscore != score) {
+		int chunk = (score - prevscore) / 9;
+		n = to_string(prevscore + chunk * (10 - (judgeFrame - 60)));
+		if (judgeFrame == 62) {
+			prevscore = score;
+		}
+	}
+	else {
+		n = to_string(score);
+	}
+	int offset = 9 - n.length();
+	int x = 0;
+	for (u8 i = 0; i < 9; i++) {
+		if (i % 3 == 0) {x++;}
+		if (i >= offset) {
+			oamSet(&oamSub, scoreSprite[i], 24 + x * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[int(n[i - offset]) - 48], 0, false, false, false, false, false);
+		}
+		else {
+			oamSet(&oamSub, scoreSprite[i], 24 + x * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[0], 0, false, false, false, false, false);
+		}
+		x++;
+	}		
+}
+
 void playJudgmentAnim(u8 anim) {
 	judgeFrame = 70;
 	if (judgeAnim != anim) {
@@ -444,6 +507,22 @@ u8 popSprite() {
 void pushSprite(u8 i) {
 	sprites[i] = TRUE;
 	oamClearSprite(&oamMain, i);
+}
+
+u8 popSpriteSub() {
+	for (u8 i = 0; i < 128; i++) {
+		if (spritesSub[i]) {
+			spritesSub[i] = FALSE;
+			return i;
+		}
+	}
+	sassert(0, "out of sprites sub");
+	return 0;
+}
+
+void pushSpriteSub(u8 i) {
+	spritesSub[i] = TRUE;
+	oamClearSprite(&oamSub, i);
 }
 
 void setRotData() {
