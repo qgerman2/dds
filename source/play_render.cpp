@@ -70,6 +70,7 @@ u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
 
 u16* scoreGfx[11];
 u8 scoreSprite[11];
+u8 scoreFrame = 0;
 
 void pr_setup() {
 	for (int i = 0; i < 128; i++) {
@@ -259,9 +260,7 @@ void loadSubScore() {
 	}
 	dmaCopy(scorePal, SPRITE_PALETTE_SUB, scorePalLen);
 	oamSet(&oamSub, scoreSprite[9], 216 - 4 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
-	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
-	
-
+	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);
 }
 
 void renderLifebar() {
@@ -461,10 +460,10 @@ void renderJudgment() {
 
 void renderSubScore() {
 	string n;
-	if (prevscore != score) {
-		int chunk = (score - prevscore) / 9;
-		n = to_string(prevscore + chunk * (10 - (judgeFrame - 60)));
-		if (judgeFrame == 62) {
+	if ((prevscore != score) && (scoreFrame > 0)) {
+		int chunk = (score - prevscore) / 10;
+		n = to_string(prevscore + chunk * (11 - scoreFrame));
+		if (scoreFrame == 1) {
 			prevscore = score;
 		}
 	}
@@ -482,7 +481,8 @@ void renderSubScore() {
 			oamSet(&oamSub, scoreSprite[i], 24 + x * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[0], 0, false, false, false, false, false);
 		}
 		x++;
-	}		
+	}
+	scoreFrame--;
 }
 
 void playJudgmentAnim(u8 anim) {
@@ -491,6 +491,10 @@ void playJudgmentAnim(u8 anim) {
 		dmaCopy(judgePal[anim / 2], SPRITE_PALETTE + 64 + 16, 64);
 		judgeAnim = anim;
 	}
+}
+
+void playScoreAnim() {
+	scoreFrame = 10;
 }
 
 u8 popSprite() {

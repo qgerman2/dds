@@ -268,6 +268,10 @@ void updateSteps() {
 			if (beatfdiff > judgesWindow[4]) {
 				//se paso una nota
 				playJudgmentAnim(11);
+				addDPTotal();
+				if (i->type == 2) {
+					addDPTotal(); //la cola del hold igual vale 2dp
+				}
 				dropCombo();
 				i->disabled = true;
 			}

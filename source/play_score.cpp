@@ -11,6 +11,9 @@ u32 judgesWindow[5];
 u32 score;
 u32 combo;
 
+u32 dptotal = 0;
+int dpscore = 0;
+
 using namespace std;
 
 void ps_setup() {
@@ -24,11 +27,12 @@ void addScore(step* s, u32 beatfdiff) {
 		if (beatfdiff <= judgesWindow[i]) {
 			if (i < 3) {
 				combo++;
-				if (i == 0) {worth = 777;} //marvelous
-				else if (i == 1) {worth = 555;} //perfect
-				else if (i == 2) {worth = 333;} //great
+				if (i == 0) {worth = 777; dpscore = dpscore + 2;} //marvelous
+				else if (i == 1) {worth = 555; dpscore = dpscore + 2;} //perfect
+				else if (i == 2) {worth = 333; dpscore++;} //great
 				prevscore = score;
 				score = score + worth * combo;
+				playScoreAnim();
 			}
 			else {
 				dropCombo();
@@ -44,6 +48,10 @@ void addScore(step* s, u32 beatfdiff) {
 		}
 	}
 	if (score > 999999999) {score = 999999999;}
+}
+
+void addDPTotal() {
+	dptotal = dptotal + 2;
 }
 
 void dropCombo() {

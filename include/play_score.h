@@ -8,5 +8,6 @@ extern u32 combo;
 extern u32 judgesWindow[5];
 void ps_setup();
 void addScore(step* s, u32 beatfdiff);
+void addDPTotal();
 void dropCombo();
 void updateJudgesWindow();

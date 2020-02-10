@@ -59,11 +59,13 @@ void updateInput() {
 						if (s->type == 2) { //hold
 							stateCol[s->col] = 1;
 							addScore(&(*s), beatfdiff);
+							addDPTotal();
 							removeStep(&s);
 						}
 						else if ((s->type != 3) && (s->type != 5)) {
 							stateCol[s->col] = 2;
 							addScore(&(*s), beatfdiff);
+							addDPTotal();
 							removeStep(&s);
 						}
 					}
@@ -87,6 +89,7 @@ void updateInput() {
 									holdCol[s->col] = steps.end();
 									stateCol[s->col] = 2;
 									addScore(&(*s), beatfdiff);
+									addDPTotal();
 									removeStep(&s);
 								}
 							}
@@ -106,6 +109,7 @@ void updateInput() {
 								holdCol[s->col] = steps.end();
 								stateCol[s->col] = 2;
 								addScore(&(*s), beatfdiff);
+								addDPTotal();
 								removeStep(&s);
 							}
 						}
@@ -118,6 +122,7 @@ void updateInput() {
 		if (holdCol[i] != steps.end()) {
 			if ((keysHeldd & colToKeys[i]) == 0) {
 				holdCol[i] = steps.end();
+				addDPTotal();
 			}
 		}
 	}
