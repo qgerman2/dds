@@ -5,9 +5,11 @@
 #define WHEELANGLE 5
 typedef struct group {
 	std::vector<group*> groups;
-	std::vector<songdata> songs;
+	std::vector<metadata> songs;
 } group;
 void m_setup();
+void wheelNext();
+void wheelPrev();
 void loadSongFrameGfx();
 void loadSongFontGfx();
 void printToBitmap(u8 gfx, std::string str);

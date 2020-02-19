@@ -19,6 +19,7 @@ using namespace std;
 
 group root;
 string fileext;
+int wheelcursor = 0;
 
 u8 songFrameSprite[21];
 u16* songFrameGfx[9];
@@ -43,6 +44,33 @@ void m_setup() {
 	fillGroup("/ddr", &root);
 	loadSongFontGfx();
 	loadSongFrameGfx();
+	printToBitmap(0, "entrada 0");
+	printToBitmap(3, "uno");
+	printToBitmap(6, "two");
+	printToBitmap(9, "TREEEES");
+	printToBitmap(12, "entry IV");
+	printToBitmap(15, "sinco");
+	printToBitmap(18, "IIIIII");
+	wheelPrev();
+	wheelPrev();
+}
+
+void wheelNext() {
+	wheelcursor++;
+	for (int y = 6; y > 0; y--) {
+		for (int i = 0; i < CHARSPRITES; i++) {
+			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y - 1) * CHARSPRITES + i];
+		}
+	}
+}
+
+void wheelPrev() {
+	wheelcursor--;
+	for (int y = 0; y < 6; y++) {
+		for (int i = 0; i < CHARSPRITES; i++) {
+			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y + 1) * CHARSPRITES + i];
+		}
+	}
 }
 
 void loadSongFrameGfx() {
@@ -75,10 +103,6 @@ void loadSongFontGfx() {
 	}
 	for (int i = 0; i < CHARSPRITES * 7; i++) {
 		songFontGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x32, SpriteColorFormat_Bmp);
-	}
-	cout << "\nwena";
-	for (int i = 0; i < 7; i++) {
-		printToBitmap(i * 4, "wenaaaabbbb");
 	}
 }
 
@@ -128,7 +152,7 @@ void fillGroup(string dir, group* parent) {
         			}
         		}
         		if (fileext == "sm") {
-        			cur->songs.push_back(parseSimFile(dir + '/' + pent->d_name));
+        			cur->songs.push_back(parseSimFile(dir + '/' + pent->d_name, true));
         			cout << "\nloaded song " << pent->d_name;
         		}
     		}
@@ -173,7 +197,7 @@ void renderWheel() {
 		for (int c = 0; c < CHARSPRITES; c++) {
 			int x = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
 			int y = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
-			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x, y + 32, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, true, false, false, false, false);
+			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x, y + 32, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);
 	}

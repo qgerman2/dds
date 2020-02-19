@@ -108,7 +108,7 @@ void pr_setup() {
 
 	loadSubBackground();
 	loadSubScore();
-	loadFontGfx();
+	//loadFontGfx();
 	
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);

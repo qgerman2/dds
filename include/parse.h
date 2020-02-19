@@ -17,14 +17,14 @@ typedef std::vector<struct t_pair> metadata;
 class songdata {
 	public:
 		notedata notes;
-		metadata tags;
+		metadata* tags;
 		bpmdata bpms;
 		bpmdata stops;
 };
 notedata parseNotes(std::string* data);
 bpmdata parseBPMS(std::string* data, bool isStops);
-songdata parseSimFile(std::string path);
-void parseSong(songdata* song);
+metadata parseSimFile(std::string path, bool partial);
+songdata parseSong(metadata* tags);
 static const u16 normal[4] {
 	0b0001000000000000,
 	0b0000000100000000,

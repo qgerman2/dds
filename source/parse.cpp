@@ -16,14 +16,24 @@ using namespace std;
 static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
+const string partialTags[6] = {
+	"TITLE",
+	"ARTIST",
+	"BANNER",
+	"BACKGROUND",
+	"MUSIC",
+	"NOTES",
+};
 
-songdata parseSimFile(string path) {
-	songdata song;
+metadata parseSimFile(string path, bool partial) {
+	metadata tags;
 	enum class state {IDLE, KEY, VALUE};
 	FILE *fp = fopen(path.c_str(), "r");
 	int p;
 	bool prevslash = FALSE;
 	bool skip = FALSE;
+	bool partialskip = false;
+	int notescount = 0;
 	state task = state::IDLE;
 	string buffer = "";
 	struct t_pair tag = empty_tag;
@@ -40,13 +50,18 @@ songdata parseSimFile(string path) {
 					} else {
 						prevslash = TRUE;
 					}
-				} else {
+				}
+				else {
 					if (prevslash) {
 						prevslash = FALSE;
-						buffer.append(1, '/');
+						if (!partialskip) {
+							buffer.append(1, '/');
+						}
 					}
 					if (((task == state::VALUE) && (p == ':')) || (p != ':'))
-						buffer.append(1, p);
+						if (!partialskip) {
+							buffer.append(1, p);
+						}
 				}
 			}
 			switch (p) {
@@ -59,13 +74,36 @@ songdata parseSimFile(string path) {
 						task = state::VALUE;
 						tag.key = buffer;
 						buffer = "";
+						if (partial) {
+							partialskip = true;
+							for (int i = 0; i < 6; i++) {
+								if (partialTags[i] == tag.key) {
+									partialskip = false;
+									break;
+								}
+							}
+						}
+					}
+					else if (task == state::VALUE) {
+						if (partial && (tag.key == "NOTES")) {
+							notescount++;
+							if (notescount > 3) {
+								partialskip = true;
+							} 
+						}
 					}
 					break;
 				case ';':
 					if (task == state::VALUE) {
 						task = state::IDLE;
 						tag.value = buffer;
-						song.tags.push_back(tag);
+						if (!partialskip || (tag.key == "NOTES")) {
+							cout << "\ntag: " << tag.key;
+							cout << "\nval: " << tag.value;
+							tags.push_back(tag);
+						}
+						partialskip = false;
+						notescount = 0;
 						tag = empty_tag;
 						buffer = "";
 					}
@@ -79,24 +117,27 @@ songdata parseSimFile(string path) {
 		}
 	} while (1);
 	fclose(fp);
-	return song;
+	return tags;
 }
 
-void parseSong(songdata* song) {
-	for (auto i = song->tags.begin(); i != song->tags.end(); i++) {
+songdata parseSong(metadata* tags) {
+	songdata song;
+	song.tags = tags;
+	for (auto i = tags->begin(); i != tags->end(); i++) {
 		if (i->key == "NOTES") {
-			song->notes = parseNotes(&i->value);
+			song.notes = parseNotes(&i->value);
 			continue;
 		}
 		if (i->key == "BPMS") {
-			song->bpms = parseBPMS(&i->value, FALSE);
+			song.bpms = parseBPMS(&i->value, FALSE);
 			continue;
 		}
 		if (i->key == "STOPS") {
-			song->stops = parseBPMS(&i->value, TRUE);
+			song.stops = parseBPMS(&i->value, TRUE);
 			continue;
 		}
 	}
+	return song;
 }
 
 bpmdata parseBPMS(string* data, bool isStops) {
