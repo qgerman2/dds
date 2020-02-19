@@ -1,1 +1,1 @@
-void playSong();
+void s_play();

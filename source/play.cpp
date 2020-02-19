@@ -1,8 +1,9 @@
 #include <nds.h>
 #include <iostream>
-#include "main.h"
 #include "parse.h"
+#include "main.h"
 #include "play.h"
+#include "sound.h"
 #include <hold.h>
 #include <bitset>
 #include <cmath>
@@ -11,6 +12,7 @@
 #include "play_render.h"
 #include "play_input.h"
 #include "play_score.h"
+#include "render.h"
 
 
 using namespace std;
@@ -18,7 +20,6 @@ using namespace std;
 u32 bpmf = 0;
 
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
-songdata song;
 vector<step> steps;
 vector<hold> holds;
 u8 parseaheadbeats = 12;
@@ -39,14 +40,16 @@ u32 rowspermeasure = 0;
 u16 *set;
 measure m;
 
-void setup(songdata s){
+void p_setup(){
 	pr_setup();
 	ps_setup();
 	pi_setup();
-	song = s;
 }
 
-void loop(){
+void playLoop(){
+	s_play();
+	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
+	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
 		updateBeat();
 		scanKeys();

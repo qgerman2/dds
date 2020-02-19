@@ -9,7 +9,7 @@ FILE* file = 0;
 mm_stream mystream;
 mm_word stream(mm_word length, mm_addr dest, mm_stream_formats format);
 
-void playSong() {
+void s_play() {
 	mm_ds_system sys;
 	sys.mod_count 			= 0;
 	sys.samp_count			= 0;

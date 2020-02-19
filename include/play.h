@@ -5,8 +5,8 @@
 #define HITY 22 //posicion y donde achuntarle a las flechas
 #define NDSHEIGHT 192
 
-void setup(songdata song); 
-void loop();
+void p_setup(); 
+void playLoop();
 u8 getNoteType(u32 row);
 void updateBeat();
 void updateSteps();
@@ -36,7 +36,6 @@ measure getMeasureAtBeat(u32 beat);
 u32 millis();
 
 extern std::vector<step>::iterator holdCol[4];
-
 extern u32 beatf;
 extern u32 bpmf;
 extern u32 beatfperiod;

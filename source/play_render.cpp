@@ -6,6 +6,7 @@
 #include "play.h"
 #include "play_render.h"
 #include "play_score.h"
+#include "render.h"
 #include <math.h>
 
 #include <step.h>
@@ -33,9 +34,6 @@
 using namespace std;
 
 u32 prevscore = 0;
-
-bool sprites[128];
-bool spritesSub[128];
 
 u16* stepGfx[8];
 
@@ -77,7 +75,6 @@ void pr_setup() {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
-	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	tapMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	tailMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	holdMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
@@ -109,10 +106,12 @@ void pr_setup() {
 	loadNumberGfx();
 	loadJudgmentGfx();
 
-	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 	loadSubBackground();
 	loadSubScore();
 	loadFontGfx();
+	
+	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
 void loadStepGfx() {
@@ -495,38 +494,6 @@ void playJudgmentAnim(u8 anim) {
 
 void playScoreAnim() {
 	scoreFrame = 10;
-}
-
-u8 popSprite() {
-	for (u8 i = 0; i < 128; i++) {
-		if (sprites[i]) {
-			sprites[i] = FALSE;
-			return i;
-		}
-	}
-	sassert(0, "out of sprites");
-	return 0;
-}
-
-void pushSprite(u8 i) {
-	sprites[i] = TRUE;
-	oamClearSprite(&oamMain, i);
-}
-
-u8 popSpriteSub() {
-	for (u8 i = 0; i < 128; i++) {
-		if (spritesSub[i]) {
-			spritesSub[i] = FALSE;
-			return i;
-		}
-	}
-	sassert(0, "out of sprites sub");
-	return 0;
-}
-
-void pushSpriteSub(u8 i) {
-	spritesSub[i] = TRUE;
-	oamClearSprite(&oamSub, i);
 }
 
 void setRotData() {

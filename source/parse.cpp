@@ -17,7 +17,7 @@ static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
 
-songdata parseSong(string path) {
+songdata parseSimFile(string path) {
 	songdata song;
 	enum class state {IDLE, KEY, VALUE};
 	FILE *fp = fopen(path.c_str(), "r");
@@ -79,32 +79,35 @@ songdata parseSong(string path) {
 		}
 	} while (1);
 	fclose(fp);
-	for (auto i = song.tags.begin(); i != song.tags.end(); i++) {
-		if (i->key == "NOTES") {
-			song.notes = parseNotes(i->value);
-			continue;
-		}
-		if (i->key == "BPMS") {
-			song.bpms = parseBPMS(i->value, FALSE);
-			continue;
-		}
-		if (i->key == "STOPS") {
-			song.stops = parseBPMS(i->value, TRUE);
-			continue;
-		}
-	}
 	return song;
 }
 
-bpmdata parseBPMS(string data, bool isStops) {
+void parseSong(songdata* song) {
+	for (auto i = song->tags.begin(); i != song->tags.end(); i++) {
+		if (i->key == "NOTES") {
+			song->notes = parseNotes(&i->value);
+			continue;
+		}
+		if (i->key == "BPMS") {
+			song->bpms = parseBPMS(&i->value, FALSE);
+			continue;
+		}
+		if (i->key == "STOPS") {
+			song->stops = parseBPMS(&i->value, TRUE);
+			continue;
+		}
+	}
+}
+
+bpmdata parseBPMS(string* data, bool isStops) {
 	bpmdata bpms;
 	struct t_bpm bpm = empty_bpm;
 	string buffer;
 	enum class state {IDLE, KEY, VALUE};
 	state task = state::IDLE;
 	char c;
-	for (uint i = 0; i < data.size(); i++) {
-		c = data[i];
+	for (uint i = 0; i < data->size(); i++) {
+		c = (*data)[i];
 		switch (task) {
 			case state::KEY:
 				if (c != '=') {
@@ -119,8 +122,8 @@ bpmdata parseBPMS(string data, bool isStops) {
 				if (c != ',' && c != '\n') {
 					buffer.append(1, c);
 				} 
-				if ((c == ',') || (c == '\n') || i == data.length() - 1) {
-					if (i == data.length() - 1) {
+				if ((c == ',') || (c == '\n') || i == data->length() - 1) {
+					if (i == data->length() - 1) {
 						buffer.append(1, c);
 					}
 					task = state::IDLE;
@@ -145,13 +148,13 @@ bpmdata parseBPMS(string data, bool isStops) {
 }
 
 
-notedata parseNotes(string data) {
-	size_t s = data.find(':');
-	size_t e = data.find(';');
+notedata parseNotes(string* data) {
+	size_t s = data->find(':');
+	size_t e = data->find(';');
 	for (int v = 0; v <= 3; v++) {
-		s = data.find(':', s + 1);
+		s = data->find(':', s + 1);
 	}
-	string rawnotes = data.substr(s, e - s);
+	string rawnotes = data->substr(s, e - s);
 	char c;
 	notedata notes;
 	measure m = empty_measure;
