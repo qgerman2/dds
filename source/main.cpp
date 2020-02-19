@@ -29,11 +29,11 @@ int main(){
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 
-	if (!fatInitDefault()) {
-		sassert(0, "failed to load libfat");
-	}
+	//if (!fatInitDefault()) {
+	//	sassert(0, "failed to load libfat");
+	//}
 
-	song = parseSimFile("/ddr/song.sm");
+	//song = parseSimFile("/ddr/song.sm");
 
 	while (1) {
 		switch (gameState) {

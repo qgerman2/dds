@@ -41,8 +41,8 @@ void m_setup() {
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
 	fillGroup("/ddr", &root);
-	//loadSongFrameGfx();
 	loadSongFontGfx();
+	loadSongFrameGfx();
 }
 
 void loadSongFrameGfx() {
@@ -64,37 +64,22 @@ void loadSongFrameGfx() {
 		}
 	}
 	dmaCopy(song_framePal, SPRITE_PALETTE_SUB + 16 * 15, song_framePalLen);
-	int s = 0;
-	int a = 5;
-	for (int i = -3; i <= 3; i++) {
-		int x1 = (((512) * cosLerp((180 + i * a) * 32768 / 360)) >> 12) + 60;
-		int x2 = (((449) * cosLerp((180 + i * a) * 32768 / 360)) >> 12) + 60;
-		int x3 = (((386) * cosLerp((180 + i * a) * 32768 / 360)) >> 12) + 60;
-		int y1 = (((512) * sinLerp((180 + i * a) * 32768 / 360)) >> 12) + 32;
-		int y2 = (((449) * sinLerp((180 + i * a) * 32768 / 360)) >> 12) + 32;
-		int y3 = (((386) * sinLerp((180 + i * a) * 32768 / 360)) >> 12) + 32;
-		oamSet(&oamSub, songFrameSprite[s], x1, y1, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[6], i + 3, true, false, false, false, false);
-		oamSet(&oamSub, songFrameSprite[s + 1], x2, y2, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[7], i + 3, true, false, false, false, false);
-		oamSet(&oamSub, songFrameSprite[s + 2], x3, y3, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[8], i + 3, true, false, false, false, false);
-		s = s + 3;
-	}
 	for (int i = 0; i < 7; i++) {
-		oamRotateScale(&oamSub, i, -((i - 3) * a) * 32768 / 360, 1 << 8, 1 << 8);
+		oamRotateScale(&oamSub, i, -((i - 3) * WHEELANGLE) * 32768 / 360, 1 << 8, 1 << 8);
 	}
 }
 
 void loadSongFontGfx() {
-	for (int i = 0; i < 21; i++) {
+	for (int i = 0; i < CHARSPRITES * 7; i++) {
 		songFontSprite[i] = popSpriteSub();
 	}
-	for (int i = 0; i < 21; i++) {
+	for (int i = 0; i < CHARSPRITES * 7; i++) {
 		songFontGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x32, SpriteColorFormat_Bmp);
 	}
-	printToBitmap(0, "wenaaaabbbbCCctmmm wena ajajjajajajj");
-	oamSet(&oamSub, songFontSprite[0], 0, 64, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[0], 0, false, false, false, false, false);
-	oamSet(&oamSub, songFontSprite[1], 64, 64, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[1], 0, false, false, false, false, false);
-	oamSet(&oamSub, songFontSprite[2], 128, 64, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[2], 0, false, false, false, false, false);
-	oamSet(&oamSub, songFontSprite[3], 128 + 64, 64, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[3], 0, false, false, false, false, false);
+	cout << "\nwena";
+	for (int i = 0; i < 7; i++) {
+		printToBitmap(i * 4, "wenaaaabbbb");
+	}
 }
 
 void printToBitmap(u8 gfx, string str) {
@@ -109,29 +94,12 @@ void printToBitmap(u8 gfx, string str) {
 			break;
 		}
 		for (int y = 0; y < 16; y++) {
-			/*if (x > 128) {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[2] + y * 64 + i * CHARWIDTH - 128, CHARWIDTH * 2);
-			}
-			else if ((x + CHARWIDTH) > 128) {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[1] + y * 64 + i * CHARWIDTH, (128 - x) * 2);
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET + (128 - x), songFontGfx[2] + y * 64 + i * CHARWIDTH + (128 - x) - 128, (CHARWIDTH * 2) - ((128 - x) * 2));
-			}
-			else if (x > 64) {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[1] + y * 64 + i * CHARWIDTH - 64, CHARWIDTH * 2);
-			}
-			else if ((x + CHARWIDTH) > 64) {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[0] + y * 64 + i * CHARWIDTH, (64 - x) * 2);
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET + (64 - x), songFontGfx[1] + y * 64 + i * CHARWIDTH + (64 - x) - 64, (CHARWIDTH * 2) - ((64 - x) * 2));
-			}
-			else {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[0] + y * 64 + i * CHARWIDTH, CHARWIDTH * 2);
-			}*/
 			if ((x % 64) > (64 - CHARWIDTH)) {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[s] + y * 64 + i * CHARWIDTH - (s * 64), (((s + 1) * 64) - x) * 2);
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET + (((s + 1) * 64) - x), songFontGfx[s + 1] + y * 64 + i * CHARWIDTH + (((s + 1) * 64) - x) - ((s + 1) * 64), (CHARWIDTH * 2) - ((((s + 1) * 64) - x) * 2));
+				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[gfx + s] + (y + 8) * 64 + i * CHARWIDTH - (s * 64), (((s + 1) * 64) - x) * 2);
+				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET + (((s + 1) * 64) - x), songFontGfx[gfx + s + 1] + (y + 8) * 64 + i * CHARWIDTH + (((s + 1) * 64) - x) - ((s + 1) * 64), (CHARWIDTH * 2) - ((((s + 1) * 64) - x) * 2));
 			}
 			else {
-				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[s] + y * 64 + i * CHARWIDTH - (s * 64), CHARWIDTH * 2);
+				dmaCopy(song_fontBitmap + 16 * y + 256 * c + CHAROFFSET, songFontGfx[gfx + s] + (y + 8) * 64 + i * CHARWIDTH - (s * 64), CHARWIDTH * 2);
 			}
 		}
 	}
@@ -182,5 +150,31 @@ void menuLoop() {
 }
 
 void renderMenu() {
+	renderWheel();
+}
 
+int scale = 256;
+void renderWheel() {
+	int s = 0;
+	int o = ((scale - 256) * 64) / 256;
+	scale--;
+	if (scale <= 128) {
+		scale = 256;
+	}
+	for (int i = -3; i <= 3; i++) {
+		for (int c = 0; c < 3; c++) {
+			int x = (((512 - (63 * c)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
+			int y = (((512 - (63 * c)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
+			oamSet(&oamSub, songFrameSprite[s + c], x, y, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[c], i + 3, true, false, false, false, false);
+		}
+		s = s + 3;
+	}
+	for (int i = -3; i <= 3; i++) {
+		for (int c = 0; c < CHARSPRITES; c++) {
+			int x = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
+			int y = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
+			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x, y + 32, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, true, false, false, false, false);
+		}
+		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);
+	}
 }

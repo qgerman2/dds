@@ -1,7 +1,8 @@
 #define ASCIIOFFSET 32
 #define CHARWIDTH 10
 #define CHAROFFSET 3
-#define CHARSPRITES 4
+#define CHARSPRITES 3
+#define WHEELANGLE 5
 typedef struct group {
 	std::vector<group*> groups;
 	std::vector<songdata> songs;
@@ -13,3 +14,4 @@ void printToBitmap(u8 gfx, std::string str);
 void fillGroup(std::string dir, group* parent);
 void menuLoop();
 void renderMenu();
+void renderWheel();
