@@ -14,17 +14,23 @@
 #include <song_font.h>
 #include <font.h>
 
-
 using namespace std;
 
-group root;
 string fileext;
-int wheelcursor = 0;
+int wheelcursor;
+int wheelview = 7; //amount of files visible at a single time on wheel
+
+int dircount; //internal count over files
+int wheelsize; //internal total amount of files
+int wheelcount; //internal count of files added to wheel
 
 u8 songFrameSprite[21];
 u16* songFrameGfx[9];
 u8 songFontSprite[CHARSPRITES * 7];
 u16* songFontGfx[CHARSPRITES * 7];
+u8 songFrameColor[7];
+
+wheelitem wheelitems[7];
 
 void m_setup() {
 	for (int i = 0; i < 128; i++) {
@@ -41,18 +47,9 @@ void m_setup() {
 	font.asciiOffset = 32;
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
-	fillGroup("/ddr", &root);
+	fillWheel();
 	loadSongFontGfx();
 	loadSongFrameGfx();
-	printToBitmap(0, "entrada 0");
-	printToBitmap(3, "uno");
-	printToBitmap(6, "two");
-	printToBitmap(9, "TREEEES");
-	printToBitmap(12, "entry IV");
-	printToBitmap(15, "sinco");
-	printToBitmap(18, "IIIIII");
-	wheelPrev();
-	wheelPrev();
 }
 
 void wheelNext() {
@@ -129,20 +126,85 @@ void printToBitmap(u8 gfx, string str) {
 	}
 }
 
-void fillGroup(string dir, group* parent) {
+void fillWheel() {
+	//encontrar total de elementos
+	wheelcursor = -1;
+	dircount = 0;
+	wheelcount = 0;
+	parseDir("/ddr", -1, -1);
+	wheelsize = dircount;
+	//popular rueda
+	wheelcursor = 1;
+	dircount = 0;
+	wheelcount = 0;
+	parseDir("/ddr", -1, -1);
+	//terminar de popular rueda si no se lleno
+	for (int i = 0; i < wheelview; i++) {
+		if (wheelitems[i].type == -1) {
+			int pos = wheelcursor - 3 + i;
+			while (pos >= wheelsize) {
+				pos = pos - wheelsize;
+			}
+			while (pos < 0) {
+				pos = pos + wheelsize;
+			}
+			dircount = 0;
+			parseDir("/ddr", pos, i);
+		}
+	}
+	for (int i = 0; i < wheelview; i++) {
+		cout << "\n" << i << " " << wheelitems[i].name;
+	}
+}
+
+int nearWheelCursor(int i) {
+	if (abs(wheelcursor - i) <= (wheelview / 2)) {
+		return (i - wheelcursor + (wheelview / 2));
+	}
+	else if (abs(wheelcursor + wheelsize - i) <= (wheelview / 2)) {
+		return (i - wheelsize - wheelcursor + (wheelview / 2));
+	}
+	else if (abs(wheelcursor - wheelsize - i) <= (wheelview / 2)) {
+		return (i + wheelsize - wheelcursor + (wheelview / 2));
+	}
+	return -1;
+}
+
+bool parseDir(string dir, int index, int dest) {
+	int pos;
 	DIR *pdir;
 	struct dirent *pent;
 	pdir = opendir(dir.c_str());
 	if (pdir){
-		group* cur = new group();
-		parent->groups.push_back(cur);
 		while ((pent = readdir(pdir)) != NULL) {
 			fileext = "";
     		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
         		continue;
     		}
     		if (pent->d_type == DT_DIR) {
-        		fillGroup(dir + '/' + pent->d_name, cur);
+    			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
+    				pos = nearWheelCursor(dircount);
+        			if (pos != -1) {
+        				wheelitem group;
+        				group.type = 0;
+        				group.name = pent->d_name;
+        				group.path = dir + '/' + pent->d_name;
+        				if (dest != -1) {
+        					wheelitems[dest] = group;
+        				}
+        				else {
+        					wheelitems[pos] = group;
+        				}
+        				wheelcount++;
+        				if ((wheelcount == (wheelview - 1)) || (index != -1)) {
+        					return true;
+        				}
+        			}
+        		}
+    			dircount++;
+    			if (parseDir(dir + '/' + pent->d_name, index, dest)) {
+    				return true;
+    			}
     		}
     		else {
         		for (int i = 0; pent->d_name[i] != '\0'; i++) {
@@ -152,17 +214,32 @@ void fillGroup(string dir, group* parent) {
         			}
         		}
         		if (fileext == "sm") {
-        			cur->songs.push_back(parseSimFile(dir + '/' + pent->d_name, true));
-        			cout << "\nloaded song " << pent->d_name;
+        			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
+        				pos = nearWheelCursor(dircount);
+	        			if (pos != -1) {
+	        				wheelitem song;
+	        				song.type = 1;
+	        				song.name = pent->d_name;
+	        				song.path = dir + '/' + pent->d_name;
+	        				if (dest != -1) {
+	        					wheelitems[dest] = song;
+	        				}
+	        				else {
+	        					wheelitems[pos] = song;
+	        				}
+	        				wheelcount++;
+	        				if ((wheelcount > wheelview) || (index != -1)) {
+	        					return true;
+	        				}
+	        			}
+        			}
+        			dircount++;
         		}
     		}
 		}
-		if ((cur->songs.size() == 0) && (cur->groups.size() == 0)) {
-			parent->groups.pop_back();
-			delete cur;
-		}
 		closedir(pdir);
 	}
+	return false;
 }
 
 void menuLoop() {
@@ -189,7 +266,7 @@ void renderWheel() {
 		for (int c = 0; c < 3; c++) {
 			int x = (((512 - (63 * c)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
 			int y = (((512 - (63 * c)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
-			oamSet(&oamSub, songFrameSprite[s + c], x, y, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[c], i + 3, true, false, false, false, false);
+			oamSet(&oamSub, songFrameSprite[s + c], x, y, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[(songFrameColor[i + 3] * 3) + c], i + 3, true, false, false, false, false);
 		}
 		s = s + 3;
 	}

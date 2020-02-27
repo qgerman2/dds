@@ -98,8 +98,6 @@ metadata parseSimFile(string path, bool partial) {
 						task = state::IDLE;
 						tag.value = buffer;
 						if (!partialskip || (tag.key == "NOTES")) {
-							cout << "\ntag: " << tag.key;
-							cout << "\nval: " << tag.value;
 							tags.push_back(tag);
 						}
 						partialskip = false;
