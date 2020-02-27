@@ -129,13 +129,13 @@ void printToBitmap(u8 gfx, string str) {
 void fillWheel() {
 	//encontrar total de elementos
 	wheelcursor = -1;
-	dircount = 0;
+	dircount = -1;
 	wheelcount = 0;
 	parseDir("/ddr", -1, -1);
-	wheelsize = dircount;
+	wheelsize = dircount + 1;
 	//popular rueda
-	wheelcursor = 1;
-	dircount = 0;
+	wheelcursor = 2;
+	dircount = -1;
 	wheelcount = 0;
 	parseDir("/ddr", -1, -1);
 	//terminar de popular rueda si no se lleno
@@ -148,7 +148,7 @@ void fillWheel() {
 			while (pos < 0) {
 				pos = pos + wheelsize;
 			}
-			dircount = 0;
+			dircount = -1;
 			parseDir("/ddr", pos, i);
 		}
 	}
@@ -174,6 +174,7 @@ bool parseDir(string dir, int index, int dest) {
 	int pos;
 	DIR *pdir;
 	struct dirent *pent;
+	bool isgroup = false;
 	pdir = opendir(dir.c_str());
 	if (pdir){
 		while ((pent = readdir(pdir)) != NULL) {
@@ -182,6 +183,8 @@ bool parseDir(string dir, int index, int dest) {
         		continue;
     		}
     		if (pent->d_type == DT_DIR) {
+    			dircount++;
+    			isgroup = true;
     			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
     				pos = nearWheelCursor(dircount);
         			if (pos != -1) {
@@ -196,17 +199,16 @@ bool parseDir(string dir, int index, int dest) {
         					wheelitems[pos] = group;
         				}
         				wheelcount++;
-        				if ((wheelcount == (wheelview - 1)) || (index != -1)) {
-        					return true;
-        				}
         			}
         		}
-    			dircount++;
-    			if (parseDir(dir + '/' + pent->d_name, index, dest)) {
+    			if (parseDir(dir + '/' + pent->d_name, index, dest) && (index != -1)) {
+    				return true;
+    			}
+    			else if ((wheelcount > wheelview) || (index == dircount)) {
     				return true;
     			}
     		}
-    		else {
+    		else if (!isgroup) {
         		for (int i = 0; pent->d_name[i] != '\0'; i++) {
         			fileext += pent->d_name[i];
         			if (pent->d_name[i] == '.') {
@@ -217,23 +219,12 @@ bool parseDir(string dir, int index, int dest) {
         			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
         				pos = nearWheelCursor(dircount);
 	        			if (pos != -1) {
-	        				wheelitem song;
-	        				song.type = 1;
-	        				song.name = pent->d_name;
-	        				song.path = dir + '/' + pent->d_name;
-	        				if (dest != -1) {
-	        					wheelitems[dest] = song;
-	        				}
-	        				else {
-	        					wheelitems[pos] = song;
-	        				}
-	        				wheelcount++;
-	        				if ((wheelcount > wheelview) || (index != -1)) {
-	        					return true;
-	        				}
+	        				wheelitem* song = &wheelitems[pos];
+	        				song->type = 1;
+	        				song->smpath = dir + '/' + pent->d_name;
+	        				return true;
 	        			}
         			}
-        			dircount++;
         		}
     		}
 		}

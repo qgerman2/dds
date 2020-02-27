@@ -7,6 +7,7 @@ typedef struct wheelitem{
 	int type = -1;
 	std::string name;
 	std::string path;
+	std::string smpath;
 } wheelitem;
 void m_setup();
 int nearWheelCursor(int i);
