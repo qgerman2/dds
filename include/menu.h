@@ -10,6 +10,7 @@ typedef struct wheelitem{
 	std::string smpath;
 } wheelitem;
 void m_setup();
+int indexToFile(int i);
 int nearWheelCursor(int i);
 void wheelNext();
 void wheelPrev();
@@ -18,6 +19,7 @@ void loadSongFontGfx();
 void printToBitmap(u8 gfx, std::string str);
 bool parseDir(std::string dir, int index, int dest);
 void fillWheel();
+void fillWheelEmpty();
 void menuLoop();
 void renderMenu();
 void renderWheel();
