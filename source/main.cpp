@@ -16,9 +16,9 @@ GameState gameState = MENU;
 
 int main(){
 	videoSetMode(MODE_3_2D);
-	videoSetModeSub(MODE_0_2D);
+	videoSetModeSub(MODE_5_2D);
 	bgExtPaletteEnable();
-	bgExtPaletteEnableSub();
+	//bgExtPaletteEnableSub();
 	vramSetBankA(VRAM_A_MAIN_BG_0x06040000);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
 	vramSetBankC(VRAM_C_SUB_BG_0x06200000);
@@ -29,9 +29,9 @@ int main(){
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 
-	if (!fatInitDefault()) {
-		sassert(0, "failed to load libfat");
-	}
+	//if (!fatInitDefault()) {
+	//	sassert(0, "failed to load libfat");
+	//}
 	//metadata tags = parseSimFile("/ddr/song.sm", false);
 	//song = parseSong(&tags);
 

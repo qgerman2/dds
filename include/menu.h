@@ -14,7 +14,7 @@ int indexToFile(int i);
 int nearWheelCursor(int i);
 void wheelNext();
 void wheelPrev();
-void loadSongFrameGfx();
+void loadSongFrameBg();
 void loadSongFontGfx();
 void printToBitmap(u8 gfx, std::string str);
 bool parseDir(std::string dir, int index, int dest);

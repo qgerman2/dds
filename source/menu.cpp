@@ -11,6 +11,7 @@
 #include "menu.h"
 #include "render.h"
 #include <song_frame.h>
+#include <group_frame.h>
 #include <song_font.h>
 #include <font.h>
 
@@ -24,8 +25,53 @@ int dircount; //internal count over files
 int wheelsize; //internal total amount of files
 int wheelcount; //internal count of files added to wheel
 
-u8 songFrameSprite[21];
-u16* songFrameGfx[9];
+const int wheelTiles0[] = {
+	3, 4, 5, 6, 7, 8,
+	25, 26, 27, 28, 29, 30, 31, 32, 33,
+	48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
+	71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84,
+	93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+	116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136,
+	144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
+	171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+	197, 198, 199, 200, 201, 202, 203, 204, 205, 206,
+	225, 225, 226, 227, 228, 229,
+	251, 252, -1,
+};
+
+const int wheelTiles1[] = {
+	254, 255, 256, 257, 258, 259,
+	277, 278, 279, 280, 281, 282, 283, 284, 285, 286,
+	300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312,
+	323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339,
+	345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366,
+	370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390,
+	395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413,
+	424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436,
+	454, 455, 456, 457, 458, 459, -1
+};
+
+const int wheelTiles2[] {
+	460, 461, 462, 463, 464,
+	483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493,
+	506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523,
+	529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551,
+	552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574,
+	575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597,
+	598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620,
+	637, 638, 639, 640, 641, 642, 643, -1
+};
+
+const int wheelTiles3[] {
+	644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660,
+	667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 687, 688, 689,
+	690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 712, -1
+};
+
+//const *int wheelTiles[4] = {&wheelTiles0, &wheelTiles1, &wheelTiles2, &wheelTiles3};
+
+//u8 songFrameSprite[21];
+//u16* songFrameGfx[9];
 u8 songFontSprite[CHARSPRITES * wheelview];
 u16* songFontGfx[CHARSPRITES * wheelview];
 u8 songFrameColor[wheelview];
@@ -47,12 +93,16 @@ void m_setup() {
 	font.asciiOffset = 32;
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
-	fillWheel();
+	cout << "aver";
+	//fillWheel();
 	loadSongFontGfx();
-	loadSongFrameGfx();
+	//loadSongFrameGfx();
+	loadSongFrameBg();
 	for (int i = 0; i < 7; i++) {
-		printToBitmap(i * 3 + 1, to_string(i));
+		printToBitmap(i * 3, "aaaaaaaaaaaaaaaaaa");
 	}
+	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
 void wheelNext() {
@@ -79,7 +129,32 @@ void wheelPrev() {
 	fillWheelEmpty();
 }
 
-void loadSongFrameGfx() {
+void loadSongFrameBg() {
+	int id1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 0, 1);
+	int id2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
+	u16* mapPtr1 = bgGetMapPtr(id1);
+	//dmaCopy(song_frameTiles + 1536, bgGetGfxPtr(id1), 64);
+	//for (int i = 0; i < 100; i++) {
+	//	mapPtr1[i] = 1023;
+	//	mapPtr1[i] |= TILE_FLIP_H;
+	//}
+	int i = 0;
+	while (wheelTiles3[i] != -1) {
+		int pos = wheelTiles3[i] + (wheelTiles3[i] / 23) * 9 - 32 * 10;
+		mapPtr1[pos] = i;
+		dmaCopy(song_frameTiles + 16 * wheelTiles3[i], bgGetGfxPtr(id1) + 32 * i, 64);
+		i++;
+	}
+
+	//dmaCopy(song_framePal, &VRAM_H[2*16*256], song_framePalLen);
+	dmaCopy(song_framePal, BG_PALETTE_SUB, song_framePalLen);
+	//bgSet(id1, 1000, 1<<8, 1<<8, 512<<8, 92<<8, 512<<8, 92<<8);
+	//bgSetCenter(id1, 30, 30);
+	bgUpdate();
+
+}
+
+/*void loadSongFrameGfx() {
 	for (int i = 0; i < 21; i++) {
 		songFrameSprite[i] = popSpriteSub();
 	}
@@ -101,7 +176,7 @@ void loadSongFrameGfx() {
 	for (int i = 0; i < 7; i++) {
 		oamRotateScale(&oamSub, i, -((i - 3) * WHEELANGLE) * 32768 / 360, 1 << 8, 1 << 8);
 	}
-}
+}*/
 
 void loadSongFontGfx() {
 	for (int i = 0; i < CHARSPRITES * 7; i++) {
@@ -277,20 +352,20 @@ void renderMenu() {
 
 int scale = 256;
 void renderWheel() {
-	int s = 0;
+	//int s = 0;
 	int o = ((scale - 256) * 64) / 256;
 	scale--;
 	if (scale <= 128) {
 		scale = 256;
 	}
-	for (int i = -3; i <= 3; i++) {
+	/*for (int i = -3; i <= 3; i++) {
 		for (int c = 0; c < 3; c++) {
 			int x = (((512 - (63 * c)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
 			int y = (((512 - (63 * c)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
 			oamSet(&oamSub, songFrameSprite[s + c], x, y, 0, 15, SpriteSize_64x64, SpriteColorFormat_16Color, songFrameGfx[(songFrameColor[-i + 3] * 3) + c], i + 3, true, false, false, false, false);
 		}
 		s = s + 3;
-	}
+	}*/
 	for (int i = -3; i <= 3; i++) {
 		for (int c = 0; c < CHARSPRITES; c++) {
 			int x = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
