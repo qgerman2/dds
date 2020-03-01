@@ -45,5 +45,5 @@ void menuLoop() {
 }
 
 void renderMenu() {
-	renderWheelChar();
+	renderWheel();
 }

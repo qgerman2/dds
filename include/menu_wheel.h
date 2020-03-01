@@ -20,5 +20,6 @@ void fillWheelEmpty();
 int indexToFile(int i);
 int nearWheelCursor(int i);
 bool parseDir(std::string dir, int index, int dest);
+void renderWheel();
 void renderWheelChar();
 void updateFrameBg();

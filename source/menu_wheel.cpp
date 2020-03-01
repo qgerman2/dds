@@ -296,6 +296,21 @@ bool parseDir(string dir, int index, int dest) {
 	return false;
 }
 
+int angle = -273;
+void renderWheel() {
+	angle += 10;
+	int rx = 520;
+	int ry = 96;
+	int sx = 440;
+	int sy = 128;
+	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, sx << 8, sy << 8, rx << 8, ry << 8);
+	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx << 8, sy << 8, rx << 8, ry << 8);
+	renderWheelChar();
+	if (angle > 273) {
+		angle = -273;
+	}
+}
+
 int scale = 256;
 void renderWheelChar() {
 	int o = ((scale - 256) * 64) / 256;
