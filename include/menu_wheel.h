@@ -11,7 +11,7 @@ typedef struct wheelitem{
 } wheelitem;
 void mw_setup();
 void loadSongFontGfx();
-void loadSongFrameBg();
+void loadFrameBg();
 void wheelNext();
 void wheelPrev();
 void printToBitmap(u8 gfx, std::string str);
@@ -21,3 +21,4 @@ int indexToFile(int i);
 int nearWheelCursor(int i);
 bool parseDir(std::string dir, int index, int dest);
 void renderWheelChar();
+void updateFrameBg();

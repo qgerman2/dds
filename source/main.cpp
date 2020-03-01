@@ -18,7 +18,7 @@ int main(){
 	videoSetMode(MODE_3_2D);
 	videoSetModeSub(MODE_5_2D);
 	bgExtPaletteEnable();
-	//bgExtPaletteEnableSub();
+	bgExtPaletteEnableSub();
 	vramSetBankA(VRAM_A_MAIN_BG_0x06040000);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
 	vramSetBankC(VRAM_C_SUB_BG_0x06200000);

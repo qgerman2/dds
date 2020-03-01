@@ -63,6 +63,7 @@ const int* wheelTiles[] {
 };
 
 int wheelTilesLen[4];
+int wheelTilesYOffset[4] = {3, 9, 13, 15};
 
 u8 songFontSprite[CHARSPRITES * wheelview];
 u16* songFontGfx[CHARSPRITES * wheelview];
@@ -77,10 +78,11 @@ void mw_setup() {
 	//fillWheel();
 	loadSongFontGfx();
 	//loadSongFrameGfx();
-	loadSongFrameBg();
+	loadFrameBg();
 	for (int i = 0; i < 7; i++) {
 		printToBitmap(i * 3, "aaaaaaaaaaaaaaaaaa");
 	}
+	updateFrameBg();
 }
 
 void loadSongFontGfx() {
@@ -92,10 +94,11 @@ void loadSongFontGfx() {
 	}
 }
 
-void loadSongFrameBg() {
+void loadFrameBg() {
 	wheelBg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 0, 1);
 	wheelBg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
-	int g = 0;
+	int g = 1;
+	//rojo negro
 	for (int i = 0; i < 4; i++) {
 		int t = 0;
 		while (wheelTiles[i][t] != -1) {
@@ -105,7 +108,21 @@ void loadSongFrameBg() {
 		}
 		wheelTilesLen[i] = t;
 	}
-	dmaCopy(song_framePal, BG_PALETTE_SUB, song_framePalLen);
+	//verde
+	for (int i = 0; i < 4; i++) {
+		int t = 0;
+		while (wheelTiles[i][t] != -1) {
+			dmaCopy(group_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(wheelBg1) + 32 * g, 64);
+			t++;
+			g++;
+		}
+	}
+	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[2][0], song_framePalLen);
+	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[2][1], song_framePalLen);
+	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[2][2], group_framePalLen);
+	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][0], song_framePalLen);
+	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][1], song_framePalLen);
+	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[3][2], group_framePalLen);
 }
 
 void wheelNext() {
@@ -293,5 +310,34 @@ void renderWheelChar() {
 			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x, y + 32, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);
+	}
+}
+
+void updateFrameBg() {
+	int tileOffset = 1;
+	int t = 0;
+	u16* bgMap1 = bgGetMapPtr(wheelBg1);
+	u16* bgMap2 = bgGetMapPtr(wheelBg2);
+	u16* bgMap = bgMap1;
+	for (int i = 0; i < 4; i++) {
+		while (wheelTiles[i][t] != -1) {
+			int pos = wheelTiles[i][t] + (wheelTiles[i][t] / 23 * 9);
+			int x = pos % 32;
+			int y = pos / 32;
+			if (y >= wheelTilesYOffset[i]) {
+				y -= wheelTilesYOffset[i];
+				bgMap[y * 32 + x] = t + tileOffset;
+				bgMap[(31 - y) * 32 + x] = (t + tileOffset) | TILE_FLIP_V;
+			}
+			t++;
+		}
+		if (bgMap == bgMap1) {
+			bgMap = bgMap2;
+		}
+		else {
+			bgMap = bgMap1;
+		}
+		tileOffset += wheelTilesLen[i];
+		t = 0;
 	}
 }
