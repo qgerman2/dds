@@ -345,7 +345,6 @@ void renderWheel() {
 		angle = 12 * (45 - wheelFrame) * wheelAnim;
 	}
 	else if (wheelFrame > 0) {
-		if (wheelFrame == 22) {wheelNext();}
 		angle = 12 * (wheelFrame) * -wheelAnim;
 	}
 	int rx = 520 << 8;
@@ -354,6 +353,8 @@ void renderWheel() {
 	int sy = 128 << 8;
 	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
 	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
+	if (wheelFrame == 22) {wheelNext();}
+	bgUpdate();
 	renderWheelChar(angle);
 	if (wheelFrame > 0) {
 		wheelFrame--;
@@ -377,7 +378,7 @@ void renderWheelChar(int angle) {
 			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 32;
 			oamSet(&oamSub, songFontSprite[CHARSPRITES * (-i + 3) + c], x - 85, y + 48, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
-		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);
+		oamRotateScale(&oamSub, i + 3 + 7, (i * WHEELANGLE) * 32768 / 360 + angle, (1 << 16) / scale, 256);
 	}
 }
 

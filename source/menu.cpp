@@ -39,7 +39,6 @@ void menuLoop() {
 	while (1) {
 		swiWaitForVBlank();
 		renderMenu();
-		bgUpdate();
 		oamUpdate(&oamSub);
 	}
 }
