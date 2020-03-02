@@ -29,9 +29,9 @@ int main(){
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 
-	//if (!fatInitDefault()) {
-	//	sassert(0, "failed to load libfat");
-	//}
+	if (!fatInitDefault()) {
+		sassert(0, "failed to load libfat");
+	}
 	//metadata tags = parseSimFile("/ddr/song.sm", false);
 	//song = parseSong(&tags);
 

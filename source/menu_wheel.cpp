@@ -14,13 +14,18 @@ using namespace std;
 
 string fileext;
 int wheelcursor;
-const int wheelview = 7; //amount of files visible at a single time on wheel
+const int wheelview = 9; //amount of files visible at a single time on wheel
 
 int dircount; //internal count over files
 int wheelsize; //internal total amount of files
 int wheelcount; //internal count of files added to wheel
 
 const int* wheelTiles[] {
+	(const int[]){
+		16, 17, 18, 19, 20, 21, 22,
+		41, 42, 43, 44, 45,
+		67, 68, -1
+	},
 	(const int[]){
 		3, 4, 5, 6, 7, 8,
 		25, 26, 27, 28, 29, 30, 31, 32, 33,
@@ -62,11 +67,12 @@ const int* wheelTiles[] {
 	}
 };
 
-int wheelTilesLen[4];
-int wheelTilesYOffset[4] = {3, 9, 13, 15};
+int wheelTilesLen[5];
+int wheelTilesYOffset[5] = {-1, 3, 9, 13, 15};
+int wheelTilesTotalLen = 0;
 
-u8 songFontSprite[CHARSPRITES * wheelview];
-u16* songFontGfx[CHARSPRITES * wheelview];
+u8 songFontSprite[CHARSPRITES * 7];
+u16* songFontGfx[CHARSPRITES * 7];
 u8 songFrameColor[wheelview];
 int wheelBg1;
 int wheelBg2;
@@ -75,13 +81,9 @@ wheelitem wheelitems[wheelview];
 
 void mw_setup() {
 	cout << "aver";
-	//fillWheel();
 	loadSongFontGfx();
-	//loadSongFrameGfx();
+	fillWheel();
 	loadFrameBg();
-	for (int i = 0; i < 7; i++) {
-		printToBitmap(i * 3, "aaaaaaaaaaaaaaaaaa");
-	}
 	updateFrameBg();
 }
 
@@ -99,7 +101,7 @@ void loadFrameBg() {
 	wheelBg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
 	int g = 1;
 	//rojo negro
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		int t = 0;
 		while (wheelTiles[i][t] != -1) {
 			dmaCopy(song_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(wheelBg1) + 32 * g, 64);
@@ -107,9 +109,10 @@ void loadFrameBg() {
 			g++;
 		}
 		wheelTilesLen[i] = t;
+		wheelTilesTotalLen += t;
 	}
 	//verde
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		int t = 0;
 		while (wheelTiles[i][t] != -1) {
 			dmaCopy(group_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(wheelBg1) + 32 * g, 64);
@@ -127,7 +130,7 @@ void loadFrameBg() {
 
 void wheelNext() {
 	wheelcursor++;
-	for (int y = 0; y < wheelview - 1; y++) {
+	for (int y = 0; y < 7; y++) {
 		for (int i = 0; i < CHARSPRITES; i++) {
 			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y + 1) * CHARSPRITES + i];
 		}
@@ -180,14 +183,16 @@ void fillWheel() {
 	parseDir("/ddr", -1, -1);
 	wheelsize = dircount + 1;
 	//popular rueda
-	wheelcursor = 2;
+	wheelcursor = 0;
 	dircount = -1;
 	wheelcount = 0;
 	parseDir("/ddr", -1, -1);
 	//llenar espacios que faltan
 	fillWheelEmpty();
 	for (int i = 0; i < wheelview; i++) {
-		cout << "\n" << i << " " << wheelitems[i].name;
+		if (abs((wheelview / 2) - i) < 4) {
+			printToBitmap((i - 1) * 3, wheelitems[i].name);
+		}
 		switch (wheelitems[i].type) {
 			case 0:
 				songFrameColor[i] = 2;
@@ -210,7 +215,7 @@ void fillWheelEmpty() {
 }
 
 int indexToFile(int i) {
-	int pos = wheelcursor - 3 + i;
+	int pos = wheelcursor - (wheelview / 2) + i;
 	while (pos >= wheelsize) {
 		pos = pos - wheelsize;
 	}
@@ -283,6 +288,9 @@ bool parseDir(string dir, int index, int dest) {
         				pos = nearWheelCursor(dircount);
 	        			if (pos != -1) {
 	        				wheelitem* song = &wheelitems[pos];
+	        				if (dest != -1) {
+	        					song = &wheelitems[dest];
+	        				}
 	        				song->type = 1;
 	        				song->smpath = dir + '/' + pent->d_name;
 	        				return true;
@@ -298,7 +306,8 @@ bool parseDir(string dir, int index, int dest) {
 
 int angle = -273;
 void renderWheel() {
-	angle += 10;
+	//angle += 10;
+	angle = 0;
 	int rx = 520;
 	int ry = 96;
 	int sx = 440;
@@ -311,18 +320,14 @@ void renderWheel() {
 	}
 }
 
-int scale = 256;
 void renderWheelChar() {
+	int scale = 256;
 	int o = ((scale - 256) * 64) / 256;
-	scale--;
-	if (scale <= 128) {
-		scale = 256;
-	}
 	for (int i = -3; i <= 3; i++) {
 		for (int c = 0; c < CHARSPRITES; c++) {
-			int x = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
-			int y = (((477 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
-			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x, y + 32, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
+			int x = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 60;
+			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * WHEELANGLE) * 32768 / 360)) >> 12) + 32;
+			oamSet(&oamSub, songFontSprite[CHARSPRITES * (i + 3) + c], x - 85, y + 48, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);
 	}
@@ -334,24 +339,24 @@ void updateFrameBg() {
 	u16* bgMap1 = bgGetMapPtr(wheelBg1);
 	u16* bgMap2 = bgGetMapPtr(wheelBg2);
 	u16* bgMap = bgMap1;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		while (wheelTiles[i][t] != -1) {
 			int pos = wheelTiles[i][t] + (wheelTiles[i][t] / 23 * 9);
 			int x = pos % 32;
 			int y = pos / 32;
 			if (y >= wheelTilesYOffset[i]) {
 				y -= wheelTilesYOffset[i];
-				bgMap[y * 32 + x] = t + tileOffset;
-				bgMap[(31 - y) * 32 + x] = (t + tileOffset) | TILE_FLIP_V;
+				int tile1 = (t + tileOffset) | TILE_PALETTE(songFrameColor[i]);
+				int tile2 = (t + tileOffset) | TILE_PALETTE(songFrameColor[8 - i]) | TILE_FLIP_V;
+				if (songFrameColor[i] == 2) {tile1 += wheelTilesTotalLen;}
+				if (songFrameColor[8 - i] == 2) {tile2 += wheelTilesTotalLen;}
+				bgMap[y * 32 + x] = tile1;
+				bgMap[(31 - y) * 32 + x] = tile2;
 			}
 			t++;
 		}
-		if (bgMap == bgMap1) {
-			bgMap = bgMap2;
-		}
-		else {
-			bgMap = bgMap1;
-		}
+		if (bgMap == bgMap1) {bgMap = bgMap2;}
+		else {bgMap = bgMap1;}
 		tileOffset += wheelTilesLen[i];
 		t = 0;
 	}

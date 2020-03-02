@@ -2,7 +2,7 @@
 #define CHARWIDTH 10
 #define CHAROFFSET 3
 #define CHARSPRITES 3
-#define WHEELANGLE 5
+#define WHEELANGLE 6
 typedef struct wheelitem{
 	int type = -1;
 	std::string name;
