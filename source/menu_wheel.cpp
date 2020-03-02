@@ -78,6 +78,9 @@ u8 songFrameColor[wheelview];
 int wheelBg1;
 int wheelBg2;
 
+int wheelAnim = 0;
+int wheelFrame = 0;
+
 wheelitem wheelitems[wheelview];
 
 void mw_setup() {
@@ -86,6 +89,7 @@ void mw_setup() {
 	fillWheel();
 	loadFrameBg();
 	updateFrameBg();
+	playWheelAnim(-1);
 }
 
 void loadSongFontGfx() {
@@ -286,7 +290,7 @@ bool parseDir(string dir, int index, int dest) {
     			isgroup = true;
     			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
     				pos = nearWheelCursor(dircount);
-        			if (pos != -1) {
+        			if ((dest != -1) || (pos != -1)) {
         				wheelitem group;
         				group.type = 0;
         				group.name = pent->d_name;
@@ -303,7 +307,7 @@ bool parseDir(string dir, int index, int dest) {
     			if (parseDir(dir + '/' + pent->d_name, index, dest) && (index != -1)) {
     				return true;
     			}
-    			else if ((wheelcount > wheelview) || (index == dircount)) {
+    			else if (((dest == -1) && (wheelcount > wheelview)) || (index == dircount)) {
     				return true;
     			}
     		}
@@ -317,7 +321,7 @@ bool parseDir(string dir, int index, int dest) {
         		if (fileext == "sm") {
         			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
         				pos = nearWheelCursor(dircount);
-	        			if (pos != -1) {
+	        			if ((dest != -1) || (pos != -1)) {
 	        				wheelitem* song = &wheelitems[pos];
 	        				if (dest != -1) {
 	        					song = &wheelitems[dest];
@@ -337,26 +341,40 @@ bool parseDir(string dir, int index, int dest) {
 
 void renderWheel() {
 	int angle = 0;
+	if (wheelFrame > 22) {
+		angle = 12 * (45 - wheelFrame) * wheelAnim;
+	}
+	else if (wheelFrame > 0) {
+		if (wheelFrame == 22) {wheelNext();}
+		angle = 12 * (wheelFrame) * -wheelAnim;
+	}
 	int rx = 520 << 8;
 	int ry = 96 << 8;
 	int sx = 440 << 8;
 	int sy = 128 << 8;
 	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
 	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
-	renderWheelChar();
+	renderWheelChar(angle);
+	if (wheelFrame > 0) {
+		wheelFrame--;
+	}
+	else {
+		playWheelAnim(-1);
+	}
 }
 
-void playWheelAnim() {
-	
+void playWheelAnim(int anim) {
+	wheelAnim = anim;
+	wheelFrame = 44;
 }
 
-void renderWheelChar() {
+void renderWheelChar(int angle) {
 	int scale = 256;
 	int o = ((scale - 256) * 64) / 256;
 	for (int i = -3; i <= 3; i++) {
 		for (int c = 0; c < CHARSPRITES; c++) {
-			int x = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * -WHEELANGLE) * 32768 / 360)) >> 12) + 60;
-			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360)) >> 12) + 32;
+			int x = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 60;
+			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 32;
 			oamSet(&oamSub, songFontSprite[CHARSPRITES * (-i + 3) + c], x - 85, y + 48, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (-i * WHEELANGLE) * 32768 / 360, (1 << 16) / scale, 256);

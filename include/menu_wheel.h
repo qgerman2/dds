@@ -22,6 +22,6 @@ int indexToFile(int i);
 int nearWheelCursor(int i);
 bool parseDir(std::string dir, int index, int dest);
 void renderWheel();
-void playWheelAnim();
-void renderWheelChar();
+void playWheelAnim(int anim);
+void renderWheelChar(int angle);
 void updateFrameBg();
