@@ -90,6 +90,11 @@ void mw_setup() {
 	cout << "aver";
 	loadSongFontGfx();
 	fillBuffer();
+	int gfx = 0;
+	for (int i = buffercursor - wheelviewchar / 2; i <= buffercursor + wheelviewchar / 2; i++) {
+		printToBitmap(gfx * CHARSPRITES, bufferitems[i].name + ' ');
+		gfx++;
+	}
 	loadFrameBg();
 	updateFrameBg();
 	playWheelAnim(-1);
@@ -142,7 +147,7 @@ void wheelNext() {
 		buffercursor -= wheelsize;
 	}
 	else if (buffercursor > (buffersize - wheelview / 2)) {
-		wheelcursor = wheelcursor + buffercursor - buffersize / 2;
+		wheelcursor = wheelcursor + (buffersize / 2 - wheelview / 2 + 2);
 		if (wheelcursor >= wheelsize) {
 			wheelcursor -= wheelsize;
 		}
@@ -156,7 +161,6 @@ void wheelNext() {
 		}
 		fillBuffer();
 	}
-	/*
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
 	for (int i = 0; i < CHARSPRITES; i++) {
@@ -168,13 +172,9 @@ void wheelNext() {
 		}
 	}
 	for (int i = 0; i < CHARSPRITES; i++) {
-		songFontGfx[6 * CHARSPRITES + i] = tempFontGfx[i];
+		songFontGfx[(wheelviewchar - 1) * CHARSPRITES + i] = tempFontGfx[i];
 	}
-	*/
-	//rellenar espacio nuevo
-	//printToBitmap(6 * CHARSPRITES, wheelitems[wheelview - 2].name);
-	//fillWheelEmpty();
-	//updateFrameBg();
+	printToBitmap((wheelviewchar - 1) * CHARSPRITES, bufferitems[buffercursor + wheelviewchar / 2].name + ' ');
 }
 
 void wheelPrev() {
@@ -198,11 +198,10 @@ void wheelPrev() {
 		}
 		fillBuffer();
 	}
-	/*
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
 	for (int i = 0; i < CHARSPRITES; i++) {
-		tempFontGfx[i] = songFontGfx[6 * CHARSPRITES + i];
+		tempFontGfx[i] = songFontGfx[(wheelviewchar - 1) * CHARSPRITES + i];
 	}
 	for (int y = wheelviewchar - 1; y > 0; y--) {
 		for (int i = 0; i < CHARSPRITES; i++) {
@@ -212,9 +211,7 @@ void wheelPrev() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		songFontGfx[i] = tempFontGfx[i];
 	}
-	printToBitmap(0, wheelitems[1].name);
-	fillWheelEmpty();
-	updateFrameBg();*/
+	printToBitmap(0, bufferitems[buffercursor - wheelviewchar / 2].name + ' ');
 }
 
 void printToBitmap(u8 gfx, string str) {
@@ -261,12 +258,14 @@ void fillBuffer() {
 	    			isgroup = true;
 	    			if (wheelsize != -1) {
 	    				pos = dircountToBuffer(dircount);
-	        			if ((pos != -1) && (bufferitems[pos].type == -1)) {
-	        				wheelitem group;
-	        				group.type = 0;
-	        				group.name = pent->d_name;
-	        				group.path = dir + '/' + pent->d_name;
-	        				bufferitems[pos] = group;
+	        			if (pos != -1) {
+	        				if (bufferitems[pos].type == -1) {
+	        					wheelitem group;
+		        				group.type = 0;
+		        				group.name = pent->d_name;
+		        				group.path = dir + '/' + pent->d_name;
+		        				bufferitems[pos] = group;
+	        				}
 	        				buffercount++;
 	        			}
 	        		}
@@ -305,14 +304,12 @@ void fillBuffer() {
 	if (wheelsize == -1) {
 		parse("/ddr");
 		wheelsize = dircount + 1;
-		cout << "\nwheelsize " << wheelsize;
 		dircount = -1;
 	}
 	//popular rueda
 	parse("/ddr");
 	//llenar espacios que faltan
 	if (wheelsize < buffersize) {
-		cout << "\nfill missing";
 		for (int i = 0; i < buffersize; i++) {
 			if (bufferitems[i].type == -1) {
 				int pos = bufferToFile(i);
@@ -320,9 +317,6 @@ void fillBuffer() {
 			}
 		}
 	}
-	//for (int i = 0; i < wheelviewchar; i++) {
-	//	printToBitmap(i * 3, wheelitems[i + 1].name);
-	//}
 }
 
 void updateWheelColor() {
@@ -378,13 +372,6 @@ void renderWheel() {
 	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
 	if (wheelFrame == 22) {
 		wheelNext();
-		cout << "\n-- " << wheelcursor;
-		for (int i = 0; i < buffersize; i++) {
-			cout << "\n" << i << " " << bufferitems[i].type << " " << bufferitems[i].name;
-			if (buffercursor == i) {
-				cout << " ---";
-			}
-		}
 	}
 	bgUpdate();
 	renderWheelChar(angle);
