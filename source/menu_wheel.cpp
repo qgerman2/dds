@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <functional>
 #include <nds.h>
 #include <fat.h>
 #include <sys/dir.h>
@@ -13,13 +14,10 @@
 using namespace std;
 
 string fileext;
-int wheelcursor;
+
 const int wheelview = 9; //amount of files visible at a single time on wheel
 const int wheelviewchar = 7; //texto visible
-
-int dircount; //internal count over files
-int wheelsize; //internal total amount of files
-int wheelcount; //internal count of files added to wheel
+int wheelsize = -1; //total amount of files
 
 const int* wheelTiles[] {
 	(const int[]){
@@ -81,12 +79,16 @@ int wheelBg2;
 int wheelAnim = 0;
 int wheelFrame = 0;
 
+int wheelcursor = 0;
+const int buffersize = 49;
+
+wheelitem bufferitems[buffersize];
 wheelitem wheelitems[wheelview];
 
 void mw_setup() {
 	cout << "aver";
 	loadSongFontGfx();
-	fillWheel();
+	fillBuffer();
 	loadFrameBg();
 	updateFrameBg();
 	playWheelAnim(-1);
@@ -135,11 +137,19 @@ void loadFrameBg() {
 
 void wheelNext() {
 	wheelcursor++;
-	//mover wheelitems
-	for (int y = 0; y < wheelview - 1; y++) {
-		wheelitems[y] = wheelitems[y + 1];
+	if (wheelcursor >= wheelsize) {
+		wheelcursor = 0;
 	}
-	wheelitems[wheelview - 1].type = -1;
+	//mover bufferitems
+	for (int y = 0; y < buffersize - 1; y++) {
+		bufferitems[y] = bufferitems[y + 1];
+	}
+	bufferitems[buffersize - 1].type = -1;
+	//llenar buffer
+	if (bufferitems[buffersize / 2 + wheelview / 2].type == -1) {
+		fillBuffer();
+	}
+	/*
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
 	for (int i = 0; i < CHARSPRITES; i++) {
@@ -153,19 +163,28 @@ void wheelNext() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		songFontGfx[6 * CHARSPRITES + i] = tempFontGfx[i];
 	}
+	*/
 	//rellenar espacio nuevo
-	printToBitmap(6 * CHARSPRITES, wheelitems[wheelview - 2].name);
-	fillWheelEmpty();
-	updateFrameBg();
+	//printToBitmap(6 * CHARSPRITES, wheelitems[wheelview - 2].name);
+	//fillWheelEmpty();
+	//updateFrameBg();
 }
 
 void wheelPrev() {
 	wheelcursor--;
-	//mover wheelitems
-	for (int y = wheelview - 1; y > 0; y--) {
-		wheelitems[y] = wheelitems[y - 1];
+	if (wheelcursor < 0) {
+		wheelcursor = wheelsize - 1;
 	}
-	wheelitems[0].type = -1;
+	//mover wheelitems
+	for (int y = buffersize - 1; y > 0; y--) {
+		bufferitems[y] = bufferitems[y - 1];
+	}
+	bufferitems[0].type = -1;
+	//llenar buffer
+	if (bufferitems[buffersize / 2 - wheelview / 2].type == -1) {
+		fillBuffer();
+	}
+	/*
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
 	for (int i = 0; i < CHARSPRITES; i++) {
@@ -181,7 +200,7 @@ void wheelPrev() {
 	}
 	printToBitmap(0, wheelitems[1].name);
 	fillWheelEmpty();
-	updateFrameBg();
+	updateFrameBg();*/
 }
 
 void printToBitmap(u8 gfx, string str) {
@@ -207,33 +226,88 @@ void printToBitmap(u8 gfx, string str) {
 	}
 }
 
-void fillWheel() {
+void fillBuffer() {
+	int dircount = -1;
+	int buffercount = 0;
+	//lectura recursiva de directorios
+	function<bool(string)> parse = [&](string dir) -> bool {
+		int pos;
+		DIR *pdir;
+		struct dirent *pent;
+		bool isgroup = false;
+		pdir = opendir(dir.c_str());
+		if (pdir){
+			while ((pent = readdir(pdir)) != NULL) {
+				fileext = "";
+	    		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
+	        		continue;
+	    		}
+	    		if (pent->d_type == DT_DIR) {
+	    			dircount++;
+	    			isgroup = true;
+	    			if (wheelsize != -1) {
+	    				pos = dircountToBuffer(dircount);
+	        			if ((pos != -1) && (bufferitems[pos].type == -1)) {
+	        				wheelitem group;
+	        				group.type = 0;
+	        				group.name = pent->d_name;
+	        				group.path = dir + '/' + pent->d_name;
+	        				bufferitems[pos] = group;
+	        				buffercount++;
+	        			}
+	        		}
+	        		if (parse(dir + '/' + pent->d_name)) {
+	        			return true;
+	        		}
+	    			if (buffercount > buffersize) {
+	    				return true;
+	    			}
+	    		}
+	    		else if (!isgroup) {
+	        		for (int i = 0; pent->d_name[i] != '\0'; i++) {
+	        			fileext += pent->d_name[i];
+	        			if (pent->d_name[i] == '.') {
+	        				fileext = "";
+	        			}
+	        		}
+	        		if (fileext == "sm") {
+	        			if (wheelsize != -1) {
+	        				pos = dircountToBuffer(dircount);
+		        			if ((pos != -1) && (bufferitems[pos].type == 0)) {
+		        				wheelitem* song = &bufferitems[pos];
+		        				song->type = 1;
+		        				song->smpath = dir + '/' + pent->d_name;
+		        				return false;
+		        			}
+	        			}
+	        		}
+	    		}
+			}
+			closedir(pdir);
+		}
+		return false;
+	};
 	//encontrar total de elementos
-	wheelcursor = -1;
-	dircount = -1;
-	wheelcount = 0;
-	parseDir("/ddr", -1, -1);
-	wheelsize = dircount + 1;
-	//popular rueda
-	wheelcursor = 0;
-	dircount = -1;
-	wheelcount = 0;
-	parseDir("/ddr", -1, -1);
-	//llenar espacios que faltan
-	fillWheelEmpty();
-	for (int i = 0; i < wheelviewchar; i++) {
-		printToBitmap(i * 3, wheelitems[i + 1].name);
+	if (wheelsize == -1) {
+		parse("/ddr");
+		wheelsize = dircount + 1;
+		dircount = -1;
 	}
-}
-
-void fillWheelEmpty() {
-	for (int i = 0; i < wheelview; i++) {
-		if (wheelitems[i].type == -1) {
-			int pos = indexToFile(i);
-			dircount = -1;
-			parseDir("/ddr", pos, i);
+	//popular rueda
+	parse("/ddr");
+	//llenar espacios que faltan
+	if (wheelsize < buffersize) {
+		cout << "\nfill missing";
+		for (int i = 0; i < buffersize; i++) {
+			if (bufferitems[i].type == -1) {
+				int pos = bufferToFile(i);
+				bufferitems[i] = bufferitems[dircountToBuffer(pos)];
+			}
 		}
 	}
+	//for (int i = 0; i < wheelviewchar; i++) {
+	//	printToBitmap(i * 3, wheelitems[i + 1].name);
+	//}
 }
 
 void updateWheelColor() {
@@ -249,8 +323,8 @@ void updateWheelColor() {
 	}
 }
 
-int indexToFile(int i) {
-	int pos = wheelcursor - (wheelview / 2) + i;
+int bufferToFile(int i) {
+	int pos = wheelcursor - (buffersize / 2) + i;
 	while (pos >= wheelsize) {
 		pos = pos - wheelsize;
 	}
@@ -260,83 +334,17 @@ int indexToFile(int i) {
 	return pos;
 }
 
-int nearWheelCursor(int i) {
-	if (abs(wheelcursor - i) <= (wheelview / 2)) {
-		return (i - wheelcursor + (wheelview / 2));
+int dircountToBuffer(int i) {
+	if (abs(wheelcursor - i) <= (buffersize / 2)) {
+		return (i - wheelcursor + (buffersize / 2));
 	}
-	else if (abs(wheelcursor + wheelsize - i) <= (wheelview / 2)) {
-		return (i - wheelsize - wheelcursor + (wheelview / 2));
+	else if (abs(wheelcursor + wheelsize - i) <= (buffersize / 2)) {
+		return (i - wheelsize - wheelcursor + (buffersize / 2));
 	}
-	else if (abs(wheelcursor - wheelsize - i) <= (wheelview / 2)) {
-		return (i + wheelsize - wheelcursor + (wheelview / 2));
+	else if (abs(wheelcursor - wheelsize - i) <= (buffersize / 2)) {
+		return (i + wheelsize - wheelcursor + (buffersize / 2));
 	}
 	return -1;
-}
-
-bool parseDir(string dir, int index, int dest) {
-	int pos;
-	DIR *pdir;
-	struct dirent *pent;
-	bool isgroup = false;
-	pdir = opendir(dir.c_str());
-	if (pdir){
-		while ((pent = readdir(pdir)) != NULL) {
-			fileext = "";
-    		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
-        		continue;
-    		}
-    		if (pent->d_type == DT_DIR) {
-    			dircount++;
-    			isgroup = true;
-    			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
-    				pos = nearWheelCursor(dircount);
-        			if ((dest != -1) || (pos != -1)) {
-        				wheelitem group;
-        				group.type = 0;
-        				group.name = pent->d_name;
-        				group.path = dir + '/' + pent->d_name;
-        				if (dest != -1) {
-        					wheelitems[dest] = group;
-        				}
-        				else {
-        					wheelitems[pos] = group;
-        				}
-        				wheelcount++;
-        			}
-        		}
-    			if (parseDir(dir + '/' + pent->d_name, index, dest) && (index != -1)) {
-    				return true;
-    			}
-    			else if (((dest == -1) && (wheelcount > wheelview)) || (index == dircount)) {
-    				return true;
-    			}
-    		}
-    		else if (!isgroup) {
-        		for (int i = 0; pent->d_name[i] != '\0'; i++) {
-        			fileext += pent->d_name[i];
-        			if (pent->d_name[i] == '.') {
-        				fileext = "";
-        			}
-        		}
-        		if (fileext == "sm") {
-        			if (((wheelcursor > -1) && (index == -1)) || (index == dircount)) {
-        				pos = nearWheelCursor(dircount);
-	        			if ((dest != -1) || (pos != -1)) {
-	        				wheelitem* song = &wheelitems[pos];
-	        				if (dest != -1) {
-	        					song = &wheelitems[dest];
-	        				}
-	        				song->type = 1;
-	        				song->smpath = dir + '/' + pent->d_name;
-	        				return true;
-	        			}
-        			}
-        		}
-    		}
-		}
-		closedir(pdir);
-	}
-	return false;
 }
 
 void renderWheel() {
@@ -353,7 +361,10 @@ void renderWheel() {
 	int sy = 128 << 8;
 	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
 	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
-	if (wheelFrame == 22) {wheelNext();}
+	if (wheelFrame == 22) {
+		wheelNext();
+		cout << "\n-- " << wheelcursor;
+	}
 	bgUpdate();
 	renderWheelChar(angle);
 	if (wheelFrame > 0) {
