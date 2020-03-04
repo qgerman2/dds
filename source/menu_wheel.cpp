@@ -79,8 +79,9 @@ int wheelBg2;
 int wheelAnim = 0;
 int wheelFrame = 0;
 
+const int buffersize = 17;
 int wheelcursor = 0;
-const int buffersize = 49;
+int buffercursor = buffersize / 2;
 
 wheelitem bufferitems[buffersize];
 wheelitem wheelitems[wheelview];
@@ -136,17 +137,23 @@ void loadFrameBg() {
 }
 
 void wheelNext() {
-	wheelcursor++;
-	if (wheelcursor >= wheelsize) {
-		wheelcursor = 0;
+	buffercursor++;
+	if ((buffercursor - buffersize / 2) >= (wheelsize - wheelview / 2)) {
+		buffercursor -= wheelsize;
 	}
-	//mover bufferitems
-	for (int y = 0; y < buffersize - 1; y++) {
-		bufferitems[y] = bufferitems[y + 1];
-	}
-	bufferitems[buffersize - 1].type = -1;
-	//llenar buffer
-	if (bufferitems[buffersize / 2 + wheelview / 2].type == -1) {
+	else if (buffercursor > (buffersize - wheelview / 2)) {
+		wheelcursor = wheelcursor + buffercursor - buffersize / 2;
+		if (wheelcursor >= wheelsize) {
+			wheelcursor -= wheelsize;
+		}
+		buffercursor = buffersize / 2;
+		//mover bufferitems
+		for (int y = 0; y < buffersize / 2 + wheelview / 2 - 1; y++) {
+			bufferitems[y] = bufferitems[y + buffersize / 2 - wheelview / 2 + 2];
+		}
+		for (int i = buffercursor + wheelview / 2 - 1; i < buffersize; i++) {
+			bufferitems[i].type = -1;
+		}
 		fillBuffer();
 	}
 	/*
@@ -171,17 +178,24 @@ void wheelNext() {
 }
 
 void wheelPrev() {
-	wheelcursor--;
-	if (wheelcursor < 0) {
-		wheelcursor = wheelsize - 1;
+	buffercursor--;
+	if ((buffercursor - buffersize / 2) <= (wheelview / 2 - wheelsize)) {
+		buffercursor += wheelsize;
 	}
-	//mover wheelitems
-	for (int y = buffersize - 1; y > 0; y--) {
-		bufferitems[y] = bufferitems[y - 1];
-	}
-	bufferitems[0].type = -1;
-	//llenar buffer
-	if (bufferitems[buffersize / 2 - wheelview / 2].type == -1) {
+	else if (buffercursor < (wheelview / 2 - 1)) {
+		wheelcursor = wheelcursor - (buffersize / 2 - wheelview / 2 + 2);
+		if (wheelcursor < 0) {
+			wheelcursor += wheelsize;
+		}
+		buffercursor = buffersize / 2;
+		//mover bufferitems
+		for (int i = buffersize - 1; i > buffersize / 2 - wheelview / 2 + 1; i--) {
+			bufferitems[i] = bufferitems[i - buffersize / 2 + wheelview / 2 - 2];
+			bufferitems[i].type = 3;
+		}
+		for (int i = 0; i <= (buffercursor - wheelview / 2 + 1); i++) {
+			bufferitems[i].type = -1;
+		}
 		fillBuffer();
 	}
 	/*
@@ -291,6 +305,7 @@ void fillBuffer() {
 	if (wheelsize == -1) {
 		parse("/ddr");
 		wheelsize = dircount + 1;
+		cout << "\nwheelsize " << wheelsize;
 		dircount = -1;
 	}
 	//popular rueda
@@ -364,6 +379,12 @@ void renderWheel() {
 	if (wheelFrame == 22) {
 		wheelNext();
 		cout << "\n-- " << wheelcursor;
+		for (int i = 0; i < buffersize; i++) {
+			cout << "\n" << i << " " << bufferitems[i].type << " " << bufferitems[i].name;
+			if (buffercursor == i) {
+				cout << " ---";
+			}
+		}
 	}
 	bgUpdate();
 	renderWheelChar(angle);
