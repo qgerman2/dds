@@ -79,7 +79,7 @@ int wheelBg2;
 int wheelAnim = 0;
 int wheelFrame = 0;
 
-const int buffersize = 17;
+const int buffersize = 19;
 int wheelcursor = 0;
 int buffercursor = buffersize / 2;
 
@@ -97,7 +97,6 @@ void mw_setup() {
 	}
 	loadFrameBg();
 	updateFrameBg();
-	playWheelAnim(-1);
 }
 
 void loadSongFontGfx() {
@@ -146,17 +145,17 @@ void wheelNext() {
 	if ((buffercursor - buffersize / 2) >= (wheelsize - wheelview / 2)) {
 		buffercursor -= wheelsize;
 	}
-	else if (buffercursor > (buffersize - wheelview / 2)) {
-		wheelcursor = wheelcursor + (buffersize / 2 - wheelview / 2 + 2);
+	else if (buffercursor >= (buffersize - wheelview / 2 - 1)) {
+		wheelcursor = wheelcursor + (buffersize / 2 - wheelview / 2);
 		if (wheelcursor >= wheelsize) {
 			wheelcursor -= wheelsize;
 		}
 		buffercursor = buffersize / 2;
 		//mover bufferitems
-		for (int y = 0; y < buffersize / 2 + wheelview / 2 - 1; y++) {
-			bufferitems[y] = bufferitems[y + buffersize / 2 - wheelview / 2 + 2];
+		for (int y = 0; y <= buffersize / 2 + wheelview / 2; y++) {
+			bufferitems[y] = bufferitems[y + buffersize - (buffersize / 2 + wheelview / 2) - 1];
 		}
-		for (int i = buffercursor + wheelview / 2 - 1; i < buffersize; i++) {
+		for (int i = buffercursor + wheelview / 2 + 1; i < buffersize; i++) {
 			bufferitems[i].type = -1;
 		}
 		fillBuffer();
@@ -175,6 +174,7 @@ void wheelNext() {
 		songFontGfx[(wheelviewchar - 1) * CHARSPRITES + i] = tempFontGfx[i];
 	}
 	printToBitmap((wheelviewchar - 1) * CHARSPRITES, bufferitems[buffercursor + wheelviewchar / 2].name + ' ');
+	updateFrameBg();
 }
 
 void wheelPrev() {
@@ -182,18 +182,17 @@ void wheelPrev() {
 	if ((buffercursor - buffersize / 2) <= (wheelview / 2 - wheelsize)) {
 		buffercursor += wheelsize;
 	}
-	else if (buffercursor < (wheelview / 2 - 1)) {
-		wheelcursor = wheelcursor - (buffersize / 2 - wheelview / 2 + 2);
+	else if (buffercursor <= (wheelview / 2)) {
+		wheelcursor = wheelcursor - (buffersize / 2 - wheelview / 2);
 		if (wheelcursor < 0) {
 			wheelcursor += wheelsize;
 		}
 		buffercursor = buffersize / 2;
 		//mover bufferitems
-		for (int i = buffersize - 1; i > buffersize / 2 - wheelview / 2 + 1; i--) {
-			bufferitems[i] = bufferitems[i - buffersize / 2 + wheelview / 2 - 2];
-			bufferitems[i].type = 3;
+		for (int i = buffersize - 1; i >= buffersize / 2 - wheelview / 2; i--) {
+			bufferitems[i] = bufferitems[i - (buffersize - (buffersize / 2 + wheelview / 2)) + 1];
 		}
-		for (int i = 0; i <= (buffercursor - wheelview / 2 + 1); i++) {
+		for (int i = 0; i <= (buffercursor - wheelview / 2 - 1); i++) {
 			bufferitems[i].type = -1;
 		}
 		fillBuffer();
@@ -212,6 +211,7 @@ void wheelPrev() {
 		songFontGfx[i] = tempFontGfx[i];
 	}
 	printToBitmap(0, bufferitems[buffercursor - wheelviewchar / 2].name + ' ');
+	updateFrameBg();
 }
 
 void printToBitmap(u8 gfx, string str) {
@@ -319,19 +319,6 @@ void fillBuffer() {
 	}
 }
 
-void updateWheelColor() {
-	for (int i = 0; i < wheelview; i++) {
-		switch (wheelitems[i].type) {
-			case 0:
-				songFrameColor[i] = 2;
-				break;
-			case 1:
-				songFrameColor[i] = 1;
-				break;
-		}
-	}
-}
-
 int bufferToFile(int i) {
 	int pos = wheelcursor - (buffersize / 2) + i;
 	while (pos >= wheelsize) {
@@ -359,27 +346,27 @@ int dircountToBuffer(int i) {
 void renderWheel() {
 	int angle = 0;
 	if (wheelFrame > 22) {
-		angle = 12 * (45 - wheelFrame) * wheelAnim;
+		angle = 12 * (45 - wheelFrame) * -wheelAnim;
 	}
 	else if (wheelFrame > 0) {
-		angle = 12 * (wheelFrame) * -wheelAnim;
+		angle = 12 * (wheelFrame) * wheelAnim;
 	}
-	int rx = 520 << 8;
-	int ry = 96 << 8;
-	int sx = 440 << 8;
-	int sy = 128 << 8;
-	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
-	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, sx, sy, rx, ry);
 	if (wheelFrame == 22) {
-		wheelNext();
+		if (wheelAnim > 0) {
+			wheelNext();
+		}
+		else {
+			wheelPrev();
+		}
+		cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << bufferitems[buffercursor].name;
 	}
+	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
+	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgUpdate();
 	renderWheelChar(angle);
 	if (wheelFrame > 0) {
 		wheelFrame--;
-	}
-	else {
-		playWheelAnim(-1);
+		wheelFrame--;
 	}
 }
 
@@ -398,6 +385,23 @@ void renderWheelChar(int angle) {
 			oamSet(&oamSub, songFontSprite[CHARSPRITES * (-i + 3) + c], x - 85, y + 48, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (i * WHEELANGLE) * 32768 / 360 + angle, (1 << 16) / scale, 256);
+	}
+}
+
+void updateWheelColor() {
+	int item = 0;
+	//cout << "\n---";
+	for (int i = buffercursor - wheelview / 2; i <= buffercursor + wheelview / 2; i++) {
+		//cout << "\n" << i << " " << bufferitems[i].name << " " << bufferitems[i].type;
+		switch (bufferitems[i].type) {
+			case 0:
+				songFrameColor[item] = 2;
+				break;
+			case 1:
+				songFrameColor[item] = 1;
+				break;
+		}
+		item++;
 	}
 }
 

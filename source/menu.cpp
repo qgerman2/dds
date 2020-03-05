@@ -31,15 +31,29 @@ void m_setup() {
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
 	mw_setup();
+
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
 void menuLoop() {
 	while (1) {
+		scanKeys();
+		updateInput_menu();
 		swiWaitForVBlank();
 		renderMenu();
 		oamUpdate(&oamSub);
+	}
+}
+
+void updateInput_menu() {
+	if (wheelFrame == 0) {
+		if (keysHeld() & KEY_UP) {
+			playWheelAnim(-1);
+		}
+		else if (keysHeld() & KEY_DOWN) {
+			playWheelAnim(1);
+		}
 	}
 }
 
