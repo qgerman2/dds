@@ -10,6 +10,10 @@ PlayScore::PlayScore(Play* play) {
 	this->play = play;
 }
 
+PlayScore::~PlayScore() {
+	
+}
+
 void PlayScore::add(step* s, u32 beatfdiff) {
 	int worth;
 	for (int i = 0; i < 5; i++) {

@@ -19,6 +19,7 @@ public:
 	u32 dptotal = 0;
 	int dpscore = 0;
 	PlayScore(Play* play);
+	~PlayScore();
 	void add(step* s, u32 beatfdiff);
 	void updateJudgesWindow();
 	void addDPTotal();

@@ -1,25 +1,30 @@
 #include <nds.h>
 #include <iostream>
 #include <bitset>
+#include "main.h"
 #include "play.h"
 #include "play_score.h"
 #include "play_input.h"
 #include "play_render.h"
 using namespace std;
 
-u32 colToKeys[4] = {
+const u32 colToKeys[4] = {
 	bitset<32> ("101000100000").to_ulong(), //left (Y, L BUMPER, DPAD LEFT)
 	bitset<32> ("10000010").to_ulong(), 	//down (DPAD DOWN, B)
 	bitset<32> ("10001000000").to_ulong(), 	//up (X, DPAD UP)
 	bitset<32> ("100010001").to_ulong(), 	//right (R BUMPER, DPAD RIGHT, A)
 };
-u32 stepKeys = bitset<32> ("110011111111").to_ulong();
+const u32 stepKeys = bitset<32> ("110011111111").to_ulong();
 
 PlayInput::PlayInput(Play* play) {
 	this->play = play;
 	for (int c = 0; c < 4; c++) {
 		holdCol[c] = play->steps.end();
 	}
+}
+
+PlayInput::~PlayInput() {
+
 }
 
 void PlayInput::update() {
@@ -114,5 +119,8 @@ void PlayInput::update() {
 				play->score->addDPTotal();
 			}
 		}
+	}
+	if (keysHeld() & KEY_A) {
+		state = 0;
 	}
 }

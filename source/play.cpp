@@ -26,6 +26,12 @@ Play::Play(){
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
+Play::~Play() {
+	delete render;
+	delete score;
+	delete input;
+}
+
 void Play::loop(){
 	s_play();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
@@ -40,6 +46,9 @@ void Play::loop(){
 		render->update();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
+		if (state != 1) {
+			return;
+		}
 	}
 }
 

@@ -18,6 +18,7 @@ private:
 public:
 	std::vector<step>::iterator holdCol[4];
 	PlayInput(Play* play);
+	~PlayInput();
 	void update();
 };
 #endif

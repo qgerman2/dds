@@ -58,6 +58,7 @@ public:
 	std::vector<step> steps;
 	std::vector<hold> holds;
 	Play();
+	~Play();
 	void loop();
 	void updateSteps();
 	void updateBeat();

@@ -31,6 +31,7 @@ private:
 public:
 	u32 prevscore;
 	PlayRender(Play* play);
+	~PlayRender();
 	void update();
 	void renderSteps();
 	void loadStepGfx();

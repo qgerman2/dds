@@ -46,6 +46,7 @@ int main(){
 				song = parseSong(&tags);
 				Play* play = new Play();
 				play->loop();
+				delete play;
 				while (1) {
 					swiWaitForVBlank();
 				}

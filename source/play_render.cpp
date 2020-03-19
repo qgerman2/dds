@@ -84,10 +84,32 @@ PlayRender::PlayRender(Play* play) {
 	loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
-	consoleDemoInit();
+	//consoleDemoInit();
 	cout << "consola";
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
+}
+
+PlayRender::~PlayRender() {
+	for (int i = 0; i < 8; i++) {
+		oamFreeGfx(&oamMain, stepGfx[i]);
+	}
+	oamFreeGfx(&oamMain, tapGfx);
+	oamFreeGfx(&oamMain, tailGfx);
+	oamFreeGfx(&oamMain, holdGfx);
+	oamFreeGfx(&oamMain, hitGfx);
+	for (int i = 0; i < 10; i++) {
+		oamFreeGfx(&oamMain, numberGfx[i]);
+	}
+	for (int i = 0; i < 24; i++) {
+		oamFreeGfx(&oamMain, judgeGfx[i]);
+	}
+	oamFreeGfx(&oamMain, barGfx);
+	oamFreeGfx(&oamMain, barTopGfx);
+	oamFreeGfx(&oamMain, barBotGfx);
+	for (int i = 0; i < 11; i++) {
+		oamFreeGfx(&oamSub, scoreGfx[i]);
+	}
 }
 
 void PlayRender::loadStepGfx() {
