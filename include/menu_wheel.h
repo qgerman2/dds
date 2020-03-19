@@ -21,8 +21,8 @@ private:
 	int buffercursor = BUFFERSIZE / 2;
 	wheelitem bufferitems[BUFFERSIZE];
 	wheelitem wheelitems[WHEELVIEW];
-	u16* songFontGfx[CHARSPRITES * 7];
-	u8 songFontSprite[CHARSPRITES * 7];
+	u16* songFontGfx[CHARSPRITES * WHEELVIEWCHAR];
+	u8 songFontSprite[CHARSPRITES * WHEELVIEWCHAR];
 	u8 songFrameColor[WHEELVIEW];
 	int size = -1;
 	int tilesLen[5];
@@ -45,6 +45,7 @@ private:
 	std::string fileext;
 public:
 	MenuWheel();
+	~MenuWheel();
 	void playAnim(int anim);
 	void render();
 	int frame = 0;

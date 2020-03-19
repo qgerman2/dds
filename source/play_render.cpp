@@ -6,8 +6,8 @@
 #include "play.h"
 #include "play_render.h"
 #include "play_score.h"
+#include "play_input.h"
 #include "render.h"
-#include <math.h>
 
 #include <step.h>
 #include <tap.h>
@@ -33,24 +33,6 @@
 
 using namespace std;
 
-u32 prevscore = 0;
-
-u16* stepGfx[8];
-
-u16* tapMemory;
-u16* tailMemory;
-u16* holdMemory;
-u16* hitMemory;
-
-u16* barTopGfx;
-u8 barTopSprite;
-u16* barBotGfx;
-u8 barBotSprite;
-u8 segments = 0;
-u16* barGfx;
-
-u16* numberGfx[10];
-u16* judgeGfx[24];
 const u16* judgePal[6] = {
 	marvelousPal,
 	perfectPal,
@@ -59,31 +41,24 @@ const u16* judgePal[6] = {
 	booPal,
 	missPal,
 };
-u8 judgeFrame = 0;
-u8 judgeAnim = 254;
-u8 comboSprite[3];
-u8 judgeSprite[2];
+const u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
 
-u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
-
-u16* scoreGfx[11];
-u8 scoreSprite[11];
-u8 scoreFrame = 0;
-
-void pr_setup() {
+PlayRender::PlayRender(Play* play) {
+	this->play = play;
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
-	tapMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-	tailMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-	holdMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
-	hitMemory = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	prevscore = 0;
+	tapGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	tailGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	holdGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+	hitGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 
-	dmaCopy(tapTiles, tapMemory, tapTilesLen);
-	dmaCopy(tailTiles, tailMemory, tailTilesLen);
-	dmaCopyHalfWords(3, holdBitmap, holdMemory, holdBitmapLen);
-	dmaCopy(hitTiles, hitMemory, hitTilesLen);
+	dmaCopy(tapTiles, tapGfx, tapTilesLen);
+	dmaCopy(tailTiles, tailGfx, tailTilesLen);
+	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
+	dmaCopy(hitTiles, hitGfx, hitTilesLen);
 
 	dmaCopy(tapPal, SPRITE_PALETTE, 512);
 	dmaCopy(hitPal, SPRITE_PALETTE + 16, 512);
@@ -93,10 +68,10 @@ void pr_setup() {
 	u8 up = popSprite();
 	u8 down = popSprite();
 	u8 right = popSprite();
-	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 0, false, false, false, false, false);
-	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 1, false, false, false, false, false);
-	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 2, false, false, false, false, false);
-	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitMemory, 3, false, false, false, false, false);
+	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 0, false, false, false, false, false);
+	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 1, false, false, false, false, false);
+	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 2, false, false, false, false, false);
+	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 3, false, false, false, false, false);
 	oamSetPalette(&oamMain, left, 1);
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
@@ -109,12 +84,13 @@ void pr_setup() {
 	loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
-	
+	consoleDemoInit();
+	cout << "consola";
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
-void loadStepGfx() {
+void PlayRender::loadStepGfx() {
 	int colors[7][3] = {{0,0,31},{31,0,0},{0,31,0},{0,31,31},{31,0,15},{0,17,31},{24,8,24}};
 	int output[3];
 	u16 gray;
@@ -153,7 +129,7 @@ void loadStepGfx() {
 	dmaCopy(stepPal, SPRITE_PALETTE + 16 * 15, stepPalLen);
 }
 
-void loadLifebarGfx() {
+void PlayRender::loadLifebarGfx() {
 	barTopGfx = oamAllocateGfx(&oamMain, SpriteSize_16x8, SpriteColorFormat_16Color);
 	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
 	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
@@ -172,7 +148,7 @@ void loadLifebarGfx() {
 	barGfx = bgGetMapPtr(id);
 }
 
-void loadNumberGfx() {
+void PlayRender::loadNumberGfx() {
 	for (int i = 0; i < 3; i++) {
 		comboSprite[i] = popSprite();
 	}
@@ -188,7 +164,7 @@ void loadNumberGfx() {
 	dmaCopy(numbersPal, SPRITE_PALETTE + 64, 64);
 }
 
-void loadJudgmentGfx() {
+void PlayRender::loadJudgmentGfx() {
 	for (int i = 0; i < 2; i++) {
 		judgeSprite[i] = popSprite();
 	}
@@ -228,7 +204,7 @@ void loadJudgmentGfx() {
 	}
 }
 
-void loadFontGfx() {
+void PlayRender::loadFontGfx() {
 	PrintConsole *console = consoleInit(0, 2, BgType_Text4bpp, BgSize_T_256x256, 4, 1, true, false);
 	ConsoleFont font;
 	font.gfx = (u16*)fontTiles;
@@ -241,14 +217,14 @@ void loadFontGfx() {
 	consoleSetFont(console, &font);
 }
 
-void loadSubBackground() {
+void PlayRender::loadSubBackground() {
 	int id = bgInitSub(3, BgType_Text8bpp, BgSize_T_256x256, 0, 1);
 	dmaCopy(sub_bgTiles, bgGetGfxPtr(id), sub_bgTilesLen);
 	dmaCopy(sub_bgMap, bgGetMapPtr(id), sub_bgMapLen);
 	dmaCopy(sub_bgPal, &VRAM_H[3*16*256], sub_bgPalLen);
 }
 
-void loadSubScore() {
+void PlayRender::loadSubScore() {
 	for (int i = 0; i < 11; i++) {
 		scoreSprite[i] = popSpriteSub();
 	}
@@ -262,7 +238,7 @@ void loadSubScore() {
 	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);
 }
 
-void renderLifebar() {
+void PlayRender::renderLifebar() {
 	u8 t;
 	segments++;
 	if (segments > 28) {
@@ -291,7 +267,7 @@ void renderLifebar() {
 	}
 }
 
-void renderPlay() {
+void PlayRender::update() {
 	renderLifebar();
 	renderSteps();
 	renderCombo();
@@ -299,18 +275,19 @@ void renderPlay() {
 	renderSubScore();
 }
 
-void renderSteps() {
+void PlayRender::renderSteps() {
 	for (auto i = 0; i < 4; i++) {
-		if ((holdCol[i] != steps.end()) && (holdCol[i]->y < (HITYOFFSET + 16))) {
-			if (holdCol[i]->gfx == NULL) {
-				holdCol[i]->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
-				dmaCopyHalfWords(3, holdBitmap, holdCol[i]->gfx, holdBitmapLen);
+		//cout << "\n" << i << " " << (play->input->holdCol[i] == play->steps.end());
+		if ((play->input->holdCol[i] != play->steps.end()) && (play->input->holdCol[i]->y < (HITYOFFSET + 16))) {
+			if (play->input->holdCol[i]->gfx == NULL) {
+				play->input->holdCol[i]->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+				dmaCopyHalfWords(3, holdBitmap, play->input->holdCol[i]->gfx, holdBitmapLen);
 			}
-			u8 diff = HITYOFFSET + 16 - holdCol[i]->y;
-			dmaFillHalfWords(ARGB16(0,0,0,0), holdCol[i]->gfx, 32*diff*2);
+			u8 diff = HITYOFFSET + 16 - play->input->holdCol[i]->y;
+			dmaFillHalfWords(ARGB16(0,0,0,0), play->input->holdCol[i]->gfx, 32*diff*2);
 		}
 	}
-	for (auto i = steps.begin(); i != steps.end(); i++) {
+	for (auto i = play->steps.begin(); i != play->steps.end(); i++) {
 		if (i->y < 224) {
 			switch (i->type) {
 				case (1):
@@ -325,7 +302,7 @@ void renderSteps() {
 						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 2, false, false, false, true, false);
 					}
 					else {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdMemory, 2, false, false, false, true, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdGfx, 2, false, false, false, true, false);
 					}
 					break;
 			}
@@ -335,33 +312,33 @@ void renderSteps() {
 	}
 }
 
-void renderCombo() {
+void PlayRender::renderCombo() {
 	int u;
 	int d;
 	int c;
-	if (combo < 10) {
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[combo], 2, false, false, false, true, false);			
+	if (play->score->combo < 10) {
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[play->score->combo], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 		oamClearSprite(&oamMain, comboSprite[1]);
 	}
-	else if (combo < 100) {
-		u = combo % 10;
-		d = combo / 10;
+	else if (play->score->combo < 100) {
+		u = play->score->combo % 10;
+		d = play->score->combo / 10;
 		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
 		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 	}
-	else if (combo < 1000) {
-		u = (combo % 100) % 10;
-		d = (combo % 100) / 10;
-		c = combo / 100;
+	else if (play->score->combo < 1000) {
+		u = (play->score->combo % 100) % 10;
+		d = (play->score->combo % 100) / 10;
+		c = play->score->combo / 100;
 		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
 		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamSet(&oamMain, comboSprite[0], COMBOX - 40, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 
-void renderJudgment() {
+void PlayRender::renderJudgment() {
 	if (judgeFrame == 0) {return;}
 	int x = 48;
 	int y = 50;
@@ -457,17 +434,17 @@ void renderJudgment() {
 	oamSet(&oamMain, judgeSprite[1], x - f + 81 + offset, y, 0, 5, SpriteSize_32x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2 + 1], 5, true, false, false, false, false);
 }
 
-void renderSubScore() {
+void PlayRender::renderSubScore() {
 	string n;
-	if ((prevscore != score) && (scoreFrame > 0)) {
-		int chunk = (score - prevscore) / 10;
+	if ((prevscore != play->score->score) && (scoreFrame > 0)) {
+		int chunk = (play->score->score - prevscore) / 10;
 		n = to_string(prevscore + chunk * (11 - scoreFrame));
 		if (scoreFrame == 1) {
-			prevscore = score;
+			prevscore = play->score->score;
 		}
 	}
 	else {
-		n = to_string(score);
+		n = to_string(play->score->score);
 	}
 	int offset = 9 - n.length();
 	int x = 0;
@@ -484,7 +461,7 @@ void renderSubScore() {
 	scoreFrame--;
 }
 
-void playJudgmentAnim(u8 anim) {
+void PlayRender::playJudgmentAnim(u8 anim) {
 	judgeFrame = 70;
 	if (judgeAnim != anim) {
 		dmaCopy(judgePal[anim / 2], SPRITE_PALETTE + 64 + 16, 64);
@@ -492,11 +469,11 @@ void playJudgmentAnim(u8 anim) {
 	}
 }
 
-void playScoreAnim() {
+void PlayRender::playScoreAnim() {
 	scoreFrame = 10;
 }
 
-void setRotData() {
+void PlayRender::setRotData() {
 	oamRotateScale(&oamMain, 0, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 1, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 2, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));

@@ -6,6 +6,7 @@ private:
 	MenuWheel* wheel;
 public:
 	Menu();
+	~Menu();
 	void loop();
 	void input();
 	void render();

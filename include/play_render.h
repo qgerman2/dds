@@ -1,27 +1,51 @@
+#ifndef PLAYRENDER
+#define PLAYRENDER
 #define HITXOFFSET 64
 #define HITYOFFSET 15
 #define COMBOX 100
 #define COMBOY 150
-
-void pr_setup();
-void loadStepGfx();
-void loadLifebarGfx();
-void loadNumberGfx();
-void loadJudgmentGfx();
-void loadFontGfx();
-void loadSubBackground();
-void loadSubScore();
-void renderPlay();
-void renderLifebar();
-void renderSteps();
-void renderCombo();
-void renderJudgment();
-void renderSubScore();
-void playJudgmentAnim(u8 anim);
-void playScoreAnim();
-void setRotData();
-
-extern u32 prevscore;
-extern u16* tapMemory;
-extern u16* tailMemory;
-extern u16* holdMemory;
+class Play;
+class PlayRender {
+private:
+	Play* play;
+	u16* stepGfx[8];
+	u16* tapGfx;
+	u16* tailGfx;
+	u16* holdGfx;
+	u16* hitGfx;
+	u16* numberGfx[10];
+	u16* judgeGfx[24];
+	u16* barGfx;
+	u16* barTopGfx;
+	u16* barBotGfx;
+	u16* scoreGfx[11];
+	u8 barTopSprite;
+	u8 barBotSprite;
+	u8 comboSprite[3];
+	u8 judgeSprite[2];
+	u8 scoreSprite[11];
+	u8 scoreFrame = 0;
+	u8 segments = 0;
+	u8 judgeFrame = 0;
+	u8 judgeAnim = 254;
+public:
+	u32 prevscore;
+	PlayRender(Play* play);
+	void update();
+	void renderSteps();
+	void loadStepGfx();
+	void loadLifebarGfx();
+	void loadNumberGfx();
+	void loadJudgmentGfx();
+	void loadFontGfx();
+	void loadSubBackground();
+	void loadSubScore();
+	void renderLifebar();
+	void renderCombo();
+	void renderJudgment();
+	void renderSubScore();
+	void playJudgmentAnim(u8 anim);
+	void playScoreAnim();
+	void setRotData();
+};
+#endif

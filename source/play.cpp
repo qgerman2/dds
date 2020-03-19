@@ -2,68 +2,48 @@
 #include <iostream>
 #include "parse.h"
 #include "main.h"
-#include "play.h"
 #include "sound.h"
 #include <hold.h>
 #include <bitset>
 #include <cmath>
 #include <maxmod9.h>
 #include <vector>
+#include "play.h"
 #include "play_render.h"
 #include "play_input.h"
 #include "play_score.h"
 #include "render.h"
 
-
 using namespace std;
 
-u32 bpmf = 0;
-
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
-vector<step> steps;
-vector<hold> holds;
-u8 parseaheadbeats = 12;
-u32 time;
-int bpmindex = -1;
-u32 minutef;
-u32 beatf;
-int beat;					//beat global
-int firstbeat = -1;			//primer beat del measure global
-int count = 0; 				//beat relativo al primer beat de measure global
-int sets;					//cantidad de sets en measure
-int cursor = 0;
-int measurecursor = -1;
-int stepbeatf = 0;			//beat preciso en el cursor
-int relbeatf = 0;			//beat preciso relativo al cursor a x set
-u32 rowspermeasure = 0;
 
-u16 *set;
-measure m;
-
-void p_setup(){
-	pr_setup();
-	ps_setup();
-	pi_setup();
+Play::Play(){
+	render = new PlayRender(this);
+	score = new PlayScore(this);
+	input = new PlayInput(this);
+	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
-void playLoop(){
+void Play::loop(){
 	s_play();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
 		updateBeat();
 		scanKeys();
-		updateInput();
+		input->update();
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		updateSteps();
-		renderPlay();
+		render->update();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
 	}
 }
 
-u8 getNoteType(u32 row) {
+int Play::getNoteType(u32 row) {
 	u8 notetype = 9; //192
 	u32 rowf = row << 8;
 	u32 rpmf = rowspermeasure << 8;
@@ -78,10 +58,7 @@ u8 getNoteType(u32 row) {
 	return notetype;
 }
 
-u32 minutefbpm;	//tiempo que dura ese bpm
-u32 minutefsum;
-bool lostbeatsbpm;
-void updateBeat() {
+void Play::updateBeat() {
 	time = millis();
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
@@ -106,7 +83,7 @@ void updateBeat() {
 			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
 			if (bpmf != song.bpms[i].bpmf) {
 				bpmf = song.bpms[i].bpmf;
-				updateJudgesWindow();
+				score->updateJudgesWindow();
 			}
 			if (lostbeatsbpm) {
 				for (uint s = 0; s < song.stops.size(); s++) {
@@ -128,7 +105,7 @@ void updateBeat() {
 	beat = beatf >> (MINUTEFRAC + BPMFRAC);
 }
 
-void updateSteps() {
+void Play::updateSteps() {
 	//crear nuevos steps
 	for (int i = cursor; i < beat + parseaheadbeats; i++) {
 		if ((i / 4) > measurecursor) {
@@ -236,15 +213,15 @@ void updateSteps() {
 			s.stepcount = h->stepcount - 1;
 			for (int c = 0; c < 4; c++) {
 				push[c] = 0;
-				if (holdCol[c] >= it) {
-					push[c] = distance(steps.begin(), holdCol[c]) + 1;
+				if (input->holdCol[c] >= it) {
+					push[c] = distance(steps.begin(), input->holdCol[c]) + 1;
 				}
 			}
 			steps.insert(it, s);
 			for (int c = 0; c < 4; c++) {
 				if (push[c] > 0) {
-					holdCol[c] = steps.begin();
-					advance(holdCol[c], push[c]);
+					input->holdCol[c] = steps.begin();
+					advance(input->holdCol[c], push[c]);
 				}
 			}
 			pos++;
@@ -268,14 +245,14 @@ void updateSteps() {
 	for (auto i = steps.begin(); i != steps.end(); i++) {
 		if (((i->type == 1) || (i->type == 2)) && !i->disabled && (i->beatf < beatf)) {
 			u32 beatfdiff = beatf - i->beatf;
-			if (beatfdiff > judgesWindow[4]) {
+			if (beatfdiff > score->judgesWindow[4]) {
 				//se paso una nota
-				playJudgmentAnim(11);
-				addDPTotal();
+				render->playJudgmentAnim(11);
+				score->addDPTotal();
 				if (i->type == 2) {
-					addDPTotal(); //la cola del hold igual vale 2dp
+					score->addDPTotal(); //la cola del hold igual vale 2dp
 				}
-				dropCombo();
+				score->dropCombo();
 				i->disabled = true;
 			}
 		}
@@ -289,7 +266,7 @@ void updateSteps() {
 	}
 }
 
-void newSteps(u16 data, u32 beatf, u8 notetype) {
+void Play::newSteps(u16 data, u32 beatf, u8 notetype) {
 	if (data == 0)
 		return;
 	bool newstep = false;
@@ -324,7 +301,7 @@ void newSteps(u16 data, u32 beatf, u8 notetype) {
 		}
 		if (newstep) {
 			for (int c = 0; c < 4; c++) {
-				if (holdCol[c] == steps.end()) {
+				if (input->holdCol[c] == steps.end()) {
 					push[c] = true;
 				}
 			}
@@ -337,28 +314,28 @@ void newSteps(u16 data, u32 beatf, u8 notetype) {
 			steps.push_back(s);
 			for (int c = 0; c < 4; c++) {
 				if (push[c]) {
-					holdCol[c] = steps.end();
+					input->holdCol[c] = steps.end();
 				}
 			}
 		}
 	}
 }
 
-void removeStep(vector<step>::iterator* s) {
+void Play::removeStep(vector<step>::iterator* s) {
 	pushSprite((*s)->sprite);
 	if ((*s)->gfx != NULL) {
 		oamFreeGfx(&oamMain, (*s)->gfx);
 	}
 	for (int i = 0; i < 4; i++) {
-		if (holdCol[i] > (*s)) {
-			holdCol[i]--;
+		if (input->holdCol[i] > (*s)) {
+			input->holdCol[i]--;
 		}
 	}
 	steps.erase((*s));
 	(*s)--;
 }
 
-measure getMeasureAtBeat(u32 beat) {
+measure Play::getMeasureAtBeat(u32 beat) {
 	if (beat / 4 > song.notes.size() - 1) {
 		while (1) {
 			swiWaitForVBlank();
@@ -368,6 +345,6 @@ measure getMeasureAtBeat(u32 beat) {
 	return song.notes.at(beat / 4);
 }
 
-u32 millis() {
+u32 Play::millis() {
 	return (timerTick(0) + (timerTick(1) << 16)) / NDSFREQ;
 }

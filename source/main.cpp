@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <fat.h>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "lodepng.h"
 #include "main.h"
@@ -11,6 +12,7 @@ using namespace std;
 
 songdata song;
 int state = 0;
+string songpath;
 
 int main(){
 	videoSetMode(MODE_3_2D);
@@ -30,19 +32,20 @@ int main(){
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
-	//metadata tags = parseSimFile("/ddr/song.sm", false);
-	//song = parseSong(&tags);
 
 	while (1) {
 		switch (state) {
 			case (0): {
 				Menu* menu = new Menu();
 				menu->loop();
+				delete menu;
 			}
 			break;
 			case (1): {
-				//p_setup();
-				//playLoop();
+				metadata tags = parseSimFile(songpath, false);
+				song = parseSong(&tags);
+				Play* play = new Play();
+				play->loop();
 				while (1) {
 					swiWaitForVBlank();
 				}

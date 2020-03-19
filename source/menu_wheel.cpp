@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include "main.h"
 #include "render.h"
 #include "menu_wheel.h"
 #include <font.h>
@@ -61,7 +62,6 @@ const int* wheelTiles[] {
 };
 
 MenuWheel::MenuWheel() {
-	cout << "aver";
 	loadSongFontGfx();
 	fillBuffer();
 	int gfx = 0;
@@ -71,6 +71,12 @@ MenuWheel::MenuWheel() {
 	}
 	loadFrameBg();
 	updateFrameBg();
+}
+
+MenuWheel::~MenuWheel() {
+	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
+		oamFreeGfx(&oamSub, songFontGfx[i]);
+	}
 }
 
 void MenuWheel::loadSongFontGfx() {
@@ -332,7 +338,8 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
-		cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << bufferitems[buffercursor].name;
+		songpath = bufferitems[buffercursor].smpath;
+		//cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);

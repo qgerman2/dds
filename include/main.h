@@ -5,4 +5,5 @@
 void imagetobg(std::string path);
 extern songdata song;
 extern int state;
+extern std::string songpath;
 #endif

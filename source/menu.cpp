@@ -28,6 +28,12 @@ Menu::Menu() {
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
+Menu::~Menu() {
+	delete wheel;
+	vramSetBankF(VRAM_F_LCD); //bg ext palette
+	vramSetBankH(VRAM_H_LCD); //bg ext palette sub
+}
+
 void Menu::loop() {
 	while (1) {
 		scanKeys();
