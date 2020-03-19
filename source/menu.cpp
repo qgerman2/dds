@@ -1,25 +1,19 @@
-#include <vector>
-#include <iostream>
-#include <string>
 #include <nds.h>
-#include <fat.h>
-#include <string>
-#include <sys/dir.h>
-#include <unistd.h>
-#include <stdio.h>
-#include "parse.h"
+#include <iostream>
+#include "main.h"
 #include "menu.h"
+#include "menu_wheel.h"
 #include "render.h"
 #include <font.h>
-#include "menu_wheel.h"
 
 using namespace std;
 
-void m_setup() {
+Menu::Menu() {
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
+	wheel = new MenuWheel();
 	PrintConsole *console = consoleInit(0, 2, BgType_Text4bpp, BgSize_T_256x256, 4, 1, true, false);
 	ConsoleFont font;
 	font.gfx = (u16*)fontTiles;
@@ -30,33 +24,37 @@ void m_setup() {
 	font.asciiOffset = 32;
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
-	mw_setup();
-
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
-void menuLoop() {
+void Menu::loop() {
 	while (1) {
 		scanKeys();
-		updateInput_menu();
+		input();
 		swiWaitForVBlank();
-		renderMenu();
+		render();
 		oamUpdate(&oamSub);
+		if (state != 0) {
+			return;
+		}
 	}
 }
 
-void updateInput_menu() {
-	if (wheelFrame == 0) {
+void Menu::input() {
+	if (wheel->frame == 0) {
 		if (keysHeld() & KEY_UP) {
-			playWheelAnim(-1);
+			wheel->playAnim(-1);
 		}
 		else if (keysHeld() & KEY_DOWN) {
-			playWheelAnim(1);
+			wheel->playAnim(1);
+		}
+		else if (keysHeld() & KEY_A) {
+			state = 1;
 		}
 	}
 }
 
-void renderMenu() {
-	renderWheel();
+void Menu::render() {
+	wheel->render();
 }

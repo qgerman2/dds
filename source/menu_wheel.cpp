@@ -1,23 +1,17 @@
-#include <iostream>
-#include <string>
-#include <functional>
 #include <nds.h>
 #include <fat.h>
 #include <sys/dir.h>
+#include <iostream>
+#include <string>
+#include <functional>
+#include "render.h"
+#include "menu_wheel.h"
 #include <font.h>
 #include <song_frame.h>
 #include <group_frame.h>
 #include <song_font.h>
-#include "render.h"
-#include "menu_wheel.h"
 
 using namespace std;
-
-string fileext;
-
-const int wheelview = 9; //amount of files visible at a single time on wheel
-const int wheelviewchar = 7; //texto visible
-int wheelsize = -1; //total amount of files
 
 const int* wheelTiles[] {
 	(const int[]){
@@ -66,32 +60,12 @@ const int* wheelTiles[] {
 	}
 };
 
-int wheelTilesLen[5];
-int wheelTilesYOffset[5] = {-1, 3, 9, 13, 15};
-int wheelTilesTotalLen = 0;
-
-u8 songFontSprite[CHARSPRITES * 7];
-u16* songFontGfx[CHARSPRITES * 7];
-u8 songFrameColor[wheelview];
-int wheelBg1;
-int wheelBg2;
-
-int wheelAnim = 0;
-int wheelFrame = 0;
-
-const int buffersize = 19;
-int wheelcursor = 0;
-int buffercursor = buffersize / 2;
-
-wheelitem bufferitems[buffersize];
-wheelitem wheelitems[wheelview];
-
-void mw_setup() {
+MenuWheel::MenuWheel() {
 	cout << "aver";
 	loadSongFontGfx();
 	fillBuffer();
 	int gfx = 0;
-	for (int i = buffercursor - wheelviewchar / 2; i <= buffercursor + wheelviewchar / 2; i++) {
+	for (int i = buffercursor - WHEELVIEWCHAR / 2; i <= buffercursor + WHEELVIEWCHAR / 2; i++) {
 		printToBitmap(gfx * CHARSPRITES, bufferitems[i].name + ' ');
 		gfx++;
 	}
@@ -99,35 +73,35 @@ void mw_setup() {
 	updateFrameBg();
 }
 
-void loadSongFontGfx() {
-	for (int i = 0; i < CHARSPRITES * wheelviewchar; i++) {
+void MenuWheel::loadSongFontGfx() {
+	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
 		songFontSprite[i] = popSpriteSub();
 	}
-	for (int i = 0; i < CHARSPRITES * wheelviewchar; i++) {
+	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
 		songFontGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x32, SpriteColorFormat_Bmp);
 	}
 }
 
-void loadFrameBg() {
-	wheelBg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 0, 1);
-	wheelBg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
+void MenuWheel::loadFrameBg() {
+	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 0, 1);
+	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
 	int g = 1;
 	//rojo negro
 	for (int i = 0; i < 5; i++) {
 		int t = 0;
 		while (wheelTiles[i][t] != -1) {
-			dmaCopy(song_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(wheelBg1) + 32 * g, 64);
+			dmaCopy(song_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(bg1) + 32 * g, 64);
 			t++;
 			g++;
 		}
-		wheelTilesLen[i] = t;
-		wheelTilesTotalLen += t;
+		tilesLen[i] = t;
+		tilesTotalLen += t;
 	}
 	//verde
 	for (int i = 0; i < 5; i++) {
 		int t = 0;
 		while (wheelTiles[i][t] != -1) {
-			dmaCopy(group_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(wheelBg1) + 32 * g, 64);
+			dmaCopy(group_frameTiles + 16 * wheelTiles[i][t], bgGetGfxPtr(bg1) + 32 * g, 64);
 			t++;
 			g++;
 		}
@@ -140,22 +114,22 @@ void loadFrameBg() {
 	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[3][2], group_framePalLen);
 }
 
-void wheelNext() {
+void MenuWheel::next() {
 	buffercursor++;
-	if ((buffercursor - buffersize / 2) >= (wheelsize - wheelview / 2)) {
-		buffercursor -= wheelsize;
+	if ((buffercursor - BUFFERSIZE / 2) >= (size - WHEELVIEW / 2)) {
+		buffercursor -= size;
 	}
-	else if (buffercursor >= (buffersize - wheelview / 2 - 1)) {
-		wheelcursor = wheelcursor + (buffersize / 2 - wheelview / 2);
-		if (wheelcursor >= wheelsize) {
-			wheelcursor -= wheelsize;
+	else if (buffercursor >= (BUFFERSIZE - WHEELVIEW / 2 - 1)) {
+		cursor = cursor + (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (cursor >= size) {
+			cursor -= size;
 		}
-		buffercursor = buffersize / 2;
+		buffercursor = BUFFERSIZE / 2;
 		//mover bufferitems
-		for (int y = 0; y <= buffersize / 2 + wheelview / 2; y++) {
-			bufferitems[y] = bufferitems[y + buffersize - (buffersize / 2 + wheelview / 2) - 1];
+		for (int y = 0; y <= BUFFERSIZE / 2 + WHEELVIEW / 2; y++) {
+			bufferitems[y] = bufferitems[y + BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2) - 1];
 		}
-		for (int i = buffercursor + wheelview / 2 + 1; i < buffersize; i++) {
+		for (int i = buffercursor + WHEELVIEW / 2 + 1; i < BUFFERSIZE; i++) {
 			bufferitems[i].type = -1;
 		}
 		fillBuffer();
@@ -165,34 +139,34 @@ void wheelNext() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		tempFontGfx[i] = songFontGfx[i];
 	}
-	for (int y = 0; y < wheelviewchar - 1; y++) {
+	for (int y = 0; y < WHEELVIEWCHAR - 1; y++) {
 		for (int i = 0; i < CHARSPRITES; i++) {
 			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y + 1) * CHARSPRITES + i];
 		}
 	}
 	for (int i = 0; i < CHARSPRITES; i++) {
-		songFontGfx[(wheelviewchar - 1) * CHARSPRITES + i] = tempFontGfx[i];
+		songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES + i] = tempFontGfx[i];
 	}
-	printToBitmap((wheelviewchar - 1) * CHARSPRITES, bufferitems[buffercursor + wheelviewchar / 2].name + ' ');
+	printToBitmap((WHEELVIEWCHAR - 1) * CHARSPRITES, bufferitems[buffercursor + WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
-void wheelPrev() {
+void MenuWheel::prev() {
 	buffercursor--;
-	if ((buffercursor - buffersize / 2) <= (wheelview / 2 - wheelsize)) {
-		buffercursor += wheelsize;
+	if ((buffercursor - BUFFERSIZE / 2) <= (WHEELVIEW / 2 - size)) {
+		buffercursor += size;
 	}
-	else if (buffercursor <= (wheelview / 2)) {
-		wheelcursor = wheelcursor - (buffersize / 2 - wheelview / 2);
-		if (wheelcursor < 0) {
-			wheelcursor += wheelsize;
+	else if (buffercursor <= (WHEELVIEW / 2)) {
+		cursor = cursor - (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (cursor < 0) {
+			cursor += size;
 		}
-		buffercursor = buffersize / 2;
+		buffercursor = BUFFERSIZE / 2;
 		//mover bufferitems
-		for (int i = buffersize - 1; i >= buffersize / 2 - wheelview / 2; i--) {
-			bufferitems[i] = bufferitems[i - (buffersize - (buffersize / 2 + wheelview / 2)) + 1];
+		for (int i = BUFFERSIZE - 1; i >= BUFFERSIZE / 2 - WHEELVIEW / 2; i--) {
+			bufferitems[i] = bufferitems[i - (BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2)) + 1];
 		}
-		for (int i = 0; i <= (buffercursor - wheelview / 2 - 1); i++) {
+		for (int i = 0; i <= (buffercursor - WHEELVIEW / 2 - 1); i++) {
 			bufferitems[i].type = -1;
 		}
 		fillBuffer();
@@ -200,9 +174,9 @@ void wheelPrev() {
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
 	for (int i = 0; i < CHARSPRITES; i++) {
-		tempFontGfx[i] = songFontGfx[(wheelviewchar - 1) * CHARSPRITES + i];
+		tempFontGfx[i] = songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES + i];
 	}
-	for (int y = wheelviewchar - 1; y > 0; y--) {
+	for (int y = WHEELVIEWCHAR - 1; y > 0; y--) {
 		for (int i = 0; i < CHARSPRITES; i++) {
 			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y - 1) * CHARSPRITES + i];
 		}
@@ -210,11 +184,11 @@ void wheelPrev() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		songFontGfx[i] = tempFontGfx[i];
 	}
-	printToBitmap(0, bufferitems[buffercursor - wheelviewchar / 2].name + ' ');
+	printToBitmap(0, bufferitems[buffercursor - WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
-void printToBitmap(u8 gfx, string str) {
+void MenuWheel::printToBitmap(u8 gfx, string str) {
 	int c;
 	int x;
 	int s;
@@ -237,7 +211,7 @@ void printToBitmap(u8 gfx, string str) {
 	}
 }
 
-void fillBuffer() {
+void MenuWheel::fillBuffer() {
 	int dircount = -1;
 	int buffercount = 0;
 	//lectura recursiva de directorios
@@ -256,7 +230,7 @@ void fillBuffer() {
 	    		if (pent->d_type == DT_DIR) {
 	    			dircount++;
 	    			isgroup = true;
-	    			if (wheelsize != -1) {
+	    			if (size != -1) {
 	    				pos = dircountToBuffer(dircount);
 	        			if (pos != -1) {
 	        				if (bufferitems[pos].type == -1) {
@@ -272,7 +246,7 @@ void fillBuffer() {
 	        		if (parse(dir + '/' + pent->d_name)) {
 	        			return true;
 	        		}
-	    			if (buffercount > buffersize) {
+	    			if (buffercount > BUFFERSIZE) {
 	    				return true;
 	    			}
 	    		}
@@ -284,7 +258,7 @@ void fillBuffer() {
 	        			}
 	        		}
 	        		if (fileext == "sm") {
-	        			if (wheelsize != -1) {
+	        			if (size != -1) {
 	        				pos = dircountToBuffer(dircount);
 		        			if ((pos != -1) && (bufferitems[pos].type == 0)) {
 		        				wheelitem* song = &bufferitems[pos];
@@ -301,16 +275,16 @@ void fillBuffer() {
 		return false;
 	};
 	//encontrar total de elementos
-	if (wheelsize == -1) {
+	if (size == -1) {
 		parse("/ddr");
-		wheelsize = dircount + 1;
+		size = dircount + 1;
 		dircount = -1;
 	}
 	//popular rueda
 	parse("/ddr");
 	//llenar espacios que faltan
-	if (wheelsize < buffersize) {
-		for (int i = 0; i < buffersize; i++) {
+	if (size < BUFFERSIZE) {
+		for (int i = 0; i < BUFFERSIZE; i++) {
 			if (bufferitems[i].type == -1) {
 				int pos = bufferToFile(i);
 				bufferitems[i] = bufferitems[dircountToBuffer(pos)];
@@ -319,63 +293,63 @@ void fillBuffer() {
 	}
 }
 
-int bufferToFile(int i) {
-	int pos = wheelcursor - (buffersize / 2) + i;
-	while (pos >= wheelsize) {
-		pos = pos - wheelsize;
+int MenuWheel::bufferToFile(int i) {
+	int pos = cursor - (BUFFERSIZE / 2) + i;
+	while (pos >= size) {
+		pos = pos - size;
 	}
 	while (pos < 0) {
-		pos = pos + wheelsize;
+		pos = pos + size;
 	}
 	return pos;
 }
 
-int dircountToBuffer(int i) {
-	if (abs(wheelcursor - i) <= (buffersize / 2)) {
-		return (i - wheelcursor + (buffersize / 2));
+int MenuWheel::dircountToBuffer(int i) {
+	if (abs(cursor - i) <= (BUFFERSIZE / 2)) {
+		return (i - cursor + (BUFFERSIZE / 2));
 	}
-	else if (abs(wheelcursor + wheelsize - i) <= (buffersize / 2)) {
-		return (i - wheelsize - wheelcursor + (buffersize / 2));
+	else if (abs(cursor + size - i) <= (BUFFERSIZE / 2)) {
+		return (i - size - cursor + (BUFFERSIZE / 2));
 	}
-	else if (abs(wheelcursor - wheelsize - i) <= (buffersize / 2)) {
-		return (i + wheelsize - wheelcursor + (buffersize / 2));
+	else if (abs(cursor - size - i) <= (BUFFERSIZE / 2)) {
+		return (i + size - cursor + (BUFFERSIZE / 2));
 	}
 	return -1;
 }
 
-void renderWheel() {
+void MenuWheel::render() {
 	int angle = 0;
-	if (wheelFrame > 22) {
-		angle = 12 * (45 - wheelFrame) * -wheelAnim;
+	if (frame > 22) {
+		angle = 12 * (45 - frame) * -anim;
 	}
-	else if (wheelFrame > 0) {
-		angle = 12 * (wheelFrame) * wheelAnim;
+	else if (frame > 0) {
+		angle = 12 * (frame) * anim;
 	}
-	if (wheelFrame == 22) {
-		if (wheelAnim > 0) {
-			wheelNext();
+	if (frame == 22) {
+		if (anim > 0) {
+			next();
 		}
 		else {
-			wheelPrev();
+			prev();
 		}
 		cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << bufferitems[buffercursor].name;
 	}
-	bgSet(wheelBg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
-	bgSet(wheelBg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
+	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
+	bgSet(bg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgUpdate();
-	renderWheelChar(angle);
-	if (wheelFrame > 0) {
-		wheelFrame--;
-		wheelFrame--;
+	renderChar(angle);
+	if (frame > 0) {
+		frame--;
+		frame--;
 	}
 }
 
-void playWheelAnim(int anim) {
-	wheelAnim = anim;
-	wheelFrame = 44;
+void MenuWheel::playAnim(int a) {
+	anim = a;
+	frame = 44;
 }
 
-void renderWheelChar(int angle) {
+void MenuWheel::renderChar(int angle) {
 	int scale = 256;
 	int o = ((scale - 256) * 64) / 256;
 	for (int i = -3; i <= 3; i++) {
@@ -388,10 +362,10 @@ void renderWheelChar(int angle) {
 	}
 }
 
-void updateWheelColor() {
+void MenuWheel::updateColor() {
 	int item = 0;
 	//cout << "\n---";
-	for (int i = buffercursor - wheelview / 2; i <= buffercursor + wheelview / 2; i++) {
+	for (int i = buffercursor - WHEELVIEW / 2; i <= buffercursor + WHEELVIEW / 2; i++) {
 		//cout << "\n" << i << " " << bufferitems[i].name << " " << bufferitems[i].type;
 		switch (bufferitems[i].type) {
 			case 0:
@@ -405,24 +379,24 @@ void updateWheelColor() {
 	}
 }
 
-void updateFrameBg() {
-	updateWheelColor();
+void MenuWheel::updateFrameBg() {
+	updateColor();
 	int tileOffset = 1;
 	int t = 0;
-	u16* bgMap1 = bgGetMapPtr(wheelBg1);
-	u16* bgMap2 = bgGetMapPtr(wheelBg2);
+	u16* bgMap1 = bgGetMapPtr(bg1);
+	u16* bgMap2 = bgGetMapPtr(bg2);
 	u16* bgMap = bgMap1;
 	for (int i = 0; i < 5; i++) {
 		while (wheelTiles[i][t] != -1) {
 			int pos = wheelTiles[i][t] + (wheelTiles[i][t] / 23 * 9);
 			int x = pos % 32;
 			int y = pos / 32;
-			if (y >= wheelTilesYOffset[i]) {
-				y -= wheelTilesYOffset[i];
+			if (y >= tilesYOffset[i]) {
+				y -= tilesYOffset[i];
 				int tile1 = (t + tileOffset) | TILE_PALETTE(songFrameColor[i]);
 				int tile2 = (t + tileOffset) | TILE_PALETTE(songFrameColor[8 - i]) | TILE_FLIP_V;
-				if (songFrameColor[i] == 2) {tile1 += wheelTilesTotalLen;}
-				if (songFrameColor[8 - i] == 2) {tile2 += wheelTilesTotalLen;}
+				if (songFrameColor[i] == 2) {tile1 += tilesTotalLen;}
+				if (songFrameColor[8 - i] == 2) {tile2 += tilesTotalLen;}
 				bgMap[y * 32 + x] = tile1;
 				bgMap[(31 - y) * 32 + x] = tile2;
 			}
@@ -430,7 +404,7 @@ void updateFrameBg() {
 		}
 		if (bgMap == bgMap1) {bgMap = bgMap2;}
 		else {bgMap = bgMap1;}
-		tileOffset += wheelTilesLen[i];
+		tileOffset += tilesLen[i];
 		t = 0;
 	}
 }

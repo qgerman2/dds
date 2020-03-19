@@ -1,18 +1,16 @@
-#include <iostream>
-#include <vector>
 #include <nds.h>
 #include <fat.h>
-#include <string>
-#include "parse.h"
+#include <iostream>
+#include <vector>
+#include "lodepng.h"
 #include "main.h"
 #include "menu.h"
 #include "play.h"
-#include "lodepng.h"
-
+#include "parse.h"
 using namespace std;
 
 songdata song;
-GameState gameState = MENU;
+int state = 0;
 
 int main(){
 	videoSetMode(MODE_3_2D);
@@ -36,15 +34,20 @@ int main(){
 	//song = parseSong(&tags);
 
 	while (1) {
-		switch (gameState) {
-			case (MENU):
-				m_setup();
-				menuLoop();
-				break;
-			case (PLAY):
-				p_setup();
-				playLoop();
-				break;
+		switch (state) {
+			case (0): {
+				Menu* menu = new Menu();
+				menu->loop();
+			}
+			break;
+			case (1): {
+				//p_setup();
+				//playLoop();
+				while (1) {
+					swiWaitForVBlank();
+				}
+			}
+			break;
 		}
 
 	}

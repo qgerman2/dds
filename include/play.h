@@ -1,3 +1,7 @@
+#ifndef PLAY
+#define PLAY
+#include <vector>
+#include "parse.h"
 #define NDSFREQ 32.7284	//khz
 #define BPMFRAC 8
 #define MINUTEFRAC 12
@@ -41,3 +45,4 @@ extern u32 bpmf;
 extern u32 beatfperiod;
 extern std::vector<step> steps;
 extern std::vector<hold> holds;
+#endif

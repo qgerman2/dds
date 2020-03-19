@@ -1,3 +1,5 @@
+#ifndef PARSE
+#define PARSE
 #include <string>
 #include <vector>
 #include <variant>
@@ -55,3 +57,4 @@ static const u16 mine[4] {
 	0b0000000010000000,
 	0b0000000000001000,
 };
+#endif
