@@ -10,7 +10,6 @@
 #include "parse.h"
 using namespace std;
 
-songdata song;
 int state = 0;
 string songpath;
 
@@ -38,20 +37,26 @@ int main(){
 			case (0): {
 				Menu* menu = new Menu();
 				menu->loop();
+				consoleDemoInit();
 				delete menu;
 			}
 			break;
 			case (1): {
 				metadata tags = parseSimFile(songpath, false);
-				song = parseSong(&tags);
-				Play* play = new Play();
+				songdata song = parseSong(&tags);
+				Play* play = new Play(&song);
+				cout << "\nplayloop";
 				play->loop();
 				delete play;
+				state = 2;
+				cout << "\nconsola";
+			}
+			break;
+			case (2): {
 				while (1) {
 					swiWaitForVBlank();
 				}
 			}
-			break;
 		}
 
 	}

@@ -84,8 +84,6 @@ PlayRender::PlayRender(Play* play) {
 	loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
-	//consoleDemoInit();
-	cout << "consola";
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }

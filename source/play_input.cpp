@@ -121,6 +121,6 @@ void PlayInput::update() {
 		}
 	}
 	if (keysHeld() & KEY_A) {
-		state = 0;
+		state = 2;
 	}
 }

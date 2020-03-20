@@ -53,11 +53,12 @@ public:
 	PlayRender* render;
 	PlayScore* score;
 	PlayInput* input;
+	songdata* song;
 	u32 beatf;
 	u32 bpmf = 0;
 	std::vector<step> steps;
 	std::vector<hold> holds;
-	Play();
+	Play(songdata* song);
 	~Play();
 	void loop();
 	void updateSteps();

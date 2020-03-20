@@ -16,6 +16,7 @@ using namespace std;
 static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
+
 const string partialTags[6] = {
 	"TITLE",
 	"ARTIST",
@@ -24,6 +25,18 @@ const string partialTags[6] = {
 	"MUSIC",
 	"NOTES",
 };
+
+songdata::~songdata() {
+	cout << "\neliminado songdata";
+	int e = 0;
+	for (auto m = this->notes.begin(); m != this->notes.end(); m++) {
+		for (auto n = m->begin(); n != m->end(); n++) {
+			e++;
+			delete [] *n;
+		}
+	}
+	cout << "\neliminao " << e;
+}
 
 metadata parseSimFile(string path, bool partial) {
 	metadata tags;
@@ -199,6 +212,7 @@ notedata parseNotes(string* data) {
 	measure m = empty_measure;
 	int fourcount = 0;
 	int count = -1;
+	int k = 0;
 	for (uint i = 0; i < rawnotes.size(); i++){
 		c = rawnotes[i];
 		if ((c == '0') || (c == '1') || (c == '2') || (c == '3') || (c == '4') || (c == 'M')) {
@@ -212,6 +226,7 @@ notedata parseNotes(string* data) {
 			}
 			if ((count == 0) && (fourcount == 0)) {
 				m.push_back(new u16[4]);
+				k++;
 				for (int i = 0; i <= 3; i++) {
 					m.back()[i] = 0;
 				}	
@@ -237,6 +252,7 @@ notedata parseNotes(string* data) {
 				break;
 		}
 	}
+	cout << "\ncreado " << k;
 	notes.push_back(m);
 	size_t size = 0;
 	for ( auto i = notes.begin(); i != notes.end(); i++ ) {

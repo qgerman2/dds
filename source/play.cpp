@@ -18,7 +18,8 @@ using namespace std;
 
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 
-Play::Play(){
+Play::Play(songdata* song){
+	this->song = song;
 	render = new PlayRender(this);
 	score = new PlayScore(this);
 	input = new PlayInput(this);
@@ -72,13 +73,13 @@ void Play::updateBeat() {
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
 	minutefsum = 0;
-	for (uint i = 0; i < song.bpms.size(); i++) {
+	for (uint i = 0; i < song->bpms.size(); i++) {
 		lostbeatsbpm = FALSE;
-		if (i < song.bpms.size() - 1) {
-			minutefbpm = (song.bpms[i + 1].beatf - song.bpms[i].beatf) / song.bpms[i].bpmf;
-			for (uint s = 0; s < song.stops.size(); s++) {
-				if ((song.stops[s].beatf > song.bpms[i].beatf) && (song.stops[s].beatf < song.bpms[i + 1].beatf)) {
-					minutefbpm = minutefbpm + song.stops[s].bpmf;
+		if (i < song->bpms.size() - 1) {
+			minutefbpm = (song->bpms[i + 1].beatf - song->bpms[i].beatf) / song->bpms[i].bpmf;
+			for (uint s = 0; s < song->stops.size(); s++) {
+				if ((song->stops[s].beatf > song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
+					minutefbpm = minutefbpm + song->stops[s].bpmf;
 					lostbeatsbpm = TRUE;
 				}
 			}
@@ -86,21 +87,21 @@ void Play::updateBeat() {
 			minutefbpm = 0;
 		}
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
-			beatf = song.bpms[i + 1].beatf - song.bpms[i].beatf + beatf;
+			beatf = song->bpms[i + 1].beatf - song->bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
 		} else {
-			beatf = beatf + ((minutef - minutefsum) * song.bpms[i].bpmf);
-			if (bpmf != song.bpms[i].bpmf) {
-				bpmf = song.bpms[i].bpmf;
+			beatf = beatf + ((minutef - minutefsum) * song->bpms[i].bpmf);
+			if (bpmf != song->bpms[i].bpmf) {
+				bpmf = song->bpms[i].bpmf;
 				score->updateJudgesWindow();
 			}
 			if (lostbeatsbpm) {
-				for (uint s = 0; s < song.stops.size(); s++) {
-					if ((song.stops[s].beatf > song.bpms[i].beatf) && (song.stops[s].beatf < song.bpms[i + 1].beatf)) {
-						if (beatf > song.stops[s].beatf) {
-							u32 offset = song.stops[s].bpmf * song.bpms[i].bpmf;
-							if (beatf - song.stops[s].beatf < offset){
-								beatf = song.stops[s].beatf;
+				for (uint s = 0; s < song->stops.size(); s++) {
+					if ((song->stops[s].beatf > song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
+						if (beatf > song->stops[s].beatf) {
+							u32 offset = song->stops[s].bpmf * song->bpms[i].bpmf;
+							if (beatf - song->stops[s].beatf < offset){
+								beatf = song->stops[s].beatf;
 							} else {
 								beatf = beatf - offset;
 							}
@@ -345,13 +346,13 @@ void Play::removeStep(vector<step>::iterator* s) {
 }
 
 measure Play::getMeasureAtBeat(u32 beat) {
-	if (beat / 4 > song.notes.size() - 1) {
+	if (beat / 4 > song->notes.size() - 1) {
 		while (1) {
 			swiWaitForVBlank();
 		}
 		sassert(0, "attempted to get nonexistant measure");
 	}
-	return song.notes.at(beat / 4);
+	return song->notes.at(beat / 4);
 }
 
 u32 Play::millis() {

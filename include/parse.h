@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <variant>
-
 struct t_pair {
 	std::string key;
 	std::string value;
@@ -16,17 +15,6 @@ struct t_bpm {
 };
 typedef std::vector<struct t_bpm> bpmdata;
 typedef std::vector<struct t_pair> metadata;
-class songdata {
-	public:
-		notedata notes;
-		metadata* tags;
-		bpmdata bpms;
-		bpmdata stops;
-};
-notedata parseNotes(std::string* data);
-bpmdata parseBPMS(std::string* data, bool isStops);
-metadata parseSimFile(std::string path, bool partial);
-songdata parseSong(metadata* tags);
 static const u16 normal[4] {
 	0b0001000000000000,
 	0b0000000100000000,
@@ -57,4 +45,16 @@ static const u16 mine[4] {
 	0b0000000010000000,
 	0b0000000000001000,
 };
+class songdata {
+	public:
+		notedata notes;
+		metadata* tags;
+		bpmdata bpms;
+		bpmdata stops;
+		~songdata();
+};
+notedata parseNotes(std::string* data);
+bpmdata parseBPMS(std::string* data, bool isStops);
+metadata parseSimFile(std::string path, bool partial);
+songdata parseSong(metadata* tags);
 #endif
