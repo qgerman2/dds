@@ -1,1 +1,0 @@
-void s_play();
