@@ -45,7 +45,7 @@ void s_play() {
 	//file = fopen("/ddr/song.wav", "rb");
 
     mystream.sampling_rate = 44100;
-    mystream.buffer_length = 1600;
+    mystream.buffer_length = 3200;
     mystream.callback = stream;
     mystream.format = MM_STREAM_16BIT_STEREO;
     mystream.timer = MM_TIMER2;
@@ -57,22 +57,18 @@ void s_play() {
 int eof = 0;
 int current_section;
 mm_word stream(mm_word length, mm_addr dest, mm_stream_formats format) {
-	char buffer[length * 4];
-	s16* output = (s16*)dest;
+	char* output = (char*)dest;
 	if (!eof) {
-		int res = ov_read(&vf, buffer, length * 4, &current_section);
+		int res = ov_read(&vf, output, length * 4, &current_section);
 		if (res) {
-			length = res;
-			for (uint i = 0; i < length; i = i + 2) {
-				output[i / 2] = buffer[i + 1] << 8 | buffer[i];
-			}
+			length = res / 4;
 		} else {
 			mmStreamClose();
 			length = 0;
 			eof = 1;
 		}
 	}
-	return length / 4;
+	return length;
 	//return length;
 	/*if (file) {
 		int res = fread(buffer, 4, length, file);
