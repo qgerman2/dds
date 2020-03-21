@@ -8,9 +8,12 @@
 #include "menu.h"
 #include "play.h"
 #include "parse.h"
+#include "sound.h"
+#include <maxmod9.h>
+
 using namespace std;
 
-int state = 0;
+int state = 2;
 string songpath;
 
 int main(){
@@ -31,13 +34,15 @@ int main(){
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
+	consoleDemoInit();
+	cout << "\nconsola";
+	s_play();
 
 	while (1) {
 		switch (state) {
 			case (0): {
 				Menu* menu = new Menu();
 				menu->loop();
-				consoleDemoInit();
 				delete menu;
 			}
 			break;
@@ -49,6 +54,12 @@ int main(){
 				delete play;
 			}
 			break;
+			case (2): {
+				while (1) {
+					mmStreamUpdate();
+					swiWaitForVBlank();
+				}
+			}
 		}
 
 	}
