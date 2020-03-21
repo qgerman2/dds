@@ -10,6 +10,8 @@
 #include "parse.h"
 #include "sound.h"
 #include <maxmod9.h>
+#include <zlib.h>
+#include <png.h>
 
 using namespace std;
 
@@ -35,7 +37,8 @@ int main(){
 		sassert(0, "failed to load libfat");
 	}
 	consoleDemoInit();
-	cout << "\nconsola";
+	cout << zlibVersion();
+	cout << "\n" << PNG_LIBPNG_VER_STRING;
 	s_play();
 
 	while (1) {
