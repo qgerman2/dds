@@ -28,7 +28,7 @@ void s_play() {
 		fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");
 	}
 	else {
-		cout << "ctm";
+		cout << "\n";
 		{
 	    char **ptr=ov_comment(&vf,-1)->user_comments;
 	    vorbis_info *vi=ov_info(&vf,-1);
