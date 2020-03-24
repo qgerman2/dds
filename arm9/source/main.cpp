@@ -44,11 +44,12 @@ int main(){
 		sassert(0, "failed to load libfat");
 	}
 	consoleDemoInit();
+	//consoleDebugInit(DebugDevice_NOCASH);
 	cout << "\nzlib: " << zlibVersion();
 	cout << "\nlibpng: " << PNG_LIBPNG_VER_STRING;
 	s_play();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
-	testpng();
+	//testpng();
 	//imagetobg("mono.png");
 
 	while (1) {
@@ -152,6 +153,7 @@ void testpng() {
 			png_process_data(png_ptr, info_ptr, inbuf, incount);
 			if (incount != INBUFSIZE) {
 				cout << "\nfin";
+				png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 				break;
 			}
 	    }

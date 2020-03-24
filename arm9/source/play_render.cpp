@@ -382,69 +382,33 @@ void PlayRender::renderJudgment() {
 	else {
 		size = 256;
 		switch (judgeFrame) {
-			case 69:
-				y = y - 10;
-				break;
-			case 68:
-				y = y - 9;
-				break;
-			case 67:
-				y = y - 8;
-				break;
-			case 66:
-				y = y - 7;
-				break;
-			case 65:
-				y = y - 6;
-				break;
-			case 64:
-				y = y - 5;
-				break;
-			case 63:
-				y = y - 4;
-				break;
-			case 62:
-				y = y - 3;
-				break;
-			case 61:
-				y = y - 2;
-				break;
-			case 60:
-				y = y - 1;
-				break;
+			case 69: y = y - 10; break;
+			case 68: y = y - 9; break;
+			case 67: y = y - 8; break;
+			case 66: y = y - 7; break;
+			case 65: y = y - 6; break;
+			case 64: y = y - 5; break;
+			case 63: y = y - 4; break;
+			case 62: y = y - 3; break;
+			case 61: y = y - 2; break;
+			case 60: y = y - 1; break;
 			case 59:
-			case 58:
-				y = y;
-				break;
+			case 58: y = y; break;
 			case 57:
-			case 56:
-				y = y + 1;
-				break;
+			case 56: y = y + 1; break;
 			case 55:
-			case 54:
-				y = y + 2;
-				break;
+			case 54: y = y + 2; break;
 			case 53:
-			case 52:
-				y = y + 3;
-				break;
+			case 52: y = y + 3; break;
 			case 51:
-			case 50:
-				y = y + 4;
-				break;
+			case 50: y = y + 4; break;
 			case 49:
 			case 48:
-			case 47:
-				y = y + 5;
-				break;
+			case 47: y = y + 5; break;
 			case 46:
 			case 45:
-			case 44:
-				y = y + 6;
-				break;
-			default:
-				y = y + 7;
-				break;
+			case 44: y = y + 6; break;
+			default: y = y + 7; break;
 		}
 	}
 	if (size == 256) {f = 1;}
