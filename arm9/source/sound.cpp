@@ -81,7 +81,7 @@ void s_play() {
 }
 
 void loadmp3() {
-	myMp3 = fopen("/ddr/song.mp3", "rb");
+	myMp3 = fopen("/ddr/rap.mp3", "rb");
 	fillmp3();
 }
 
@@ -118,7 +118,6 @@ u_char* guard;
 const int bufsize = 1500;
 u_char readbuffer[bufsize];
 void fillmp3() {
-	cout << "\nrellenar buffer";
 	int res;
 	int rem = 0;
 	if (stream.next_frame != NULL) {
@@ -129,6 +128,7 @@ void fillmp3() {
 		res = fread(readbuffer, 1, bufsize - MAD_BUFFER_GUARD + 1, myMp3);
 	}
 	if (res + rem <= bufsize - MAD_BUFFER_GUARD) {
+		cout << "\n" << (res + rem);
 		guard = readbuffer + res + rem;
 		memset(guard, 0, MAD_BUFFER_GUARD);
 		mad_stream_buffer(&stream, readbuffer, res + rem + MAD_BUFFER_GUARD);
@@ -152,21 +152,21 @@ mm_word streammp3(mm_word length, mm_addr dest, mm_stream_formats format) {
 			samples++;
 			f++;
 			if (samples == length) {
-				cout << "\nentregadas samples";
 				return samples;
 			}
 		}
 		if (mad_frame_decode(&frame, &stream)) {
-			cout << "\n" << mad_stream_errorstr(&stream);
-			if (stream.error == MAD_ERROR_BUFPTR) {
-				//no se ha inicializado el buffer
-				fillmp3();
-			} else if (stream.error == MAD_ERROR_BUFLEN) {
-				//se llego al fin del buffer de lectura
-				fillmp3();
+			//cout << "\n" << mad_stream_errorstr(&stream);
+			if (stream.error == MAD_ERROR_BUFPTR || stream.error == MAD_ERROR_BUFLEN) {
+				if (stream.this_frame != guard) {
+					fillmp3();
+				} else {
+					mmStreamClose();
+					break;
+				}
 			} else if (stream.error != MAD_ERROR_LOSTSYNC) {
 				mmStreamClose();
-				return 0;
+				break;
 			}
 		} else {
 			mad_synth_frame(&synth, &frame);

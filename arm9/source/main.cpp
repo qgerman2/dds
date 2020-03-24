@@ -49,7 +49,7 @@ int main(){
 	cout << "\nlibpng: " << PNG_LIBPNG_VER_STRING;
 	s_play();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
-	//testpng();
+	testpng();
 	//imagetobg("mono.png");
 
 	while (1) {
