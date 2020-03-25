@@ -1,5 +1,9 @@
 #include <nds.h>
 #include <fat.h>
+#include <maxmod9.h>
+#include <zlib.h>
+#include <png.h>
+#include <jpeglib.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,10 +13,7 @@
 #include "play.h"
 #include "parse.h"
 #include "sound.h"
-#include <maxmod9.h>
-#include <zlib.h>
-#include <png.h>
-#include <jpeglib.h>
+
 
 #define PNG_ROWBYTES(pixel_bits, width) \
     ((pixel_bits) >= 8 ? \
@@ -52,7 +53,7 @@ int main(){
 	s_play();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 	//testpng();
-	testjpeg();
+	//testjpeg();
 	//imagetobg("mono.png");
 
 	while (1) {
@@ -74,6 +75,13 @@ int main(){
 			case (2): {
 				while (1) {
 					mmStreamUpdate();
+					if (fifoCheckDatamsg(FIFO_USER_08)) {
+						//mensaje debug
+						int len = fifoCheckDatamsgLength(FIFO_USER_08);
+						u8 msg[len];
+						fifoGetDatamsg(FIFO_USER_08, len, msg);
+						printf("\narm7: %s", msg);
+					}
 					swiWaitForVBlank();
 				}
 			}

@@ -1,8 +1,3 @@
-export ARM7_MAJOR	:= 0
-export ARM7_MINOR	:= 7
-export ARM7_PATCH	:= 4
-
-VERSTRING	:=	$(ARM7_MAJOR).$(ARM7_MINOR).$(ARM7_PATCH)
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
@@ -12,7 +7,6 @@ endif
 
 include $(DEVKITARM)/ds_rules
 #---------------------------------------------------------------------------------
-# TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
@@ -33,6 +27,7 @@ CFLAGS	:=	-g -Wall -Os\
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM7
+CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=ds_arm7.specs -g $(ARCH) -Wl,--nmagic -Wl,-Map,$(notdir $*).map
@@ -41,14 +36,14 @@ LDFLAGS	=	-specs=ds_arm7.specs -g $(ARCH) -Wl,--nmagic -Wl,-Map,$(notdir $*).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -ldswifi7 -lmm7 -lnds7
+LIBS	:= -lfat -ldswifi7 -lmm7 -lnds7
 
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:=	$(LIBNDS)
+LIBDIRS	:=	$(DEVKITPRO)/portlibs/arm $(LIBNDS)
 
 
 #---------------------------------------------------------------------------------
