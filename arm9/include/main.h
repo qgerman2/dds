@@ -4,6 +4,7 @@
 #include "parse.h"
 void imagetobg(std::string path);
 void testpng();
+void testjpeg();
 extern songdata song;
 extern int state;
 extern std::string songpath;

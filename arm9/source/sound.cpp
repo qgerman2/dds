@@ -81,7 +81,7 @@ void s_play() {
 }
 
 void loadmp3() {
-	myMp3 = fopen("/ddr/rap.mp3", "rb");
+	myMp3 = fopen("/ddr/song.mp3", "rb");
 	fillmp3();
 }
 

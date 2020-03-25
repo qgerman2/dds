@@ -12,6 +12,7 @@
 #include <maxmod9.h>
 #include <zlib.h>
 #include <png.h>
+#include <jpeglib.h>
 
 #define PNG_ROWBYTES(pixel_bits, width) \
     ((pixel_bits) >= 8 ? \
@@ -47,9 +48,11 @@ int main(){
 	//consoleDebugInit(DebugDevice_NOCASH);
 	cout << "\nzlib: " << zlibVersion();
 	cout << "\nlibpng: " << PNG_LIBPNG_VER_STRING;
+	cout << "\nlibjpeg-turbo: " << LIBJPEG_TURBO_VERSION_NUMBER;
 	s_play();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
-	testpng();
+	//testpng();
+	testjpeg();
 	//imagetobg("mono.png");
 
 	while (1) {
@@ -78,6 +81,41 @@ int main(){
 
 	}
 	return 0;
+}
+
+void jpegErrorExit ( j_common_ptr cinfo )
+{
+    char jpegLastErrorMsg[JMSG_LENGTH_MAX];
+    /* Create the message */
+    ( *( cinfo->err->format_message ) ) ( cinfo, jpegLastErrorMsg );
+
+    /* Jump to the setjmp point */
+    cout << "\n" << jpegLastErrorMsg; // or your preffered exception ...
+}
+
+void testjpeg() {
+	u16* bg = bgGetGfxPtr(bgid);
+	struct jpeg_decompress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	cinfo.err = jpeg_std_error( &jerr );
+	jerr.error_exit = jpegErrorExit;
+	FILE* infile = fopen("mono.jpeg", "rb");
+	jpeg_create_decompress(&cinfo);
+	jpeg_stdio_src(&cinfo, infile);
+	jpeg_read_header(&cinfo, TRUE);
+	cinfo.out_color_space = JCS_RGB;
+	jpeg_start_decompress(&cinfo);
+	JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray) ((j_common_ptr) &cinfo, JPOOL_IMAGE, cinfo.output_width * cinfo.output_components, 1);
+	while (cinfo.output_scanline < cinfo.output_height) {
+		jpeg_read_scanlines(&cinfo, buffer, 1);
+		for (int x = 0; x < 256 * 3; x = x + 3) {
+			bg[(x / 3) + 256 * cinfo.output_scanline] = ARGB16(1, buffer[0][x] >> 3, buffer[0][x + 1] >> 3, buffer[0][x + 2] >> 3);
+		}
+		swiWaitForVBlank();
+	}
+	jpeg_finish_decompress(&cinfo);
+	jpeg_destroy_decompress(&cinfo);
+	fclose(infile);
 }
 
 void imagetobg(string path) {
