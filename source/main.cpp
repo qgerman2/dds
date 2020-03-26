@@ -37,11 +37,11 @@ int main(){
 		sassert(0, "failed to load libfat");
 	}
 	consoleDemoInit();
+	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 	
-	processArtwork("mono.png", 0);
+	processArtwork("duck2.jpg", 0);
 
 	s_play();
-	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 
 	while (1) {
 		switch (state) {

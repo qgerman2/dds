@@ -1,14 +1,27 @@
 #ifndef ARTWORK
 #define ARTWORK
+#define PIXELFRAC 5
+#define COLORFRAC 5
+#define NDSWIDTH 256
 #define PNGBUFFER 2000
 #define PNG_ROWBYTES(pixel_bits, width) \
-    ((pixel_bits) >= 8 ? \
-    ((size_t)(width) * (((size_t)(pixel_bits)) >> 3)) : \
-    (( ((size_t)(width) * ((size_t)(pixel_bits))) + 7) >> 3) )
+	((pixel_bits) >= 8 ? \
+	((size_t)(width) * (((size_t)(pixel_bits)) >> 3)) : \
+	(( ((size_t)(width) * ((size_t)(pixel_bits))) + 7) >> 3) )
+#include <nds.h>
 #include <string>
 #include <jpeglib.h>
 #include <png.h>
+struct transform {
+	u32 source_width;
+	u32 source_height;
+	u32 output_width;
+	u32 output_height;
+	u32 area_width;
+	u8* output;
+};
 bool processArtwork(std::string filepath, int type);
+void processScanline(u8* scanline, int count, int width, int height);
 bool fromJpeg(std::string filepath, int type);
 void errorJpeg(j_common_ptr cinfo);
 bool fromPng(std::string filepath, int type);
