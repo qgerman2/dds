@@ -1,6 +1,6 @@
 #ifndef ARTWORK
 #define ARTWORK
-#define PIXELFRAC 5
+#define PIXELFRAC 6
 #define COLORFRAC 5
 #define NDSWIDTH 256
 #define PNGBUFFER 2000
@@ -18,7 +18,8 @@ struct transform {
 	u32 output_width;
 	u32 output_height;
 	u32 area_width;
-	u8* output;
+	u32 area_height;
+	u32* output;
 };
 bool processArtwork(std::string filepath, int type);
 void processScanline(u8* scanline, int count, int width, int height);

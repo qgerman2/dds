@@ -20,33 +20,50 @@ bool processArtwork(string filepath, int type) {
 }
 
 void processScanline(struct transform* tinfo, u8* scanline, int count) {
-	u16* bg = bgGetGfxPtr(bgid);
+	count--;
+	int rowweight = (1 << PIXELFRAC);
+	int nextrowweight = 0;
+	int row = count * tinfo->output_height / tinfo->source_height;
+	int endcount = ((((row + 1) * tinfo->area_height) + (1 << PIXELFRAC) - 1) / (1 << PIXELFRAC)) - 1;
+	if (count == endcount) {
+		int endcountweight = ((row + 1) * tinfo->area_height) % (1 << PIXELFRAC);
+		if (endcountweight != 0) {
+			rowweight = endcountweight;
+			nextrowweight = (1 << PIXELFRAC) - rowweight;
+		}
+	}
+	cout << "\ncount: " << count << " row: " << row << " w: " << rowweight << " nw: " << nextrowweight;
+	swiWaitForVBlank();
+	swiWaitForVBlank(); 
 	for (uint out_x = 0; out_x < tinfo->output_width; out_x++) {
 		uint startpixel = (out_x * tinfo->area_width) / (1 << PIXELFRAC);
 		uint endpixel = ((((out_x + 1) * tinfo->area_width) + (1 << PIXELFRAC) - 1) / (1 << PIXELFRAC)) - 1;
 		uint r = 0;
 		uint g = 0;
 		uint b = 0;
-		//cout << "\nat " << out_x << " from " << startpixel << " to " << endpixel << "\n";
 		for (uint src_x = startpixel; src_x <= endpixel; src_x++) {
-			int weigth = (1 << PIXELFRAC);
+			int weight = (1 << PIXELFRAC);
 			if (src_x == startpixel) {
-				int startweigth = (1 << PIXELFRAC) - ((out_x * tinfo->area_width) % 32);
-				if (startweigth != 0) {weigth = startweigth;}
+				int startweight = (1 << PIXELFRAC) - ((out_x * tinfo->area_width) % (1 << PIXELFRAC));
+				if (startweight != 0) {weight = startweight;}
 			} else if (src_x == endpixel) {
-				int endweigth = ((out_x + 1) * tinfo->area_width) % 32;
-				if (endweigth != 0) {weigth = endweigth;}
+				int endweight = ((out_x + 1) * tinfo->area_width) % (1 << PIXELFRAC);
+				if (endweight != 0) {weight = endweight;}
 			}
-			r += ((scanline[src_x * 3] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weigth;
-			g += ((scanline[src_x * 3 + 1] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weigth;
-			b += ((scanline[src_x * 3 + 2] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weigth;
-			//cout << weigth << " ";
+			r += ((scanline[src_x * 3] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weight;
+			g += ((scanline[src_x * 3 + 1] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weight;
+			b += ((scanline[src_x * 3 + 2] << (COLORFRAC * 2)) / (tinfo->area_width << COLORFRAC)) * weight;
 		}
-		r = r >> COLORFRAC;
-		g = g >> COLORFRAC;
-		b = b >> COLORFRAC;
-		bg[out_x + 256 * count] = ARGB16(1, r >> 3, g >> 3, b >> 3);
-		//swiWaitForVBlank();
+		int out_i = out_x + row * tinfo->output_width;
+		tinfo->output[out_i * 3] += (r << COLORFRAC) / (tinfo->area_height << COLORFRAC) * rowweight;
+		tinfo->output[out_i * 3 + 1] += (g << COLORFRAC) / (tinfo->area_height << COLORFRAC) * rowweight;
+		tinfo->output[out_i * 3 + 2] += (b << COLORFRAC) / (tinfo->area_height << COLORFRAC) * rowweight;
+		if (nextrowweight) {
+			int out_ii = out_x + (row + 1) * tinfo->output_width;
+			tinfo->output[out_ii * 3] += (r << COLORFRAC) / (tinfo->area_height << COLORFRAC) * nextrowweight;
+			tinfo->output[out_ii * 3 + 1] += (g << COLORFRAC) / (tinfo->area_height << COLORFRAC) * nextrowweight;
+			tinfo->output[out_ii * 3 + 2] += (b << COLORFRAC) / (tinfo->area_height << COLORFRAC) * nextrowweight;
+		}
 	}
 }
 
@@ -65,19 +82,24 @@ bool fromJpeg(string filepath, int type) {
 	tinfo.source_height = cinfo.image_height;
 	tinfo.output_width = 256;
 	tinfo.output_height = 192;
-	tinfo.output = new u8[tinfo.output_width * tinfo.output_height * 3]();
-	tinfo.area_width = (1 << PIXELFRAC) * (tinfo.source_width << PIXELFRAC) / (tinfo.output_width << PIXELFRAC);
-	cout << "\n" << tinfo.area_width;
+	tinfo.output = new u32[tinfo.output_width * tinfo.output_height * 3]();
+	tinfo.area_width = (tinfo.source_width << (PIXELFRAC * 2)) / (tinfo.output_width << PIXELFRAC);
+	tinfo.area_height = (tinfo.source_height << (PIXELFRAC * 2)) / (tinfo.output_height << PIXELFRAC);
+	cout << "\n" << tinfo.area_width << " " << tinfo.area_height;
 	jpeg_start_decompress(&cinfo);
 	int bufsize = cinfo.output_width * cinfo.output_components;
 	JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray) ((j_common_ptr) &cinfo, JPOOL_IMAGE, bufsize, 1);
-	while (cinfo.output_scanline < 200) {
+	while (cinfo.output_scanline < cinfo.output_height) {
 		jpeg_read_scanlines(&cinfo, buffer, 1);
 		processScanline(&tinfo, (u8*)buffer[0], cinfo.output_scanline);
 	}
 	jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
 	fclose(infile);
+	u16* bg = bgGetGfxPtr(bgid);
+	for (uint i = 0; i < tinfo.output_width * tinfo.output_height * 3; i = i + 3) {
+		bg[i / 3] = ARGB16(1, tinfo.output[i] >> 8, tinfo.output[i + 1] >> 8, tinfo.output[i + 2] >> 8);
+	}
 	return true;
 }
 
