@@ -1,6 +1,6 @@
 #ifndef ARTWORK
 #define ARTWORK
-#define PIXELFRAC 5
+#define PIXELFRAC 6
 #define COLORFRAC 6
 #define NDSWIDTH 256
 #define PNGBUFFER 2000

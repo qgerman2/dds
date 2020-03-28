@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <jpeglib.h>
 #include <zlib.h>
 #include <png.h>
@@ -34,6 +35,7 @@ void processScanline(struct transform* tinfo, u8* scanline, int count) {
 			nextrowweight = (1 << PIXELFRAC) - rowweight;
 		}
 	}
+	cout << "\nc: " << count << " r: " << row << " w: " << rowweight << " nw: " << nextrowweight; 
 	for (uint out_x = 0; out_x < tinfo->output_width; out_x++) {
 		uint startpixel = (out_x * AREAWIDTH) / (1 << PIXELFRAC);
 		uint endpixel = ((((out_x + 1) * AREAWIDTH) + (1 << PIXELFRAC) - 1) / (1 << PIXELFRAC)) - 1;
@@ -62,6 +64,15 @@ void processScanline(struct transform* tinfo, u8* scanline, int count) {
 			tinfo->output[out_ii * 3] += (r << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
 			tinfo->output[out_ii * 3 + 1] += (g << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
 			tinfo->output[out_ii * 3 + 2] += (b << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
+		}
+	}
+	//color cap
+	if (count == endcount) {
+		for (uint x = 0; x < tinfo->output_width; x++) {
+			int out_i = x + row * tinfo->output_width;
+			if (tinfo->output[out_i * 3] >= 255 << COLORFRAC) {tinfo->output[out_i * 3] = (255 << COLORFRAC) - 1;}
+			if (tinfo->output[out_i * 3 + 1] >= 255 << COLORFRAC) {tinfo->output[out_i * 3 + 1] = (255 << COLORFRAC) - 1;}
+			if (tinfo->output[out_i * 3 + 2] >= 255 << COLORFRAC) {tinfo->output[out_i * 3 + 2] = (255 << COLORFRAC) - 1;}
 		}
 	}
 }
@@ -94,7 +105,7 @@ bool fromJpeg(string filepath, int type) {
 	fclose(infile);
 	u16* bg = bgGetGfxPtr(bgid);
 	for (uint i = 0; i < tinfo.output_width * tinfo.output_height * 3; i = i + 3) {
-		bg[i / 3] = ARGB16(1, tinfo.output[i] >> 9, tinfo.output[i + 1] >> 9, tinfo.output[i + 2] >> 9);
+		bg[i / 3] = ARGB16(1, tinfo.output[i] >> (COLORFRAC + 3), tinfo.output[i + 1] >> (COLORFRAC + 3), tinfo.output[i + 2] >> (COLORFRAC + 3));
 	}
 	return true;
 }

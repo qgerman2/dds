@@ -39,7 +39,7 @@ int main(){
 	consoleDemoInit();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 	
-	processArtwork("mono2.png", 0);
+	processArtwork("mono.jpeg", 0);
 
 	s_play();
 
