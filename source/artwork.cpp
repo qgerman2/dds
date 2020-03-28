@@ -94,7 +94,7 @@ bool fromJpeg(string filepath, int type) {
 	fclose(infile);
 	u16* bg = bgGetGfxPtr(bgid);
 	for (uint i = 0; i < tinfo.output_width * tinfo.output_height * 3; i = i + 3) {
-		bg[i / 3] = ARGB16(1, tinfo.output[i] >> 8, tinfo.output[i + 1] >> 8, tinfo.output[i + 2] >> 8);
+		bg[i / 3] = ARGB16(1, tinfo.output[i] >> 9, tinfo.output[i + 1] >> 9, tinfo.output[i + 2] >> 9);
 	}
 	return true;
 }
@@ -106,9 +106,15 @@ void errorJpeg(j_common_ptr cinfo) {
 }
 
 bool fromPng(string filepath, int type) {
-	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, warningPng);
+	struct transform tinfo;
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (void*)&tinfo, errorPng, warningPng);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	png_set_progressive_read_fn(png_ptr, NULL, infoPng, rowPng, endPng);
+	png_set_packing(png_ptr);
+	png_set_palette_to_rgb(png_ptr);
+	png_set_gray_to_rgb(png_ptr);
+	png_set_strip_16(png_ptr);
+	png_set_strip_alpha(png_ptr);
 	u_char inbuf[PNGBUFFER];
 	FILE* infile;
 	if (!(infile = fopen(filepath.c_str(), "rb"))) {
@@ -130,35 +136,35 @@ bool fromPng(string filepath, int type) {
 
 void infoPng(png_structp png_ptr, png_infop info_ptr) {
 	cout << "\ninfo callback";
-	png_uint_32 channels = png_get_channels(png_ptr, info_ptr);
 	png_uint_32 width;
 	png_uint_32 height;
-	int bit_depth;
-	int color_type;
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, NULL, NULL, NULL, NULL, NULL);
+	struct transform* tinfo = (struct transform*)png_get_progressive_ptr(png_ptr);
+	tinfo->source_width = width;
+	tinfo->source_height = height;
+	tinfo->output_width = 256;
+	tinfo->output_height = 192;
+	tinfo->output = new u32[tinfo->output_width * tinfo->output_height * 3]();
 	png_read_update_info(png_ptr, info_ptr);
-	uint pixel_depth = channels * bit_depth;
-	cout << "\nwidth: " << width << " height: " << height << " bitdepth: " << bit_depth << " color_type: " << color_type;
-	cout << "\nchannels: " << channels << " pixel_depth: " << pixel_depth;
-	uint row_bytes = PNG_ROWBYTES(pixel_depth, width);
-	cout << "\nrow_bytes: " << row_bytes;
-
 }
 
 void rowPng(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass) {
-	//u16* bg = bgGetGfxPtr(bgid);
-	if (!new_row) {
-		cout << "\nrow vacia";
-	}
-	//u8* row = (u8*)new_row;
-	for (int x = 0; x < 256 * 3; x = x + 3) {
-		//bg[(x / 3) + 256 * row_num] = ARGB16(1, row[x] >> 3, row[x + 1] >> 3, row[x + 2] >> 3);
-	}
-	//swiWaitForVBlank();
+	struct transform* tinfo = (struct transform*)png_get_progressive_ptr(png_ptr);
+	processScanline(tinfo, new_row, row_num);
+	swiWaitForVBlank();
 }
 
 void endPng(png_structp png_ptr, png_infop info_ptr) {
-	//cout << "\nend callback";
+	struct transform* tinfo = (struct transform*)png_get_progressive_ptr(png_ptr);
+	u16* bg = bgGetGfxPtr(bgid);
+	for (uint i = 0; i < tinfo->output_width * tinfo->output_height * 3; i = i + 3) {
+		bg[i / 3] = ARGB16(1, tinfo->output[i] >> 9, tinfo->output[i + 1] >> 9, tinfo->output[i + 2] >> 9);
+	}
+	cout << "\nend callback";
+}
+
+void errorPng(png_structp png_ptr, png_const_charp msg) {
+	fprintf(stderr, "%s\n", msg);
 }
 
 void warningPng(png_structp png_ptr, png_const_charp msg) {

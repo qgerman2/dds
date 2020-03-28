@@ -1,7 +1,7 @@
 #ifndef ARTWORK
 #define ARTWORK
-#define PIXELFRAC 6
-#define COLORFRAC 5
+#define PIXELFRAC 5
+#define COLORFRAC 6
 #define NDSWIDTH 256
 #define PNGBUFFER 2000
 #define PNG_ROWBYTES(pixel_bits, width) \
@@ -29,5 +29,6 @@ bool fromPng(std::string filepath, int type);
 void infoPng(png_structp png_ptr, png_infop info_ptr);
 void rowPng(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass);
 void endPng(png_structp png_ptr, png_infop info_ptr);
+void errorPng(png_structp png_ptr, png_const_charp msg);
 void warningPng(png_structp png_ptr, png_const_charp msg);
 #endif
