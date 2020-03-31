@@ -27,6 +27,10 @@ bool processArtwork(string filepath, int type) {
 		if (processFile(&infile, filepath)) {
 			success = fromPng(infile, &tinfo);
 		}
+	} else if (extension == "bmp") {
+		if (processFile(&infile, filepath)) {
+			//success = fromBmp(infile, &tinfo);
+		}
 	} else {
 		cout << "\nNot an image file " << filepath;
 		success = false;
@@ -146,6 +150,15 @@ void errorJpeg(j_common_ptr cinfo) {
 }
 
 bool fromPng(FILE* infile, struct transform* tinfo) {
+	u_char inbuf[PNGBUFFER];
+	if (fread(inbuf, 1, 8, infile) != 8) {
+		cout << "\nFailed to read png header";
+		return false;
+	}
+	if (png_sig_cmp(inbuf, 0, 8)) {
+		cout << "\nImage is not a valid png";
+		return false;
+	}
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, errorPng, warningPng);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	png_set_progressive_read_fn(png_ptr, tinfo, infoPng, rowPng, endPng);
@@ -154,7 +167,7 @@ bool fromPng(FILE* infile, struct transform* tinfo) {
 	png_set_gray_to_rgb(png_ptr);
 	png_set_strip_16(png_ptr);
 	png_set_strip_alpha(png_ptr);
-	u_char inbuf[PNGBUFFER];
+	png_process_data(png_ptr, info_ptr, inbuf, 8);
 	int incount = 0;
 	while (1) {
 		incount = fread(inbuf, 1, PNGBUFFER, infile);
