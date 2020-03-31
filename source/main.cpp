@@ -10,6 +10,7 @@
 #include "parse.h"
 #include "sound.h"
 #include "artwork.h"
+#include <font.h>
 
 using namespace std;
 
@@ -32,14 +33,25 @@ int main(){
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 
+	PrintConsole *console = consoleInit(0, 1, BgType_Text4bpp, BgSize_T_256x256, 16, 0, false, true);
+	ConsoleFont font;
+	font.gfx = (u16*)fontTiles;
+	font.pal = (u16*)fontPal;
+	font.numChars = 95;
+	font.numColors = fontPalLen / 2;
+	font.bpp = 4;
+	font.asciiOffset = 32;
+	font.convertSingleColor = false;
+	consoleSetFont(console, &font);
+	cout << "\nhola";
 	
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
-	consoleDemoInit();
+	//consoleDemoInit();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 	
-	processArtwork("mono.jpeg", 0);
+	processArtwork("mono.png", 0);
 
 	s_play();
 

@@ -126,9 +126,9 @@ void MenuWheel::next() {
 		buffercursor -= size;
 	}
 	else if (buffercursor >= (BUFFERSIZE - WHEELVIEW / 2 - 1)) {
-		cursor = cursor + (BUFFERSIZE / 2 - WHEELVIEW / 2);
-		if (cursor >= size) {
-			cursor -= size;
+		buffercenter = buffercenter + (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (buffercenter >= size) {
+			buffercenter -= size;
 		}
 		buffercursor = BUFFERSIZE / 2;
 		//mover bufferitems
@@ -163,9 +163,9 @@ void MenuWheel::prev() {
 		buffercursor += size;
 	}
 	else if (buffercursor <= (WHEELVIEW / 2)) {
-		cursor = cursor - (BUFFERSIZE / 2 - WHEELVIEW / 2);
-		if (cursor < 0) {
-			cursor += size;
+		buffercenter = buffercenter - (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (buffercenter < 0) {
+			buffercenter += size;
 		}
 		buffercursor = BUFFERSIZE / 2;
 		//mover bufferitems
@@ -297,10 +297,16 @@ void MenuWheel::fillBuffer() {
 			}
 		}
 	}
+	for (int i = 0; i < BUFFERSIZE; i++) {
+		cout << "\n" << i << " " << bufferitems[i].type;
+		if (i == buffercursor) {
+			cout << " <<";
+		}
+	}
 }
 
 int MenuWheel::bufferToFile(int i) {
-	int pos = cursor - (BUFFERSIZE / 2) + i;
+	int pos = buffercenter - (BUFFERSIZE / 2) + i;
 	while (pos >= size) {
 		pos = pos - size;
 	}
@@ -311,14 +317,14 @@ int MenuWheel::bufferToFile(int i) {
 }
 
 int MenuWheel::dircountToBuffer(int i) {
-	if (abs(cursor - i) <= (BUFFERSIZE / 2)) {
-		return (i - cursor + (BUFFERSIZE / 2));
+	if (abs(buffercenter - i) <= (BUFFERSIZE / 2)) {
+		return (i - buffercenter + (BUFFERSIZE / 2));
 	}
-	else if (abs(cursor + size - i) <= (BUFFERSIZE / 2)) {
-		return (i - size - cursor + (BUFFERSIZE / 2));
+	else if (abs(buffercenter + size - i) <= (BUFFERSIZE / 2)) {
+		return (i - size - buffercenter + (BUFFERSIZE / 2));
 	}
-	else if (abs(cursor - size - i) <= (BUFFERSIZE / 2)) {
-		return (i + size - cursor + (BUFFERSIZE / 2));
+	else if (abs(buffercenter - size - i) <= (BUFFERSIZE / 2)) {
+		return (i + size - buffercenter + (BUFFERSIZE / 2));
 	}
 	return -1;
 }
@@ -340,6 +346,13 @@ void MenuWheel::render() {
 		}
 		songpath = bufferitems[buffercursor].smpath;
 		//cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << songpath;
+		cout << "\nbuffercenter: " << buffercenter;
+		for (int i = 0; i < BUFFERSIZE; i++) {
+			cout << "\n" << i << " " << bufferitems[i].type;
+			if (i == buffercursor) {
+				cout << " <<";
+			}
+		}
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);

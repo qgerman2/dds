@@ -14,16 +14,6 @@ Menu::Menu() {
 		pushSpriteSub(i);
 	}
 	wheel = new MenuWheel();
-	PrintConsole *console = consoleInit(0, 2, BgType_Text4bpp, BgSize_T_256x256, 4, 1, true, false);
-	ConsoleFont font;
-	font.gfx = (u16*)fontTiles;
-	font.pal = (u16*)fontPal;
-	font.numChars = 95;
-	font.numColors = fontPalLen / 2;
-	font.bpp = 4;
-	font.asciiOffset = 32;
-	font.convertSingleColor = false;
-	consoleSetFont(console, &font);
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }

@@ -8,7 +8,7 @@
 #define WHEELANGLE 6
 #define WHEELVIEW 9
 #define WHEELVIEWCHAR 7
-#define BUFFERSIZE 49
+#define BUFFERSIZE 19
 typedef struct wheelitem{
 	int type = -1;
 	std::string name;
@@ -30,7 +30,7 @@ private:
 	int bg1;
 	int bg2;
 	int anim = 0;
-	int cursor = 0;
+	int buffercenter = 0;
 	void loadSongFontGfx();
 	void loadFrameBg();
 	void fillBuffer();
