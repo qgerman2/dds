@@ -246,6 +246,7 @@ bool exportArtwork(string filepath, struct transform* tinfo) {
 			u16 pixel = ARGB16(1, tinfo->output[offset] >> (COLORFRAC + 3), tinfo->output[offset + 1] >> (COLORFRAC + 3), tinfo->output[offset + 2] >> (COLORFRAC + 3));
 			fwrite(&pixel, 2, 1, bmp);
 		}
+		fwrite(&(info.zero), 1, (tinfo->output_width * 2) % 4, bmp);
 	}
 	fclose(bmp);
 	return false;
