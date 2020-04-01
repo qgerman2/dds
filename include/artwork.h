@@ -4,10 +4,6 @@
 #define COLORFRAC 7
 #define NDSWIDTH 256
 #define PNGBUFFER 2500
-#define PNG_ROWBYTES(pixel_bits, width) \
-	((pixel_bits) >= 8 ? \
-	((size_t)(width) * (((size_t)(pixel_bits)) >> 3)) : \
-	(( ((size_t)(width) * ((size_t)(pixel_bits))) + 7) >> 3) )
 #include <nds.h>
 #include <string>
 #include <jpeglib.h>
@@ -17,8 +13,6 @@ struct transform {
 	u32 source_height;
 	u32 output_width;
 	u32 output_height;
-	u32 area_width;
-	u32 area_height;
 	u32* output = NULL;
 	bool error = false;
 	std::string error_msg;
@@ -26,6 +20,22 @@ struct transform {
 struct jpeg_error {
 	struct jpeg_error_mgr mgr;
 	struct transform* tinfo;
+};
+struct bmp {
+	const char* bm = "BM";
+	const char* dds = "!dds";
+	u32 size = 0;
+	u32 offset_pixel = 70;
+	u32 size_header = 56;
+	u16 planes = 1;
+	u16 colordepth = 16;
+	u32 mode = 3;
+	u32 size_pixel = 99;
+	u32 print_res = 2835;
+	u32 zero = 0;
+	u32 red_mask = 31744;	//11111 00000 00000
+	u32 green_mask = 992;	//00000 11111 00000
+	u32 blue_mask = 31;		//00000 00000 11111
 };
 bool processArtwork(std::string filepath, int type);
 bool processFile(FILE** infile, std::string);
@@ -38,4 +48,5 @@ void rowPng(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pas
 void endPng(png_structp png_ptr, png_infop info_ptr);
 void errorPng(png_structp png_ptr, png_const_charp msg);
 void warningPng(png_structp png_ptr, png_const_charp msg);
+bool exportArtwork(std::string filepath, struct transform* tinfo);
 #endif

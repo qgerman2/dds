@@ -27,19 +27,16 @@ bool processArtwork(string filepath, int type) {
 		if (processFile(&infile, filepath)) {
 			success = fromPng(infile, &tinfo);
 		}
-	} else if (extension == "bmp") {
-		if (processFile(&infile, filepath)) {
-			//success = fromBmp(infile, &tinfo);
-		}
 	} else {
 		cout << "\nNot an image file " << filepath;
 		success = false;
 	}
-	if (tinfo.output != NULL) {
-		delete[] tinfo.output;
-	}
 	if (infile != NULL) {
 		fclose(infile);
+	}
+	if (tinfo.output != NULL) {
+		exportArtwork(filepath, &tinfo);
+		delete[] tinfo.output;
 	}
 	return success;
 }
@@ -133,10 +130,6 @@ bool fromJpeg(FILE* infile, struct transform* tinfo) {
 	}
 	jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
-	u16* bg = bgGetGfxPtr(bgid);
-	for (uint i = 0; i < tinfo->output_width * tinfo->output_height * 3; i = i + 3) {
-		bg[i / 3] = ARGB16(1, tinfo->output[i] >> (COLORFRAC + 3), tinfo->output[i + 1] >> (COLORFRAC + 3), tinfo->output[i + 2] >> (COLORFRAC + 3));
-	}
 	return true;
 }
 
@@ -205,11 +198,7 @@ void rowPng(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pas
 }
 
 void endPng(png_structp png_ptr, png_infop info_ptr) {
-	struct transform* tinfo = (struct transform*)png_get_progressive_ptr(png_ptr);
-	u16* bg = bgGetGfxPtr(bgid);
-	for (uint i = 0; i < tinfo->output_width * tinfo->output_height * 3; i = i + 3) {
-		bg[i / 3] = ARGB16(1, tinfo->output[i] >> (COLORFRAC + 3), tinfo->output[i + 1] >> (COLORFRAC + 3), tinfo->output[i + 2] >> (COLORFRAC + 3));
-	}
+
 }
 
 void errorPng(png_structp png_ptr, png_const_charp msg) {
@@ -221,4 +210,43 @@ void errorPng(png_structp png_ptr, png_const_charp msg) {
 
 void warningPng(png_structp png_ptr, png_const_charp msg) {
 	cout << "\nlibpng warning: " << msg;
+}
+
+bool exportArtwork(string filepath, struct transform* tinfo) {
+	u16* bg = bgGetGfxPtr(bgid);
+	for (uint i = 0; i < tinfo->output_width * tinfo->output_height * 3; i = i + 3) {
+		bg[i / 3] = ARGB16(1, tinfo->output[i] >> (COLORFRAC + 3), tinfo->output[i + 1] >> (COLORFRAC + 3), tinfo->output[i + 2] >> (COLORFRAC + 3));
+	}
+	struct bmp info;
+	info.size_pixel = tinfo->output_width * tinfo->output_height * 2;
+	info.size = info.size_pixel + info.offset_pixel;
+	FILE* bmp = fopen("output.bmp", "wb");
+	fwrite(info.bm, 2, 1, bmp);
+	fwrite(&(info.size), 4, 1, bmp);
+	fwrite(info.dds, 4, 1, bmp);
+	fwrite(&(info.offset_pixel), 4, 1, bmp);
+	fwrite(&(info.size_header), 4, 1, bmp);
+	fwrite(&(tinfo->output_width), 4, 1, bmp);
+	fwrite(&(tinfo->output_height), 4, 1, bmp);
+	fwrite(&(info.planes), 2, 1, bmp);
+	fwrite(&(info.colordepth), 2, 1, bmp);
+	fwrite(&(info.mode), 4, 1, bmp);
+	fwrite(&(info.size_pixel), 4, 1, bmp);
+	fwrite(&(info.print_res), 4, 1, bmp);
+	fwrite(&(info.print_res), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	fwrite(&(info.blue_mask), 4, 1, bmp);
+	fwrite(&(info.green_mask), 4, 1, bmp);
+	fwrite(&(info.red_mask), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	for (int y = tinfo->output_height - 1; y >= 0; y--) {
+		for (uint x = 0; x < tinfo->output_width; x++) {
+			uint offset = (y * tinfo->output_width * 3) + (x * 3);
+			u16 pixel = ARGB16(1, tinfo->output[offset] >> (COLORFRAC + 3), tinfo->output[offset + 1] >> (COLORFRAC + 3), tinfo->output[offset + 2] >> (COLORFRAC + 3));
+			fwrite(&pixel, 2, 1, bmp);
+		}
+	}
+	fclose(bmp);
+	return false;
 }
