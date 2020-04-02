@@ -51,8 +51,8 @@ int main(){
 	//consoleDemoInit();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
 	
-	processArtwork("mono.png", 0);
-
+	processArtwork("mono.png", bgGetGfxPtr(bgid), 0);
+	exportArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
 	s_play();
 
 	while (1) {
