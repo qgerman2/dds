@@ -12,12 +12,12 @@
 
 using namespace std;
 
-bool processArtwork(string filepath, u16* dest, int type) {
+bool processArtwork(string filepath, u16* dest, uint width, uint height) {
 	FILE* infile = NULL;
 	bool success = false;
 	struct transform tinfo;
-	tinfo.output_width = 100;
-	tinfo.output_height = 100;
+	tinfo.output_width = width;
+	tinfo.output_height = height;
 	tinfo.output = dest;
 	string extension = filepath.substr(filepath.find_last_of(".") + 1);
 	if (extension == "jpeg" || extension == "jpg") {
@@ -84,11 +84,7 @@ void processScanline(struct transform* tinfo, u8* scanline, uint count) {
 		tinfo->row_buffer[out_x * 3 + 2] += (b << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * rowweight;
 		if (nextrowweight) {
 			//pixel a output
-			if (tinfo->row_buffer[out_x * 3] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3] = (255 << COLORFRAC) - 1;}
-			if (tinfo->row_buffer[out_x * 3 + 1] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 1] = (255 << COLORFRAC) - 1;}
-			if (tinfo->row_buffer[out_x * 3 + 2] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 2] = (255 << COLORFRAC) - 1;}
-			u16 pixel = ARGB16(1, tinfo->row_buffer[out_x * 3] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 1] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 2] >> (COLORFRAC + 3));
-			tinfo->output[out_x + row * tinfo->output_width] = pixel;
+			pixelToOutput(out_x, row, tinfo);
 			tinfo->row_buffer[out_x * 3] = (r << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
 			tinfo->row_buffer[out_x * 3 + 1] = (g << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
 			tinfo->row_buffer[out_x * 3 + 2] = (b << COLORFRAC) / ((AREAHEIGHT) << COLORFRAC) * nextrowweight;
@@ -96,21 +92,23 @@ void processScanline(struct transform* tinfo, u8* scanline, uint count) {
 	}
 	if (count == endcount) {
 		//rowbuffer a output
-		for (uint out_x = 0; out_x < tinfo->output_width; out_x++) {
-			if (tinfo->row_buffer[out_x * 3] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3] = (255 << COLORFRAC) - 1;}
-			if (tinfo->row_buffer[out_x * 3 + 1] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 1] = (255 << COLORFRAC) - 1;}
-			if (tinfo->row_buffer[out_x * 3 + 2] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 2] = (255 << COLORFRAC) - 1;}
-		}
 		if (!nextrowweight) {
 			for (uint out_x = 0; out_x < tinfo->output_width; out_x++) {
-				u16 pixel = ARGB16(1, tinfo->row_buffer[out_x * 3] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 1] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 2] >> (COLORFRAC + 3));
-				tinfo->output[out_x + row * tinfo->output_width] = pixel;
+				pixelToOutput(out_x, row, tinfo);
 				tinfo->row_buffer[out_x * 3] = 0;
 				tinfo->row_buffer[out_x * 3 + 1] = 0;
 				tinfo->row_buffer[out_x * 3 + 2] = 0;
 			}
 		}
 	}
+}
+
+void pixelToOutput(uint out_x, uint row, struct transform* tinfo) {
+	if (tinfo->row_buffer[out_x * 3] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3] = (255 << COLORFRAC) - 1;}
+	if (tinfo->row_buffer[out_x * 3 + 1] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 1] = (255 << COLORFRAC) - 1;}
+	if (tinfo->row_buffer[out_x * 3 + 2] >= 255 << COLORFRAC) {tinfo->row_buffer[out_x * 3 + 2] = (255 << COLORFRAC) - 1;}
+	u16 pixel = ARGB16(1, tinfo->row_buffer[out_x * 3] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 1] >> (COLORFRAC + 3), tinfo->row_buffer[out_x * 3 + 2] >> (COLORFRAC + 3));
+	tinfo->output[out_x + row * tinfo->output_width] = pixel;	
 }
 
 bool fromJpeg(FILE* infile, struct transform* tinfo) {
@@ -257,10 +255,6 @@ bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
 	return true;
 }
 
-bool loadArtwork(string filepath) {
-	return false;
-}
-
-bool displayArtwork(u8* data, u16* dest, uint bytes) {
+bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 	return false;
 }

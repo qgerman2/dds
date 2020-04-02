@@ -8,7 +8,6 @@
 #include <string>
 #include <jpeglib.h>
 #include <png.h>
-#include <iostream>
 struct transform {
 	u32 source_width;
 	u32 source_height;
@@ -42,9 +41,10 @@ struct bmp {
 	u32 green_mask = 992;	//00000 11111 00000
 	u32 blue_mask = 31;		//00000 00000 11111
 };
-bool processArtwork(std::string filepath, u16* dest, int type);
+bool processArtwork(std::string filepath, u16* dest, uint width, uint height);
 bool processFile(FILE** infile, std::string);
 void processScanline(struct transform* tinfo, u8* scanline, uint count);
+void pixelToOutput(uint out_x, uint row, struct transform* tinfo);
 bool fromJpeg(FILE* infile, struct transform* tinfo);
 void errorJpeg(j_common_ptr cinfo);
 bool fromPng(FILE* infile, struct transform* tinfo);
@@ -54,4 +54,5 @@ void endPng(png_structp png_ptr, png_infop info_ptr);
 void errorPng(png_structp png_ptr, png_const_charp msg);
 void warningPng(png_structp png_ptr, png_const_charp msg);
 bool exportArtwork(std::string filepath, u16* buffer, uint width, uint height);
+bool loadArtwork(std::string filepath, u16* dest, uint width, uint height);
 #endif
