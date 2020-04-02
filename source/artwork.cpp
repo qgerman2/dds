@@ -256,5 +256,86 @@ bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
 }
 
 bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
-	return false;
-}
+	FILE* bmp = fopen(filepath.c_str(), "rb");
+	if (bmp == NULL) {
+		cout << "\nCouldn't open artwork file";
+		return false;
+	}
+	char bm[2];
+	char dds[4];
+	uint size = 0;
+	uint offset = 0;
+	uint r_width = 0;
+	uint r_height = 0;
+	uint row = width * 2;
+	uint padding = (width * 2) % 4;
+	//BM signature
+	if (!fread(bm, 2, 1, bmp)) {
+		cout << "\nFailed to read bmp signature";
+		return false;
+	}
+	if (memcmp(bm, "BM", 2) != 0) {
+		cout << "\nFile doesn't have bmp signature";
+		return false;
+	}
+	//file size
+	if (!fread(&size, 4, 1, bmp)) {
+		cout << "\nFailed to read file size";
+		return false;
+	}
+	//!dds signature
+	if (!fread(dds, 4, 1, bmp)) {
+		cout << "\nFailed to read dds signature";
+		return false;
+	}
+	if (memcmp(dds, "!dds", 4) != 0) {
+		cout << "\nFile doesn't have dds signature";
+	}
+	//pixel data offset
+	if (!fread(&offset, 4, 1, bmp)) {
+		cout << "\nFailed to read pixel data offset";
+		return false;
+	}
+	if (offset > size) {
+		cout << "\nPixel data offset larger than file size";
+		return false;
+	}
+	//jump 4 bytes
+	if (fseek(bmp, 4, SEEK_CUR) != 0) {
+		cout << "\nFailed to jump to image width/height";
+		return false;
+	}
+	//compare width and height
+	if (!fread(&r_width, 4, 1, bmp)) {
+		cout << "\nFailed to read image width";
+		return false;
+	}
+	if (r_width != width) {
+		cout << "\nExpected width of " << width << " doesn't match reported width " << r_width;
+		return false;
+	}
+	if (!fread(&r_height, 4, 1, bmp)) {
+		cout << "\nFailed to read image height";
+		return false;
+	}
+	if (r_height != height) {
+		cout << "\nExpected height of " << height << " doesn't match reported height " << r_height;
+		return false;
+	}
+	//finally load the pixels
+	if (fseek(bmp, offset, SEEK_SET) != 0) {
+		cout << "\nFailed to jump to pixel data";
+		return false;
+	}
+	for (uint y = 0; y < height; y++) {
+		if (fread(&dest[(height - y - 1) * 256], 1, row, bmp) != row) {
+			cout << "\nFailed to read pixel row";
+			return false;
+		}
+		if (fseek(bmp, padding, SEEK_CUR) != 0) {
+			cout << "\nFailed to jump to next row";
+			return false;
+		}
+	}
+	return true;
+};
