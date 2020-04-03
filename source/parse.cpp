@@ -117,11 +117,6 @@ bool parseSimFile(songdata* song, string path) {
 	return true;
 }
 
-songdata parseSong() {
-	songdata song;
-	return song;
-}
-
 bool parseBPMS(songdata* song, bool parseStops) {
 	bpmdata* bpms = &song->bpms;
 	if (parseStops) {bpms = &song->stops;}
@@ -180,9 +175,6 @@ bool parseNotes(chart* chart) {
 	fseek(fp, chart->notes_offset, SEEK_SET);
 	while (nextChar(fp, &c)){
 		if (c == ';') {break;}
-		cout << (char*)&c;
-		swiWaitForVBlank();
-		swiWaitForVBlank();
 		if ((c == '0') || (c == '1') || (c == '2') || (c == '3') || (c == '4') || (c == 'M')) {
 			count++;
 			if (count > 3) {
@@ -224,3 +216,10 @@ bool parseNotes(chart* chart) {
 	fclose(fp);
 	return true;
 } 
+
+bool parseChart(songdata* song) {
+	parseBPMS(song, false);
+	parseBPMS(song, true);
+	parseNotes(&song->charts.back());
+	return true;
+}

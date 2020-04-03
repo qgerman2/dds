@@ -24,8 +24,6 @@ Play::Play(songdata* song){
 	render = new PlayRender(this);
 	score = new PlayScore(this);
 	input = new PlayInput(this);
-	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
-	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
 Play::~Play() {
@@ -44,6 +42,7 @@ void Play::loop(){
 		input->update();
 		mmStreamUpdate();
 		swiWaitForVBlank();
+		
 		updateSteps();
 		render->update();
 		oamUpdate(&oamMain);
@@ -348,13 +347,13 @@ void Play::removeStep(vector<step>::iterator* s) {
 }
 
 measure Play::getMeasureAtBeat(u32 beat) {
-	if (beat / 4 > song->charts.end()->notes.size() - 1) {
+	if (beat / 4 > song->charts.back().notes.size() - 1) {
 		while (1) {
 			swiWaitForVBlank();
 		}
 		sassert(0, "attempted to get nonexistant measure");
 	}
-	return song->charts.end()->notes.at(beat / 4);
+	return song->charts.back().notes.at(beat / 4);
 }
 
 u32 Play::millis() {

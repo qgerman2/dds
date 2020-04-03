@@ -24,33 +24,11 @@ mm_word streamogg(mm_word length, mm_addr dest, mm_stream_formats format);
 
 static signed short MadFixedToSshort(mad_fixed_t Fixed)
 {
-	/* A fixed point number is formed of the following bit pattern:
-	 *
-	 * SWWWFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-	 * MSB                          LSB
-	 * S ==> Sign (0 is positive, 1 is negative)
-	 * W ==> Whole part bits
-	 * F ==> Fractional part bits
-	 *
-	 * This pattern contains MAD_F_FRACBITS fractional bits, one
-	 * should alway use this macro when working on the bits of a fixed
-	 * point number. It is not guaranteed to be constant over the
-	 * different platforms supported by libmad.
-	 *
-	 * The signed short value is formed, after clipping, by the least
-	 * significant whole part bit, followed by the 15 most significant
-	 * fractional part bits. Warning: this is a quick and dirty way to
-	 * compute the 16-bit number, madplay includes much better
-	 * algorithms.
-	 */
-
-	/* Clipping */
 	if(Fixed>=MAD_F_ONE)
 		return(SHRT_MAX);
 	if(Fixed<=-MAD_F_ONE)
 		return(-SHRT_MAX);
 
-	/* Conversion. */
 	Fixed=Fixed>>(MAD_F_FRACBITS-15);
 	return((signed short)Fixed);
 }
@@ -85,35 +63,6 @@ void loadmp3() {
 	fillmp3();
 }
 
-/*void fillmp3() {
-	int res;
-	while (1) {
-		if (mad_frame_decode(&frame, &stream)) {
-			cout << "\n" << mad_stream_errorstr(&stream);
-			if (stream.error == MAD_ERROR_BUFLEN) {
-				cout << "\nrecargando buffer";
-				int remlen = stream.bufend - stream.next_frame;
-				//cout << "\nremlen: " << remlen;
-				//cout << "\nat next_frame 0 " << *(u16*)stream.next_frame;
-				//cout << "\nat readbuffer 0 before " << *(u16*)readbuffer;
-				memmove(readbuffer, stream.next_frame, remlen);
-				//cout << "\nat readbuffer 0 " << *(u16*)readbuffer;
-				res = fread(readbuffer + remlen, 1, 2000 - remlen, myMp3);
-				//cout << "\n" << remlen + res;
-				mad_stream_buffer(&stream, readbuffer, res + remlen);
-			} else if (stream.error == MAD_ERROR_BUFPTR) {
-				cout << "\nptr" << (stream.next_frame == NULL);
-				res = fread(readbuffer, 1, 2000, myMp3);
-				mad_stream_buffer(&stream, readbuffer, 2000);
-			} else if (stream.error != MAD_ERROR_LOSTSYNC) {
-				cout << "\nerror";
-				break;
-			}
-		} else {
-			
-		}
-	}
-}*/
 u_char* guard;
 const int bufsize = 1500;
 u_char readbuffer[bufsize];
@@ -213,19 +162,4 @@ mm_word streamogg(mm_word length, mm_addr dest, mm_stream_formats format) {
 		}
 	}
 	return length;
-	//return length;
-	/*if (file) {
-		int res = fread(buffer, 4, length, file);
-		if (res) {
-			length = res;
-			for (uint i = 0; i < length * 4; i++) {
-				output[i] = buffer[i];
-			}
-		} else {
-			mmStreamClose();
-			fclose(file);
-			length = 0;
-		}
-	}
-	return length;*/
 }

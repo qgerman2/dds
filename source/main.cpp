@@ -14,7 +14,7 @@
 
 using namespace std;
 
-int state = 2;
+int state = 1;
 string songpath;
 int bgid;
 
@@ -57,18 +57,9 @@ int main(){
 
 	songdata song;
 	parseSimFile(&song, "ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/toheart2 game opening.sm");
-	parseBPMS(&song, false);
-	//parseNotes(&song.charts.back());
-	for (auto it = song.bpms.begin(); it != song.bpms.end(); it++) {
-		cout << "\n" << it->beatf << " = " << it->bpmf;
-		swiWaitForVBlank();
-		swiWaitForVBlank();
-	}
+	parseChart(&song);
+	processArtwork("ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
 	
-	cout << "\ntitle: " << song.title;
-	cout << "\nartist: " << song.artist;
-	cout << "\nbanner;" << song.banner;
-	cout << "\nbg:" << song.bg;
 	s_play();
 
 	while (1) {
@@ -80,11 +71,13 @@ int main(){
 			}
 			break;
 			case (1): {
-				//metadata tags = parseSimFile(songpath, false);
-				//songdata song = parseSong(&tags);
-				//Play* play = new Play(&song);
-				//play->loop();
-				//delete play;
+				Play* play = new Play(&song);
+				play->loop();
+				while (1) {
+					mmStreamUpdate();
+					swiWaitForVBlank();
+				}
+				delete play;
 			}
 			break;
 			case (2): {

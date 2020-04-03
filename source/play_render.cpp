@@ -81,11 +81,12 @@ PlayRender::PlayRender(Play* play) {
 	loadNumberGfx();
 	loadJudgmentGfx();
 
-	loadSubBackground();
-	loadSubScore();
+	//loadSubBackground();
+	//loadSubScore();
 	//loadFontGfx();
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
-	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
+	//vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
+	consoleDemoInit();
 }
 
 PlayRender::~PlayRender() {
