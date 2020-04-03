@@ -13,16 +13,17 @@
 
 using namespace std;
 
-static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
 
 songdata::~songdata() {
 	int e = 0;
-	for (auto m = this->notes.begin(); m != this->notes.end(); m++) {
-		for (auto n = m->begin(); n != m->end(); n++) {
-			e++;
-			delete [] *n;
+	for (auto c = this->charts.begin(); c != this->charts.end(); c++) {
+		for (auto m = c->notes.begin(); m != c->notes.end(); m++) {
+			for (auto n = m->begin(); n != m->end(); n++) {
+				e++;
+				delete [] *n;
+			}
 		}
 	}
 }
@@ -48,8 +49,8 @@ bool nextChar(FILE* input, int* output) {
 	return true;
 }
 
-songdata parseSimFile(string path, bool partial) {
-	songdata simfile;
+bool parseSimFile(songdata* song, string path) {
+	song->filepath = path;
 	enum state {IDLE, KEY, VALUE};
 	FILE *fp = fopen(path.c_str(), "r");
 	int p;
@@ -65,12 +66,15 @@ songdata parseSimFile(string path, bool partial) {
 			case (KEY):
 				if (p == ':') {
 					task = VALUE;
-					if (buffer == "TITLE") {output = &simfile.title;}
-					else if (buffer == "ARTIST") {output = &simfile.artist;}
-					else if (buffer == "BANNER") {output = &simfile.banner;}
-					else if (buffer == "BACKGROUND") {output = &simfile.bg;}
+					if (buffer == "TITLE") {output = &song->title;}
+					else if (buffer == "ARTIST") {output = &song->artist;}
+					else if (buffer == "BANNER") {output = &song->banner;}
+					else if (buffer == "BACKGROUND") {output = &song->bg;}
+					else if (buffer == "BPMS") {song->bpms_offset = ftell(fp);}
+					else if (buffer == "STOPS") {song->stops_offset = ftell(fp);}
 					else if (buffer == "NOTES") {
-						simfile.charts.emplace_back();
+						song->charts.emplace_back();
+						song->charts.back().song = song;
 						key_chart = 1;
 					}
 					buffer = "";
@@ -87,21 +91,21 @@ songdata parseSimFile(string path, bool partial) {
 				}
 				if (key_chart) {
 					if (output == NULL) {
-						chart* new_chart = &simfile.charts.back();
+						chart* new_chart = &song->charts.back();
 						switch (key_chart) {
 							case 1: output = &new_chart->type; break;
 							case 2: output = &new_chart->description; break;
 							case 3: output = &new_chart->difficulty; break;
 							case 4: output = &new_chart->meter; break;
 							case 5: output = &new_chart->groove; break;
-							case 6:
-								new_chart->notes_offset = ftell(fp);
-								key_chart = 0; 
-								break;
 						}
 					}
 					if (p == ':') {
 						key_chart++;
+						if (key_chart == 6) {
+							song->charts.back().notes_offset = ftell(fp);
+							key_chart = 0;
+						}
 						output = NULL;
 					}
 				}
@@ -110,93 +114,75 @@ songdata parseSimFile(string path, bool partial) {
 		}
 	}
 	fclose(fp);
-	return simfile;
+	return true;
 }
 
-songdata parseSong(metadata* tags) {
+songdata parseSong() {
 	songdata song;
-	song.tags = tags;
-	for (auto i = tags->begin(); i != tags->end(); i++) {
-		if (i->key == "NOTES") {
-			song.notes = parseNotes(&i->value);
-			continue;
-		}
-		if (i->key == "BPMS") {
-			song.bpms = parseBPMS(&i->value, FALSE);
-			continue;
-		}
-		if (i->key == "STOPS") {
-			song.stops = parseBPMS(&i->value, TRUE);
-			continue;
-		}
-	}
 	return song;
 }
 
-bpmdata parseBPMS(string* data, bool isStops) {
-	bpmdata bpms;
+bool parseBPMS(songdata* song, bool parseStops) {
+	bpmdata* bpms = &song->bpms;
+	if (parseStops) {bpms = &song->stops;}
 	struct t_bpm bpm = empty_bpm;
-	string buffer;
 	enum state {IDLE, KEY, VALUE};
 	state task = IDLE;
-	char c;
-	for (uint i = 0; i < data->size(); i++) {
-		c = (*data)[i];
+	int c;
+	string buffer = "";
+	FILE* fp = fopen(song->filepath.c_str(), "r");
+	if (!parseStops) {fseek(fp, song->bpms_offset, SEEK_SET);}
+	else {fseek(fp, song->stops_offset, SEEK_SET);}
+	while (nextChar(fp, &c)) {
 		switch (task) {
-			case KEY:
-				if (c != '=') {
+			case (IDLE):
+				if (isdigit(c)) {
+					task = KEY;
 					buffer.append(1, c);
-				} else {
+				}
+				break;
+			case (KEY):
+				if (isdigit(c) || c == '.') {buffer.append(1, c);}
+				if (c == '=') {
 					task = VALUE;
 					bpm.beatf = stod(buffer) * beatfperiod;
 					buffer = "";
 				}
 				break;
-			case VALUE:
-				if (c != ',' && c != '\n') {
-					buffer.append(1, c);
-				} 
-				if ((c == ',') || (c == '\n') || i == data->length() - 1) {
-					if (i == data->length() - 1) {
-						buffer.append(1, c);
-					}
+			case (VALUE):
+				if (isdigit(c) || c == '.') {buffer.append(1, c);}
+				if (c == ',' || c == ';') {
 					task = IDLE;
-					if (isStops)
+					if (parseStops)
 						bpm.bpmf = (stod(buffer) * (1 << MINUTEFRAC)) / 60;
 					else
 						bpm.bpmf = stod(buffer) * pow(2, BPMFRAC);
 					buffer = "";
-					bpms.push_back(bpm);
+					bpms->push_back(bpm);
 					bpm = empty_bpm;
 				}
 				break;
-			case IDLE:
-				if (c != ' ' && c != '\n' && c != ',') {
-					task = KEY;
-					buffer.append(1, c);
-				}
-				break;
 		}
+		if (c == ';') {break;}
 	}
-	return bpms;
+	return true;
 }
 
 
-notedata parseNotes(string* data) {
-	size_t s = data->find(':');
-	size_t e = data->find(';');
-	for (int v = 0; v <= 3; v++) {
-		s = data->find(':', s + 1);
-	}
-	string rawnotes = data->substr(s, e - s);
-	char c;
-	notedata notes;
+bool parseNotes(chart* chart) {
+	int c;
+	notedata* notes = &chart->notes;
 	measure m = empty_measure;
 	int fourcount = 0;
 	int count = -1;
 	int k = 0;
-	for (uint i = 0; i < rawnotes.size(); i++){
-		c = rawnotes[i];
+	FILE* fp = fopen(chart->song->filepath.c_str(), "r");
+	fseek(fp, chart->notes_offset, SEEK_SET);
+	while (nextChar(fp, &c)){
+		if (c == ';') {break;}
+		cout << (char*)&c;
+		swiWaitForVBlank();
+		swiWaitForVBlank();
 		if ((c == '0') || (c == '1') || (c == '2') || (c == '3') || (c == '4') || (c == 'M')) {
 			count++;
 			if (count > 3) {
@@ -214,7 +200,6 @@ notedata parseNotes(string* data) {
 				}	
 			}
 		}
-		//printf("%c", c);
 		switch (c) {
 			case '1':
 				m.back()[fourcount] |= normal[count];
@@ -229,16 +214,13 @@ notedata parseNotes(string* data) {
 				m.back()[fourcount] |= mine[count];
 				break;
 			case ',':
-				notes.push_back(m);
+				notes->push_back(m);
 				m = empty_measure;
 				break;
 		}
 	}
 	cout << "\ncreado " << k;
-	notes.push_back(m);
-	size_t size = 0;
-	for ( auto i = notes.begin(); i != notes.end(); i++ ) {
-		size = size + i->size();
-	}
-	return notes;
+	notes->push_back(m);
+	fclose(fp);
+	return true;
 } 

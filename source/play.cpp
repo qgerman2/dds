@@ -348,13 +348,13 @@ void Play::removeStep(vector<step>::iterator* s) {
 }
 
 measure Play::getMeasureAtBeat(u32 beat) {
-	if (beat / 4 > song->notes.size() - 1) {
+	if (beat / 4 > song->charts.end()->notes.size() - 1) {
 		while (1) {
 			swiWaitForVBlank();
 		}
 		sassert(0, "attempted to get nonexistant measure");
 	}
-	return song->notes.at(beat / 4);
+	return song->charts.end()->notes.at(beat / 4);
 }
 
 u32 Play::millis() {

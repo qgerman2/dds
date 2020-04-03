@@ -55,7 +55,15 @@ int main(){
 	//exportArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
 	//loadArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
 
-	songdata song = parseSimFile("ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] Green Green Game OP/GGOP.sm", true);
+	songdata song;
+	parseSimFile(&song, "ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/toheart2 game opening.sm");
+	parseBPMS(&song, false);
+	//parseNotes(&song.charts.back());
+	for (auto it = song.bpms.begin(); it != song.bpms.end(); it++) {
+		cout << "\n" << it->beatf << " = " << it->bpmf;
+		swiWaitForVBlank();
+		swiWaitForVBlank();
+	}
 	
 	cout << "\ntitle: " << song.title;
 	cout << "\nartist: " << song.artist;

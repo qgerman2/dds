@@ -6,11 +6,7 @@
 #include <map>
 #include <iterator>
 #include <stdio.h>
-struct t_pair {
-	std::string key;
-	std::string value;
-};
-typedef std::vector<u16 *> measure;
+typedef std::vector<u16*> measure;
 typedef std::vector<measure> notedata;
 struct t_bpm {
 	u32 beatf = 0;
@@ -18,15 +14,6 @@ struct t_bpm {
 };
 typedef std::vector<struct t_bpm> bpmdata;
 typedef std::vector<struct t_pair> metadata;
-typedef struct chart {
-	std::string type;
-	std::string description;
-	std::string difficulty;
-	std::string meter;
-	std::string groove;
-	uint notes_offset = 0;
-	notedata notes;
-} chart;
 static const u16 normal[4] {
 	0b0001000000000000,
 	0b0000000100000000,
@@ -57,22 +44,34 @@ static const u16 mine[4] {
 	0b0000000010000000,
 	0b0000000000001000,
 };
+typedef struct chart chart;
 class songdata {
 	public:
+		std::string filepath;
 		std::string title;
 		std::string artist;
 		std::string bg;
 		std::string banner;
+		uint bpms_offset = 0;
+		uint stops_offset = 0;
 		std::vector<chart> charts;
-		notedata notes;
-		metadata* tags;
 		bpmdata bpms;
 		bpmdata stops;
 		~songdata();
 };
+typedef struct chart {
+	songdata* song = NULL;
+	std::string type;
+	std::string description;
+	std::string difficulty;
+	std::string meter;
+	std::string groove;
+	uint notes_offset = 0;
+	notedata notes;
+} chart;
 bool nextChar(FILE* input, int* output);
-notedata parseNotes(std::string* data);
-bpmdata parseBPMS(std::string* data, bool isStops);
-songdata parseSimFile(std::string path, bool partial);
+bool parseNotes(chart* chart);
+bool parseBPMS(songdata* song, bool parseStops);
+bool parseSimFile(songdata* song, std::string path);
 songdata parseSong(metadata* tags);
 #endif
