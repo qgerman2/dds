@@ -17,17 +17,7 @@ static const struct t_pair empty_tag;
 static const struct t_bpm empty_bpm;
 static const measure empty_measure;
 
-const string partialTags[6] = {
-	"TITLE",
-	"ARTIST",
-	"BANNER",
-	"BACKGROUND",
-	"MUSIC",
-	"NOTES",
-};
-
 songdata::~songdata() {
-	cout << "\neliminado songdata";
 	int e = 0;
 	for (auto m = this->notes.begin(); m != this->notes.end(); m++) {
 		for (auto n = m->begin(); n != m->end(); n++) {
@@ -35,100 +25,92 @@ songdata::~songdata() {
 			delete [] *n;
 		}
 	}
-	cout << "\neliminao " << e;
 }
 
-metadata parseSimFile(string path, bool partial) {
-	metadata tags;
-	enum class state {IDLE, KEY, VALUE};
-	FILE *fp = fopen(path.c_str(), "r");
-	int p;
-	bool prevslash = FALSE;
-	bool skip = FALSE;
-	bool partialskip = false;
-	int notescount = 0;
-	state task = state::IDLE;
-	string buffer = "";
-	struct t_pair tag = empty_tag;
-	do {
-		p = fgetc(fp);
-		if (feof(fp))
-			break;
-		if (!skip) {
-			if ((task == state::KEY || task == state::VALUE) && (p != ';')) {
-				if (p == '/') {
-					if (prevslash) {
-						skip = TRUE;
-						prevslash = FALSE;
-					} else {
-						prevslash = TRUE;
-					}
-				}
-				else {
-					if (prevslash) {
-						prevslash = FALSE;
-						if (!partialskip) {
-							buffer.append(1, '/');
-						}
-					}
-					if (((task == state::VALUE) && (p == ':')) || (p != ':'))
-						if (!partialskip) {
-							buffer.append(1, p);
-						}
-				}
-			}
-			switch (p) {
-				case '#':
-					if (task == state::IDLE)
-						task = state::KEY;
-					break;
-				case ':':
-					if (task == state::KEY) {
-						task = state::VALUE;
-						tag.key = buffer;
-						buffer = "";
-						if (partial) {
-							partialskip = true;
-							for (int i = 0; i < 6; i++) {
-								if (partialTags[i] == tag.key) {
-									partialskip = false;
-									break;
-								}
-							}
-						}
-					}
-					else if (task == state::VALUE) {
-						if (partial && (tag.key == "NOTES")) {
-							notescount++;
-							if (notescount > 3) {
-								partialskip = true;
-							} 
-						}
-					}
-					break;
-				case ';':
-					if (task == state::VALUE) {
-						task = state::IDLE;
-						tag.value = buffer;
-						if (!partialskip || (tag.key == "NOTES")) {
-							tags.push_back(tag);
-						}
-						partialskip = false;
-						notescount = 0;
-						tag = empty_tag;
-						buffer = "";
-					}
-					break;
+bool nextChar(FILE* input, int* output) {
+	int c = fgetc(input);
+	if (c == EOF) {return false;}
+	while (c == '/') {
+		int pos = ftell(input);
+		int next_c = fgetc(input);
+		if (next_c == EOF) {return false;}
+		if (next_c == '/') {
+			while (c != '\n') {
+				c = fgetc(input);
+				if (c == EOF) {return false;}
 			}
 		} else {
-			if (p == '\n') {
-				buffer.append(1, '\n');
-				skip = FALSE;
-			}
+			fseek(input, pos, SEEK_SET);
+			break;
 		}
-	} while (1);
+	}
+	*output = c;
+	return true;
+}
+
+songdata parseSimFile(string path, bool partial) {
+	songdata simfile;
+	enum state {IDLE, KEY, VALUE};
+	FILE *fp = fopen(path.c_str(), "r");
+	int p;
+	state task = IDLE;
+	string buffer = "";
+	string* output = NULL;
+	int key_chart = 0;
+	while (nextChar(fp, &p)) {
+		switch (task) {
+			case (IDLE):
+				if (p == '#') {task = KEY;}
+				break;
+			case (KEY):
+				if (p == ':') {
+					task = VALUE;
+					if (buffer == "TITLE") {output = &simfile.title;}
+					else if (buffer == "ARTIST") {output = &simfile.artist;}
+					else if (buffer == "BANNER") {output = &simfile.banner;}
+					else if (buffer == "BACKGROUND") {output = &simfile.bg;}
+					else if (buffer == "NOTES") {
+						simfile.charts.emplace_back();
+						key_chart = 1;
+					}
+					buffer = "";
+				} else {
+					buffer.append(1, p);
+				}
+				break;
+			case (VALUE):
+				if (p == ';') {
+					task = IDLE;
+					output = NULL;
+					key_chart = 0;
+					break;
+				}
+				if (key_chart) {
+					if (output == NULL) {
+						chart* new_chart = &simfile.charts.back();
+						switch (key_chart) {
+							case 1: output = &new_chart->type; break;
+							case 2: output = &new_chart->description; break;
+							case 3: output = &new_chart->difficulty; break;
+							case 4: output = &new_chart->meter; break;
+							case 5: output = &new_chart->groove; break;
+							case 6:
+								new_chart->notes_offset = ftell(fp);
+								key_chart = 0; 
+								break;
+						}
+					}
+					if (p == ':') {
+						key_chart++;
+						output = NULL;
+					}
+				}
+				if (output) {output->append(1, p);}
+				break;
+		}
+	}
 	fclose(fp);
-	return tags;
+	return simfile;
 }
 
 songdata parseSong(metadata* tags) {
@@ -155,22 +137,22 @@ bpmdata parseBPMS(string* data, bool isStops) {
 	bpmdata bpms;
 	struct t_bpm bpm = empty_bpm;
 	string buffer;
-	enum class state {IDLE, KEY, VALUE};
-	state task = state::IDLE;
+	enum state {IDLE, KEY, VALUE};
+	state task = IDLE;
 	char c;
 	for (uint i = 0; i < data->size(); i++) {
 		c = (*data)[i];
 		switch (task) {
-			case state::KEY:
+			case KEY:
 				if (c != '=') {
 					buffer.append(1, c);
 				} else {
-					task = state::VALUE;
+					task = VALUE;
 					bpm.beatf = stod(buffer) * beatfperiod;
 					buffer = "";
 				}
 				break;
-			case state::VALUE:
+			case VALUE:
 				if (c != ',' && c != '\n') {
 					buffer.append(1, c);
 				} 
@@ -178,7 +160,7 @@ bpmdata parseBPMS(string* data, bool isStops) {
 					if (i == data->length() - 1) {
 						buffer.append(1, c);
 					}
-					task = state::IDLE;
+					task = IDLE;
 					if (isStops)
 						bpm.bpmf = (stod(buffer) * (1 << MINUTEFRAC)) / 60;
 					else
@@ -188,9 +170,9 @@ bpmdata parseBPMS(string* data, bool isStops) {
 					bpm = empty_bpm;
 				}
 				break;
-			case state::IDLE:
+			case IDLE:
 				if (c != ' ' && c != '\n' && c != ',') {
-					task = state::KEY;
+					task = KEY;
 					buffer.append(1, c);
 				}
 				break;

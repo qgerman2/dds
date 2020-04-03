@@ -225,7 +225,7 @@ bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
 	info.size = info.size_pixel + info.offset_pixel;
 	FILE* bmp = fopen(filepath.c_str(), "wb");
 	if (bmp == NULL) {
-		cout << "\nCouldn't export processed artwork";
+		cout << "\nFailed to write artwork file";
 		return false;
 	}
 	fwrite(info.bm, 2, 1, bmp);
@@ -258,7 +258,7 @@ bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
 bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 	FILE* bmp = fopen(filepath.c_str(), "rb");
 	if (bmp == NULL) {
-		cout << "\nCouldn't open artwork file";
+		cout << "\nFailet to open artwork file";
 		return false;
 	}
 	char bm[2];
@@ -328,7 +328,7 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 		return false;
 	}
 	for (uint y = 0; y < height; y++) {
-		if (fread(&dest[(height - y - 1) * 256], 1, row, bmp) != row) {
+		if (fread(&dest[(height - y - 1) * width], 1, row, bmp) != row) {
 			cout << "\nFailed to read pixel row";
 			return false;
 		}

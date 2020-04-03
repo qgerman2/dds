@@ -53,8 +53,14 @@ int main(){
 	
 	//processArtwork("mono.png", bgGetGfxPtr(bgid), 100, 100);
 	//exportArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
-	loadArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
+	//loadArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
 
+	songdata song = parseSimFile("ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] Green Green Game OP/GGOP.sm", true);
+	
+	cout << "\ntitle: " << song.title;
+	cout << "\nartist: " << song.artist;
+	cout << "\nbanner;" << song.banner;
+	cout << "\nbg:" << song.bg;
 	s_play();
 
 	while (1) {
@@ -66,11 +72,11 @@ int main(){
 			}
 			break;
 			case (1): {
-				metadata tags = parseSimFile(songpath, false);
-				songdata song = parseSong(&tags);
-				Play* play = new Play(&song);
-				play->loop();
-				delete play;
+				//metadata tags = parseSimFile(songpath, false);
+				//songdata song = parseSong(&tags);
+				//Play* play = new Play(&song);
+				//play->loop();
+				//delete play;
 			}
 			break;
 			case (2): {

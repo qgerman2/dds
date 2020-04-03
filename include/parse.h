@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <map>
+#include <iterator>
+#include <stdio.h>
 struct t_pair {
 	std::string key;
 	std::string value;
@@ -15,6 +18,15 @@ struct t_bpm {
 };
 typedef std::vector<struct t_bpm> bpmdata;
 typedef std::vector<struct t_pair> metadata;
+typedef struct chart {
+	std::string type;
+	std::string description;
+	std::string difficulty;
+	std::string meter;
+	std::string groove;
+	uint notes_offset = 0;
+	notedata notes;
+} chart;
 static const u16 normal[4] {
 	0b0001000000000000,
 	0b0000000100000000,
@@ -47,14 +59,20 @@ static const u16 mine[4] {
 };
 class songdata {
 	public:
+		std::string title;
+		std::string artist;
+		std::string bg;
+		std::string banner;
+		std::vector<chart> charts;
 		notedata notes;
 		metadata* tags;
 		bpmdata bpms;
 		bpmdata stops;
 		~songdata();
 };
+bool nextChar(FILE* input, int* output);
 notedata parseNotes(std::string* data);
 bpmdata parseBPMS(std::string* data, bool isStops);
-metadata parseSimFile(std::string path, bool partial);
+songdata parseSimFile(std::string path, bool partial);
 songdata parseSong(metadata* tags);
 #endif
