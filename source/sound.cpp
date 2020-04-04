@@ -84,8 +84,14 @@ bool loadMp3() {
 			break;
 		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
 			cout << "\nlibmad fatal error: " << mad_stream_errorstr(&audio.mp3->stream);
-			audio.end();
-			return false;
+			if (audio.mp3->stream.error == MAD_ERROR_BUFLEN) {
+				if (audio.mp3->stream.this_frame == audio.mp3->guard) {
+					audio.end();
+					return false;
+				} else {
+					fillMp3();
+				}
+			}
 		};
 	}
 	audio.stream.callback = mm_mp3_callback;

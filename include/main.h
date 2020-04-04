@@ -7,6 +7,7 @@ void testpng();
 void testjpeg();
 extern songdata song;
 extern int state;
+extern std::string simpath;
 extern std::string songpath;
 extern int bgid;
 #endif

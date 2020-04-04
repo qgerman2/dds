@@ -70,6 +70,7 @@ bool parseSimFile(songdata* song, string path) {
 					else if (buffer == "ARTIST") {output = &song->artist;}
 					else if (buffer == "BANNER") {output = &song->banner;}
 					else if (buffer == "BACKGROUND") {output = &song->bg;}
+					else if (buffer == "MUSIC") {output = &song->music;}
 					else if (buffer == "BPMS") {song->bpms_offset = ftell(fp);}
 					else if (buffer == "STOPS") {song->stops_offset = ftell(fp);}
 					else if (buffer == "NOTES") {

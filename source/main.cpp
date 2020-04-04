@@ -14,7 +14,8 @@
 
 using namespace std;
 
-int state = 1;
+int state = 0;
+string simpath;
 string songpath;
 int bgid;
 
@@ -32,36 +33,10 @@ int main(){
 	vramSetBankH(VRAM_H_LCD); //bg ext palette sub
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
-
-	PrintConsole *console = consoleInit(0, 1, BgType_Text4bpp, BgSize_T_256x256, 16, 0, false, true);
-	ConsoleFont font;
-	font.gfx = (u16*)fontTiles;
-	font.pal = (u16*)fontPal;
-	font.numChars = 95;
-	font.numColors = fontPalLen / 2;
-	font.bpp = 4;
-	font.asciiOffset = 32;
-	font.convertSingleColor = false;
-	consoleSetFont(console, &font);
-	cout << "\nhola";
-	
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
-	//consoleDemoInit();
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
-	
-	//processArtwork("mono.png", bgGetGfxPtr(bgid), 100, 100);
-	//exportArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
-	//loadArtwork("output2.bmp", bgGetGfxPtr(bgid), 100, 100);
-
-	songdata song;
-	parseSimFile(&song, "ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/toheart2 game opening.sm");
-	parseChart(&song);
-	loadAudio("ddr/song.ogg");
-	processArtwork("mana.jpeg", bgGetGfxPtr(bgid), 256, 192);
-	playAudio();
-
 	while (1) {
 		switch (state) {
 			case (0): {
@@ -71,6 +46,15 @@ int main(){
 			}
 			break;
 			case (1): {
+				consoleDemoInit();
+				cout << "\n" << simpath;
+				cout << "\n" << songpath;
+				songdata song;
+				parseSimFile(&song, simpath);
+				parseChart(&song);
+				loadAudio(songpath + "/" + song.music);
+				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
+				playAudio();
 				Play* play = new Play(&song);
 				play->loop();
 				delete play;

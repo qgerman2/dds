@@ -12,7 +12,7 @@
 
 using namespace std;
 
-bool processArtwork(string filepath, u16* dest, uint width, uint height) {
+bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 	FILE* infile = NULL;
 	bool success = false;
 	struct transform tinfo;
@@ -27,6 +27,10 @@ bool processArtwork(string filepath, u16* dest, uint width, uint height) {
 	} else if (extension == "png") {
 		if (processFile(&infile, filepath)) {
 			success = fromPng(infile, &tinfo);
+		}
+	} else if (extension == "bmp") {
+		if (processFile(&infile, filepath)) {
+			success = fromBmp(infile, dest, width, height);
 		}
 	} else {
 		cout << "\nNot a supported image file " << filepath;
@@ -219,48 +223,7 @@ void warningPng(png_structp png_ptr, png_const_charp msg) {
 	cout << "\nlibpng warning: " << msg;
 }
 
-bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
-	struct bmp info;
-	info.size_pixel = width * height * 2;
-	info.size = info.size_pixel + info.offset_pixel;
-	FILE* bmp = fopen(filepath.c_str(), "wb");
-	if (bmp == NULL) {
-		cout << "\nFailed to write artwork file";
-		return false;
-	}
-	fwrite(info.bm, 2, 1, bmp);
-	fwrite(&(info.size), 4, 1, bmp);
-	fwrite(info.dds, 4, 1, bmp);
-	fwrite(&(info.offset_pixel), 4, 1, bmp);
-	fwrite(&(info.size_header), 4, 1, bmp);
-	fwrite(&(width), 4, 1, bmp);
-	fwrite(&(height), 4, 1, bmp);
-	fwrite(&(info.planes), 2, 1, bmp);
-	fwrite(&(info.colordepth), 2, 1, bmp);
-	fwrite(&(info.mode), 4, 1, bmp);
-	fwrite(&(info.size_pixel), 4, 1, bmp);
-	fwrite(&(info.print_res), 4, 1, bmp);
-	fwrite(&(info.print_res), 4, 1, bmp);
-	fwrite(&(info.zero), 4, 1, bmp);
-	fwrite(&(info.zero), 4, 1, bmp);
-	fwrite(&(info.blue_mask), 4, 1, bmp);
-	fwrite(&(info.green_mask), 4, 1, bmp);
-	fwrite(&(info.red_mask), 4, 1, bmp);
-	fwrite(&(info.zero), 4, 1, bmp);
-	for (int y = height - 1; y >= 0; y--) {
-		fwrite(&buffer[width * y], 2, width, bmp);
-		fwrite(&(info.zero), 1, (width * 2) % 4, bmp);
-	}
-	fclose(bmp);
-	return true;
-}
-
-bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
-	FILE* bmp = fopen(filepath.c_str(), "rb");
-	if (bmp == NULL) {
-		cout << "\nFailet to open artwork file";
-		return false;
-	}
+bool fromBmp(FILE* bmp, u16* dest, uint width, uint height) {
 	char bm[2];
 	char dds[4];
 	uint size = 0;
@@ -339,3 +302,39 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 	}
 	return true;
 };
+
+bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
+	struct bmp info;
+	info.size_pixel = width * height * 2;
+	info.size = info.size_pixel + info.offset_pixel;
+	FILE* bmp = fopen(filepath.c_str(), "wb");
+	if (bmp == NULL) {
+		cout << "\nFailed to write artwork file";
+		return false;
+	}
+	fwrite(info.bm, 2, 1, bmp);
+	fwrite(&(info.size), 4, 1, bmp);
+	fwrite(info.dds, 4, 1, bmp);
+	fwrite(&(info.offset_pixel), 4, 1, bmp);
+	fwrite(&(info.size_header), 4, 1, bmp);
+	fwrite(&(width), 4, 1, bmp);
+	fwrite(&(height), 4, 1, bmp);
+	fwrite(&(info.planes), 2, 1, bmp);
+	fwrite(&(info.colordepth), 2, 1, bmp);
+	fwrite(&(info.mode), 4, 1, bmp);
+	fwrite(&(info.size_pixel), 4, 1, bmp);
+	fwrite(&(info.print_res), 4, 1, bmp);
+	fwrite(&(info.print_res), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	fwrite(&(info.blue_mask), 4, 1, bmp);
+	fwrite(&(info.green_mask), 4, 1, bmp);
+	fwrite(&(info.red_mask), 4, 1, bmp);
+	fwrite(&(info.zero), 4, 1, bmp);
+	for (int y = height - 1; y >= 0; y--) {
+		fwrite(&buffer[width * y], 2, width, bmp);
+		fwrite(&(info.zero), 1, (width * 2) % 4, bmp);
+	}
+	fclose(bmp);
+	return true;
+}

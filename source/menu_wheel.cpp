@@ -344,15 +344,8 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
-		songpath = bufferitems[buffercursor].smpath;
-		//cout << "\n" << buffercursor << " " << bufferitems[buffercursor].type << " " << songpath;
-		cout << "\nbuffercenter: " << buffercenter;
-		for (int i = 0; i < BUFFERSIZE; i++) {
-			cout << "\n" << i << " " << bufferitems[i].type;
-			if (i == buffercursor) {
-				cout << " <<";
-			}
-		}
+		simpath = bufferitems[buffercursor].smpath;
+		songpath = bufferitems[buffercursor].path;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);

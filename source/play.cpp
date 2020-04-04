@@ -19,7 +19,6 @@ using namespace std;
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 
 Play::Play(songdata* song){
-	cout << "\n this song";
 	this->song = song;
 	render = new PlayRender(this);
 	score = new PlayScore(this);
