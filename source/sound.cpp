@@ -22,6 +22,7 @@ audio::audio() {
 	stream.buffer_length = MAXMODBUFFER;
 	stream.format = MM_STREAM_16BIT_STEREO;
 	stream.timer = MM_TIMER2;
+	stream.sampling_rate = 0;
 	stream.manual = 1;
 }
 
@@ -40,6 +41,7 @@ void audio::end() {
 		fclose(inbuf);
 	}
 	mmStreamClose();
+	stream.sampling_rate = 0;
 }
 
 static signed short MadFixedToSshort(mad_fixed_t Fixed) {
@@ -176,6 +178,15 @@ mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 	return length;
 }
 
-void playAudio() {
+bool playAudio() {
+	if (!(audio.mp3 || audio.ogg)) {
+		cout << "\nNo audio loaded";
+		return false;
+	}
+	if (audio.stream.sampling_rate <= 0) {
+		cout << "\nInvalid sampling rate";
+		return false;
+	}
 	mmStreamOpen(&audio.stream);
+	return true;
 }

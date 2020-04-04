@@ -58,7 +58,7 @@ int main(){
 	songdata song;
 	parseSimFile(&song, "ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/toheart2 game opening.sm");
 	parseChart(&song);
-	loadAudio("ddr/song.mp3");
+	loadAudio("ddr/song.ogg");
 	processArtwork("mana.jpeg", bgGetGfxPtr(bgid), 256, 192);
 	playAudio();
 

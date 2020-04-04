@@ -34,5 +34,5 @@ void fillMp3();
 mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format);
 bool loadOgg();
 mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format);
-void playAudio();
+bool playAudio();
 #endif
