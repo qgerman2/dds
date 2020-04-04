@@ -10,156 +10,172 @@
 #include <climits>
 
 using namespace std;
-FILE* file = 0;
 
-OggVorbis_File vf;
-mm_stream mystream;
-struct mad_stream stream;
-struct mad_frame frame;
-struct mad_synth synth;
-FILE* myMp3;
+struct audio audio;
 
-mm_word streammp3(mm_word length, mm_addr dest, mm_stream_formats format);
-mm_word streamogg(mm_word length, mm_addr dest, mm_stream_formats format);
+audio::audio() {
+	sys.mod_count = 0;
+	sys.samp_count = 0;
+	sys.mem_bank = 0;
+	sys.fifo_channel = FIFO_MAXMOD;
+	mmInit(&sys);
+	stream.buffer_length = MAXMODBUFFER;
+	stream.format = MM_STREAM_16BIT_STEREO;
+	stream.timer = MM_TIMER2;
+	stream.manual = 1;
+}
 
-static signed short MadFixedToSshort(mad_fixed_t Fixed)
-{
+void audio::end() {
+	if (mp3) {
+		mad_synth_finish(&mp3->synth);
+		mad_frame_finish(&mp3->frame);
+		mad_stream_finish(&mp3->stream);
+		delete mp3;
+	}
+	if (ogg) {
+		ov_clear(&ogg->vf);
+		delete ogg;
+	}
+	if (inbuf) {
+		fclose(inbuf);
+	}
+	mmStreamClose();
+}
+
+static signed short MadFixedToSshort(mad_fixed_t Fixed) {
 	if(Fixed>=MAD_F_ONE)
 		return(SHRT_MAX);
 	if(Fixed<=-MAD_F_ONE)
 		return(-SHRT_MAX);
-
 	Fixed=Fixed>>(MAD_F_FRACBITS-15);
 	return((signed short)Fixed);
 }
 
-void s_play() {
-	mm_ds_system sys;
-	sys.mod_count 			= 0;
-	sys.samp_count			= 0;
-	sys.mem_bank			= 0;
-	sys.fifo_channel		= FIFO_MAXMOD;
-	mmInit( &sys );
-
-	mad_stream_init(&stream);
-	mad_frame_init(&frame);
-	mad_synth_init(&synth);
-
-	loadmp3();
-	//file = fopen("/ddr/song.wav", "rb");
-
-    mystream.sampling_rate = 44100;
-    mystream.buffer_length = 3200;
-    mystream.callback = streammp3;
-    mystream.format = MM_STREAM_16BIT_STEREO;
-    mystream.timer = MM_TIMER2;
-    mystream.manual = 1;
-    
- 	mmStreamOpen( &mystream );
+bool loadAudio(string filepath) {
+	FILE* inbuf = fopen(filepath.c_str(), "rb");
+	if (!inbuf) {
+		cout << "\nFailed to open sound file " << filepath;
+		return false;
+	}
+	audio.inbuf = inbuf;
+	bool success = false;
+	string extension = filepath.substr(filepath.find_last_of(".") + 1);
+	if (extension == "mp3") {
+		success = loadMp3();
+	} else if (extension == "ogg") {
+		success = loadOgg();
+	} else {
+		cout << "\nNot a supported audio file " << filepath;
+	}
+	return success;
 }
 
-void loadmp3() {
-	myMp3 = fopen("/ddr/song.mp3", "rb");
-	fillmp3();
+bool loadMp3() {
+	audio.mp3 = new struct mp3;
+	mad_stream_init(&audio.mp3->stream);
+	mad_frame_init(&audio.mp3->frame);
+	mad_synth_init(&audio.mp3->synth);
+	fillMp3();
+	while (1) {
+		if (mad_header_decode(&audio.mp3->frame.header, &audio.mp3->stream) == 0) {
+			audio.stream.sampling_rate = audio.mp3->frame.header.samplerate;
+			break;
+		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
+			cout << "\nlibmad fatal error: " << mad_stream_errorstr(&audio.mp3->stream);
+			audio.end();
+			return false;
+		};
+	}
+	audio.stream.callback = mm_mp3_callback;
+	return true;
 }
 
-u_char* guard;
-const int bufsize = 1500;
-u_char readbuffer[bufsize];
-void fillmp3() {
+void fillMp3() {
+	struct mp3* mp3 = audio.mp3;
 	int res;
 	int rem = 0;
-	if (stream.next_frame != NULL) {
-		rem = stream.bufend - stream.next_frame;
-		memmove(readbuffer, stream.next_frame, rem);
-		res = fread(readbuffer + rem, 1, bufsize - rem - MAD_BUFFER_GUARD + 1, myMp3);
+	if (mp3->stream.next_frame != NULL) {
+		rem = mp3->stream.bufend - mp3->stream.next_frame;
+		memmove(mp3->buffer, mp3->stream.next_frame, rem);
+		res = fread(mp3->buffer + rem, 1, MP3BUFFER - rem - MAD_BUFFER_GUARD + 1, audio.inbuf);
 	} else {
-		res = fread(readbuffer, 1, bufsize - MAD_BUFFER_GUARD + 1, myMp3);
+		res = fread(mp3->buffer, 1, MP3BUFFER - MAD_BUFFER_GUARD + 1, audio.inbuf);
 	}
-	if (res + rem <= bufsize - MAD_BUFFER_GUARD) {
-		cout << "\n" << (res + rem);
-		guard = readbuffer + res + rem;
-		memset(guard, 0, MAD_BUFFER_GUARD);
-		mad_stream_buffer(&stream, readbuffer, res + rem + MAD_BUFFER_GUARD);
+	if (res + rem <= MP3BUFFER - MAD_BUFFER_GUARD) {
+		mp3->guard = mp3->buffer + res + rem;
+		memset(mp3->guard, 0, MAD_BUFFER_GUARD);
+		mad_stream_buffer(&mp3->stream, mp3->buffer, res + rem + MAD_BUFFER_GUARD);
 	} else {
-		mad_stream_buffer(&stream, readbuffer, bufsize - MAD_BUFFER_GUARD + 1);
+		mad_stream_buffer(&mp3->stream, mp3->buffer, MP3BUFFER - MAD_BUFFER_GUARD + 1);
 	}
 }
-int f = 0;
-mm_word streammp3(mm_word length, mm_addr dest, mm_stream_formats format) {
+
+mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format) {
+	mp3* mp3 = audio.mp3;
 	s16* output = (s16*)dest;
 	uint samples = 0;
 	while (samples < length) {
-		for(int i = f; i < synth.pcm.length; i++){
+		for(int i = mp3->f; i < mp3->synth.pcm.length; i++){
 			s16 sample;
-			sample = MadFixedToSshort(synth.pcm.samples[0][i]);
+			sample = MadFixedToSshort(mp3->synth.pcm.samples[0][i]);
 			*(output++) = sample;
-			if(MAD_NCHANNELS(&frame.header)==2){
-				sample=MadFixedToSshort(synth.pcm.samples[1][i]);
+			if(MAD_NCHANNELS(&mp3->frame.header)==2){
+				sample=MadFixedToSshort(mp3->synth.pcm.samples[1][i]);
 			}
 			*(output++) = sample;
 			samples++;
-			f++;
+			mp3->f++;
 			if (samples == length) {
 				return samples;
 			}
 		}
-		if (mad_frame_decode(&frame, &stream)) {
-			//cout << "\n" << mad_stream_errorstr(&stream);
-			if (stream.error == MAD_ERROR_BUFPTR || stream.error == MAD_ERROR_BUFLEN) {
-				if (stream.this_frame != guard) {
-					fillmp3();
-				} else {
-					mmStreamClose();
+		if (mad_frame_decode(&mp3->frame, &mp3->stream)) {
+			if (mp3->stream.error == MAD_ERROR_BUFPTR || mp3->stream.error == MAD_ERROR_BUFLEN) {
+				if (mp3->stream.this_frame == mp3->guard) {
+					audio.end();
 					break;
+				} else {
+					fillMp3();
 				}
-			} else if (stream.error != MAD_ERROR_LOSTSYNC) {
-				mmStreamClose();
+			} else if (mp3->stream.error != MAD_ERROR_LOSTSYNC && mp3->stream.error != MAD_ERROR_BADSAMPLERATE) {
+				cout << "\nlibmad fatal error: " << mad_stream_errorstr(&mp3->stream);
+				audio.end();
 				break;
 			}
 		} else {
-			mad_synth_frame(&synth, &frame);
-			f = 0;
+			mad_synth_frame(&mp3->synth, &mp3->frame);
+			//cout << "\nsamplerate: " << mp3->frame.header.samplerate;
+			mp3->f = 0;
 		}
 	}
 	return samples;
 }
 
-void loadogg() {
-	FILE * myOgg = fopen("/ddr/song.ogg", "rb");
-	if(ov_open(myOgg, &vf, NULL, 0) < 0) {
-		fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");
-	}
-	else {
-		cout << "\n";
-		{
-	    char **ptr=ov_comment(&vf,-1)->user_comments;
-	    vorbis_info *vi=ov_info(&vf,-1);
-	    while(*ptr){
-	      fprintf(stderr,"%s\n",*ptr);
-	      ++ptr;
-	    }
-	    fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
-	    fprintf(stderr,"\nDecoded length: %ld samples\n",
-	            (long)ov_pcm_total(&vf,-1));
-	    fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
-	  }
-	}
+bool loadOgg() {
+	audio.ogg = new struct ogg;
+	if (ov_open(audio.inbuf, &audio.ogg->vf, NULL, 0) != 0) {
+		cout << "\nFailed to open ogg file";
+		audio.end();
+		return false;
+	};
+	vorbis_info* info = ov_info(&audio.ogg->vf, -1);
+	audio.stream.sampling_rate = info->rate;
+	audio.stream.callback = mm_ogg_callback;
+	return true;
 }
 
-int eof = 0;
-int current_section;
-mm_word streamogg(mm_word length, mm_addr dest, mm_stream_formats format) {
+mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) {
 	char* output = (char*)dest;
-	if (!eof) {
-		int res = ov_read(&vf, output, length * 4, &current_section);
-		if (res) {
-			length = res / 4;
-		} else {
-			mmStreamClose();
-			length = 0;
-			eof = 1;
-		}
+	int res = ov_read(&audio.ogg->vf, output, length * 4, NULL);
+	if (res) {
+		length = res / 4;
+	} else {
+		audio.end();
+		length = 0;
 	}
 	return length;
+}
+
+void playAudio() {
+	mmStreamOpen(&audio.stream);
 }

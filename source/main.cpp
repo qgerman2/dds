@@ -58,9 +58,9 @@ int main(){
 	songdata song;
 	parseSimFile(&song, "ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/toheart2 game opening.sm");
 	parseChart(&song);
-	processArtwork("ddr/Otaku's Dream 1st Hentai Mix-WS/[errorrrr] To Heart2 Game OP/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
-	
-	s_play();
+	loadAudio("ddr/song.mp3");
+	processArtwork("mana.jpeg", bgGetGfxPtr(bgid), 256, 192);
+	playAudio();
 
 	while (1) {
 		switch (state) {
@@ -73,10 +73,6 @@ int main(){
 			case (1): {
 				Play* play = new Play(&song);
 				play->loop();
-				while (1) {
-					mmStreamUpdate();
-					swiWaitForVBlank();
-				}
 				delete play;
 			}
 			break;

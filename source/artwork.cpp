@@ -29,7 +29,7 @@ bool processArtwork(string filepath, u16* dest, uint width, uint height) {
 			success = fromPng(infile, &tinfo);
 		}
 	} else {
-		cout << "\nNot an image file " << filepath;
+		cout << "\nNot a supported image file " << filepath;
 		success = false;
 	}
 	if (infile != NULL) {
