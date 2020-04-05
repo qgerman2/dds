@@ -28,6 +28,7 @@ audio::audio() {
 
 void audio::end() {
 	if (mp3) {
+		cout << "\nmp3 end";
 		mad_synth_finish(&mp3->synth);
 		mad_frame_finish(&mp3->frame);
 		mad_stream_finish(&mp3->stream);
@@ -60,16 +61,16 @@ bool loadAudio(string filepath) {
 		return false;
 	}
 	audio.inbuf = inbuf;
-	bool success = false;
 	string extension = filepath.substr(filepath.find_last_of(".") + 1);
 	if (extension == "mp3") {
-		success = loadMp3();
+		if (!loadMp3()) {return false;}
 	} else if (extension == "ogg") {
-		success = loadOgg();
+		if (!loadOgg()) {return false;}
 	} else {
 		cout << "\nNot a supported audio file " << filepath;
+		return false;
 	}
-	return success;
+	return true;
 }
 
 bool loadMp3() {
@@ -83,14 +84,12 @@ bool loadMp3() {
 			audio.stream.sampling_rate = audio.mp3->frame.header.samplerate;
 			break;
 		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
-			cout << "\nlibmad fatal error: " << mad_stream_errorstr(&audio.mp3->stream);
-			if (audio.mp3->stream.error == MAD_ERROR_BUFLEN) {
-				if (audio.mp3->stream.this_frame == audio.mp3->guard) {
-					audio.end();
-					return false;
-				} else {
-					fillMp3();
-				}
+			cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);
+			if (audio.mp3->stream.this_frame == audio.mp3->guard) {
+				audio.end();
+				return false;
+			} else {
+				fillMp3();
 			}
 		};
 	}
@@ -127,20 +126,20 @@ mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 			s16 sample;
 			sample = MadFixedToSshort(mp3->synth.pcm.samples[0][i]);
 			*(output++) = sample;
-			if(MAD_NCHANNELS(&mp3->frame.header)==2){
-				sample=MadFixedToSshort(mp3->synth.pcm.samples[1][i]);
+			if(MAD_NCHANNELS(&mp3->frame.header) == 2){
+				sample = MadFixedToSshort(mp3->synth.pcm.samples[1][i]);
 			}
 			*(output++) = sample;
 			samples++;
 			mp3->f++;
-			if (samples == length) {
-				return samples;
-			}
+			if (samples == length) {break;}
 		}
+		if (samples == length) {break;}
 		if (mad_frame_decode(&mp3->frame, &mp3->stream)) {
 			if (mp3->stream.error == MAD_ERROR_BUFPTR || mp3->stream.error == MAD_ERROR_BUFLEN) {
 				if (mp3->stream.this_frame == mp3->guard) {
 					audio.end();
+					samples = 0; //deberia haber una mejor solución
 					break;
 				} else {
 					fillMp3();
@@ -148,11 +147,11 @@ mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 			} else if (mp3->stream.error != MAD_ERROR_LOSTSYNC && mp3->stream.error != MAD_ERROR_BADSAMPLERATE) {
 				cout << "\nlibmad fatal error: " << mad_stream_errorstr(&mp3->stream);
 				audio.end();
+				samples = 0;
 				break;
 			}
 		} else {
 			mad_synth_frame(&mp3->synth, &mp3->frame);
-			//cout << "\nsamplerate: " << mp3->frame.header.samplerate;
 			mp3->f = 0;
 		}
 	}

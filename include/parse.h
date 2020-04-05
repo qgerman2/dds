@@ -53,6 +53,7 @@ class songdata {
 		std::string bg;
 		std::string banner;
 		std::string music;
+		std::string offset;
 		uint bpms_offset = 0;
 		uint stops_offset = 0;
 		std::vector<chart> charts;

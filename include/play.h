@@ -40,15 +40,17 @@ private:
 	int count = 0; 				//beat relativo al primer beat de measure global
 	int sets;					//cantidad de sets en measure
 	int cursor = 0;
+	measure* m;
 	int measurecursor = -1;
 	int stepbeatf = 0;			//beat preciso en el cursor
 	int relbeatf = 0;			//beat preciso relativo al cursor a x set
 	u32 rowspermeasure = 0;
 	u16 *set;
-	measure m;
 	u32 minutefbpm;
 	u32 minutefsum;
 	bool lostbeatsbpm;
+	int offset;
+	bool end_of_chart = false;
 public:
 	PlayRender* render;
 	PlayScore* score;
@@ -66,7 +68,7 @@ public:
 	void newSteps(u16 data, u32 beatf, u8 notetype);
 	void removeStep(std::vector<step>::iterator* s);
 	int getNoteType(u32 row);
-	measure getMeasureAtBeat(u32 beat);
+	bool getMeasureAtBeat(u32 beat);
 	u32 millis();
 };
 extern u32 beatfperiod;

@@ -23,6 +23,7 @@ Play::Play(songdata* song){
 	render = new PlayRender(this);
 	score = new PlayScore(this);
 	input = new PlayInput(this);
+	offset = stod(song->offset) * 1000;
 }
 
 Play::~Play() {
@@ -69,6 +70,11 @@ int Play::getNoteType(u32 row) {
 
 void Play::updateBeat() {
 	time = millis();
+	if (time > uint(-offset)) {
+		time = time + offset;
+	} else {
+		time = 0;
+	}
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
 	minutefsum = 0;
@@ -116,76 +122,82 @@ void Play::updateBeat() {
 
 void Play::updateSteps() {
 	//crear nuevos steps
-	for (int i = cursor; i < beat + parseaheadbeats; i++) {
-		if ((i / 4) > measurecursor) {
-			firstbeat = i;
-			m = getMeasureAtBeat(i);
-			cout << "\nmeasure " << (i / 4);
-			sets = m.size();
-			measurecursor = i / 4;
-			rowspermeasure = sets * 4;
-		}
-		count = i - firstbeat;
-		stepbeatf = i * beatfperiod;
-		switch (sets) {
-			case 1: //1 set, 1 linea por beat
-				set = m.at(0);
-				newSteps(set[count], stepbeatf, 1);
-				break;
-			case 2: //2 sets, 2 lineas por beat
-				if ((count == 0) || (count == 1)) {
-					set = m.at(0);
-					newSteps(set[count * 2], stepbeatf, 1);
-					newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2), 2);
-				} else {
-					set = m.at(1);
-					newSteps(set[(count - 2) * 2], stepbeatf, 1);
-					newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2), 2);
+	if (!end_of_chart) {
+		for (int i = cursor; i < beat + parseaheadbeats; i++) {
+			if ((i / 4) > measurecursor) {
+				firstbeat = i;
+				if (!getMeasureAtBeat(i)) {
+					cout << "\nend of chart";
+					end_of_chart = true;
+					break;
 				}
-				break;
-			case 3: //3 sets, 3 lineas por beat
-				switch (count) {
-					case 0:
-						set = m.at(0);
-						newSteps(set[0], stepbeatf, 1);
-						newSteps(set[1], stepbeatf + (beatfperiod / 3), 3);
-						newSteps(set[2], stepbeatf + (beatfperiod / 3) * 2, 3);
-						break;
-					case 1:
-						set = m.at(0);
-						newSteps(set[3], stepbeatf, 1);
-						set = m.at(1);
-						newSteps(set[0], stepbeatf + (beatfperiod / 3), 3);
-						newSteps(set[1], stepbeatf + (beatfperiod / 3) * 2, 3);
-						break;
-					case 2:
-						set = m.at(1);
-						newSteps(set[2], stepbeatf, 1);
-						newSteps(set[3], stepbeatf + (beatfperiod / 3), 3);
-						set = m.at(2);
-						newSteps(set[0], stepbeatf + (beatfperiod / 3) * 2, 3);
-						break;
-					case 3:
-						set = m.at(2);
-						newSteps(set[1], stepbeatf, 1);
-						newSteps(set[2], stepbeatf + (beatfperiod / 3), 3);
-						newSteps(set[3], stepbeatf + (beatfperiod / 3) * 2, 3);
-						break;
-
-				}
-				break;
-			default: //sets sets, sets lineas por beat
-				for (int k = 0; k < sets / 4; k++) {
-					int seti = count * (sets / 4) + k;
-					set = m.at(seti);
-					relbeatf = ((k * beatfperiod) / (sets / 4));
-					for (int ii = 0; ii < 4; ii++) {
-						newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)), getNoteType(seti * 4 + ii));
+				cout << "\nmeasure " << (i / 4);
+				sets = m->size();
+				measurecursor = i / 4;
+				rowspermeasure = sets * 4;
+			}
+			count = i - firstbeat;
+			stepbeatf = i * beatfperiod;
+			switch (sets) {
+				case 1: //1 set, 1 linea por beat
+					set = m->at(0);
+					newSteps(set[count], stepbeatf, 1);
+					break;
+				case 2: //2 sets, 2 lineas por beat
+					if ((count == 0) || (count == 1)) {
+						set = m->at(0);
+						newSteps(set[count * 2], stepbeatf, 1);
+						newSteps(set[count * 2 + 1], stepbeatf + (beatfperiod / 2), 2);
+					} else {
+						set = m->at(1);
+						newSteps(set[(count - 2) * 2], stepbeatf, 1);
+						newSteps(set[(count - 2) * 2 + 1], stepbeatf + ((beatfperiod) / 2), 2);
 					}
-				}
-				break;
+					break;
+				case 3: //3 sets, 3 lineas por beat
+					switch (count) {
+						case 0:
+							set = m->at(0);
+							newSteps(set[0], stepbeatf, 1);
+							newSteps(set[1], stepbeatf + (beatfperiod / 3), 3);
+							newSteps(set[2], stepbeatf + (beatfperiod / 3) * 2, 3);
+							break;
+						case 1:
+							set = m->at(0);
+							newSteps(set[3], stepbeatf, 1);
+							set = m->at(1);
+							newSteps(set[0], stepbeatf + (beatfperiod / 3), 3);
+							newSteps(set[1], stepbeatf + (beatfperiod / 3) * 2, 3);
+							break;
+						case 2:
+							set = m->at(1);
+							newSteps(set[2], stepbeatf, 1);
+							newSteps(set[3], stepbeatf + (beatfperiod / 3), 3);
+							set = m->at(2);
+							newSteps(set[0], stepbeatf + (beatfperiod / 3) * 2, 3);
+							break;
+						case 3:
+							set = m->at(2);
+							newSteps(set[1], stepbeatf, 1);
+							newSteps(set[2], stepbeatf + (beatfperiod / 3), 3);
+							newSteps(set[3], stepbeatf + (beatfperiod / 3) * 2, 3);
+							break;
+
+					}
+					break;
+				default: //sets sets, sets lineas por beat
+					for (int k = 0; k < sets / 4; k++) {
+						int seti = count * (sets / 4) + k;
+						set = m->at(seti);
+						relbeatf = ((k * beatfperiod) / (sets / 4));
+						for (int ii = 0; ii < 4; ii++) {
+							newSteps(set[ii], stepbeatf + relbeatf + (ii * (beatfperiod / sets)), getNoteType(seti * 4 + ii));
+						}
+					}
+					break;
+			}
+			cursor = i + 1;
 		}
-		cursor = i + 1;
 	}
 	//crear steps por holds
 	int ystart;
@@ -345,14 +357,12 @@ void Play::removeStep(vector<step>::iterator* s) {
 	(*s)--;
 }
 
-measure Play::getMeasureAtBeat(u32 beat) {
+bool Play::getMeasureAtBeat(u32 beat) {
 	if (beat / 4 > song->charts.back().notes.size() - 1) {
-		while (1) {
-			swiWaitForVBlank();
-		}
-		sassert(0, "attempted to get nonexistant measure");
+		return false;
 	}
-	return song->charts.back().notes.at(beat / 4);
+	m = &song->charts.back().notes.at(beat / 4);
+	return true;
 }
 
 u32 Play::millis() {

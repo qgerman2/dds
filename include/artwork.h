@@ -37,9 +37,9 @@ struct bmp {
 	u32 size_pixel = 99;
 	u32 print_res = 2835;
 	u32 zero = 0;
-	u32 red_mask = 31744;	//11111 00000 00000
-	u32 green_mask = 992;	//00000 11111 00000
-	u32 blue_mask = 31;		//00000 00000 11111
+	u32 red_mask  = 0b111110000000000;
+	u32 green_mask= 0b000001111100000;
+	u32 blue_mask = 0b000000000011111;
 };
 bool loadArtwork(std::string filepath, u16* dest, uint width, uint height);
 bool processFile(FILE** infile, std::string);

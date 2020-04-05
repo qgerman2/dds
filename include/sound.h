@@ -1,7 +1,7 @@
 #ifndef SOUND
 #define SOUND
-#define MAXMODBUFFER 3200
-#define MP3BUFFER 3200
+#define MAXMODBUFFER 1600
+#define MP3BUFFER 4800
 #include <string>
 #include <stdio.h>
 #include <maxmod9.h>
