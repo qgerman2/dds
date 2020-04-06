@@ -1,7 +1,8 @@
 #ifndef SOUND
 #define SOUND
-#define MAXMODBUFFER 4800
+#define MAXMODBUFFER 3200
 #define MP3BUFFER 3200
+#define OGGBUFFER 1600
 #include <string>
 #include <stdio.h>
 #include <maxmod9.h>
@@ -18,6 +19,8 @@ struct mp3 {
 };
 struct ogg {
 	OggVorbis_File vf;
+	//char buffer[OGGBUFFER];
+	uint rem = 0;
 };
 struct audio {
 	FILE* inbuf = NULL;

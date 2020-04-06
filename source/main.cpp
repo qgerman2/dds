@@ -59,7 +59,7 @@ int main(){
 				songdata song;
 				parseSimFile(&song, simpath);
 				parseChart(&song);
-				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
+				//loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
 				loadAudio(songpath + "/" + song.music);
 				playAudio();
 				Play play(&song);

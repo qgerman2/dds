@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <fat.h>
 #include <iostream>
+#include <algorithm>
 #include "sound.h"
 #include <maxmod9.h>
 
@@ -174,8 +175,45 @@ bool loadOgg() {
 }
 
 mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) {
+	struct ogg* ogg = audio.ogg;
 	char* output = (char*)dest;
-	int res = ov_read(&audio.ogg->vf, output, length * 4, NULL);
+	int res;
+	uint samples = 0;
+	while (samples < length) {
+		res = ov_read(&audio.ogg->vf, &output[samples * 4], (length - samples) * 4, NULL);
+		samples += res / 4;
+	}
+	return samples;
+	/*uint res;
+	if (ogg->rem) {
+		memcpy(output, ogg->buffer, min(ogg->rem, length * 4));
+		samples = samples + min(ogg->rem / 4, length);
+		if (ogg->rem / 4 > length) {
+			memmove(ogg->buffer, &ogg->buffer[length * 4], ogg->rem - length * 4);
+			ogg->rem -= length * 4;
+		} else {
+			ogg->rem = 0;
+		}
+	}
+	while (samples < length) {
+		if (length - samples <= OGGBUFFER / 4) {
+			res = ov_read(&ogg->vf, ogg->buffer, OGGBUFFER , NULL);
+			if (res / 4 > length - samples) {
+				ogg->rem = samples * 4 + res - length * 4;
+				memcpy(&output[samples * 4], ogg->buffer, res - ogg->rem);
+				memmove(ogg->buffer, &ogg->buffer[res - ogg->rem], ogg->rem);
+				samples += (res - ogg->rem) / 4;
+			} else {
+				memcpy(&output[samples * 4], ogg->buffer, res);
+				samples = samples + res / 4;
+			}
+		} else {
+			res = ov_read(&ogg->vf, &output[samples * 4], (length - samples) * 4, NULL);
+			samples = samples + res / 4;
+		}
+	}
+	return samples;
+	/*res = ov_read(&ogg->vf, output, length * 4, NULL);
 	if (res > 0) {
 		length = res / 4;
 	} else {
@@ -186,7 +224,7 @@ mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 		audio.end();
 		length = 0;
 	}
-	return length;
+	return length;*/
 }
 
 bool playAudio() {
