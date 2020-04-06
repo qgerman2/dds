@@ -37,27 +37,33 @@ int main(){
 		sassert(0, "failed to load libfat");
 	}
 	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
+	PrintConsole *console = consoleInit(0, 1, BgType_Text4bpp, BgSize_T_256x256, 3, 7, false, false);
+	ConsoleFont font;
+	font.gfx = (u16*)fontTiles;
+	font.pal = (u16*)fontPal;
+	font.numChars = 95;
+	font.numColors = fontPalLen / 2;
+	font.bpp = 4;
+	font.asciiOffset = 32;
+	font.convertSingleColor = false;
+	consoleSetFont(console, &font);
+	cout << "\ndds alpha -1";
 	while (1) {
 		switch (state) {
 			case (0): {
-				Menu* menu = new Menu();
-				menu->loop();
-				delete menu;
+				Menu menu;
+				menu.loop();
 			}
 			break;
 			case (1): {
-				consoleDemoInit();
-				cout << "\n" << simpath;
-				cout << "\n" << songpath;
 				songdata song;
 				parseSimFile(&song, simpath);
 				parseChart(&song);
-				loadAudio(songpath + "/" + song.music);
 				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
+				loadAudio(songpath + "/" + song.music);
 				playAudio();
-				Play* play = new Play(&song);
-				play->loop();
-				delete play;
+				Play play(&song);
+				play.loop();
 			}
 			break;
 			case (2): {

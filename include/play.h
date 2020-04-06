@@ -50,7 +50,8 @@ private:
 	u32 minutefsum;
 	bool lostbeatsbpm;
 	int offset;
-	bool end_of_chart = false;
+	bool cursor_end = false;
+	int beat_end = 0;
 public:
 	PlayRender* render;
 	PlayScore* score;

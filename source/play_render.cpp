@@ -60,8 +60,8 @@ PlayRender::PlayRender(Play* play) {
 	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
 	dmaCopy(hitTiles, hitGfx, hitTilesLen);
 
-	dmaCopy(tapPal, SPRITE_PALETTE, 512);
-	dmaCopy(hitPal, SPRITE_PALETTE + 16, 512);
+	dmaCopy(tapPal, SPRITE_PALETTE, tapPalLen);
+	dmaCopy(hitPal, SPRITE_PALETTE + 16, hitPalLen);
 	setRotData();
 
 	u8 left = popSprite();
@@ -76,17 +76,15 @@ PlayRender::PlayRender(Play* play) {
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
 	oamSetPalette(&oamMain, right, 1);
+
 	loadStepGfx();
 	loadLifebarGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
 
 	//loadSubBackground();
-	//loadSubScore();
+	loadSubScore();
 	//loadFontGfx();
-	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
-	//vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
-	consoleDemoInit();
 }
 
 PlayRender::~PlayRender() {
@@ -103,7 +101,6 @@ PlayRender::~PlayRender() {
 	for (int i = 0; i < 24; i++) {
 		oamFreeGfx(&oamMain, judgeGfx[i]);
 	}
-	oamFreeGfx(&oamMain, barGfx);
 	oamFreeGfx(&oamMain, barTopGfx);
 	oamFreeGfx(&oamMain, barBotGfx);
 	for (int i = 0; i < 11; i++) {
@@ -156,17 +153,15 @@ void PlayRender::loadLifebarGfx() {
 	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
 	barTopSprite = popSprite();
 	oamSet(&oamMain, barTopSprite, 16, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
-	
 	barBotGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	dmaCopy(barBotTiles, barBotGfx, barBotTilesLen);
 	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
 	barBotSprite = popSprite();
 	oamSet(&oamMain, barBotSprite, 8, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
-
 	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
 	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
 	dmaCopy(barPal, &VRAM_F[1*16*256], barPalLen);
-	barGfx = bgGetMapPtr(id);
+	barMap = bgGetMapPtr(id);
 }
 
 void PlayRender::loadNumberGfx() {
@@ -267,23 +262,23 @@ void PlayRender::renderLifebar() {
 	}
 	for (int y = 0; y < 9; y++) {
 		if (y > 8 - ((segments - 1) / 3)) {
-			barGfx[2 + (y*2+3)*32] = 1;
-			barGfx[3 + (y*2+3)*32] = 2;
-			barGfx[2 + (y*2+4)*32] = 3;
-			barGfx[3 + (y*2+4)*32] = 4;
+			barMap[2 + (y*2+3)*32] = 1;
+			barMap[3 + (y*2+3)*32] = 2;
+			barMap[2 + (y*2+4)*32] = 3;
+			barMap[3 + (y*2+4)*32] = 4;
 		}
 		else if ((y == 8 - ((segments - 1) / 3)) && (segments != 0)) {
 			t = 2 - (segments+2)%3;
-			barGfx[2 + (y*2+3)*32] = 5 + t*4;
-			barGfx[3 + (y*2+3)*32] = 6 + t*4;
-			barGfx[2 + (y*2+4)*32] = 7 + t*4;
-			barGfx[3 + (y*2+4)*32] = 8 + t*4;
+			barMap[2 + (y*2+3)*32] = 5 + t*4;
+			barMap[3 + (y*2+3)*32] = 6 + t*4;
+			barMap[2 + (y*2+4)*32] = 7 + t*4;
+			barMap[3 + (y*2+4)*32] = 8 + t*4;
 		}
 		else {
-			barGfx[2 + (y*2+3)*32] = 17;
-			barGfx[3 + (y*2+3)*32] = 18;
-			barGfx[2 + (y*2+4)*32] = 19;
-			barGfx[3 + (y*2+4)*32] = 20;
+			barMap[2 + (y*2+3)*32] = 17;
+			barMap[3 + (y*2+3)*32] = 18;
+			barMap[2 + (y*2+4)*32] = 19;
+			barMap[3 + (y*2+4)*32] = 20;
 		}
 	}
 }

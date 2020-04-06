@@ -297,12 +297,6 @@ void MenuWheel::fillBuffer() {
 			}
 		}
 	}
-	for (int i = 0; i < BUFFERSIZE; i++) {
-		cout << "\n" << i << " " << bufferitems[i].type;
-		if (i == buffercursor) {
-			cout << " <<";
-		}
-	}
 }
 
 int MenuWheel::bufferToFile(int i) {
@@ -377,9 +371,7 @@ void MenuWheel::renderChar(int angle) {
 
 void MenuWheel::updateColor() {
 	int item = 0;
-	//cout << "\n---";
 	for (int i = buffercursor - WHEELVIEW / 2; i <= buffercursor + WHEELVIEW / 2; i++) {
-		//cout << "\n" << i << " " << bufferitems[i].name << " " << bufferitems[i].type;
 		switch (bufferitems[i].type) {
 			case 0:
 				songFrameColor[item] = 2;

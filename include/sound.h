@@ -14,7 +14,7 @@ struct mp3 {
 	struct mad_synth synth;
 	u_char buffer[MP3BUFFER];
 	int f = 0;
-	u_char *guard;
+	u_char *guard = NULL;
 };
 struct ogg {
 	OggVorbis_File vf;
@@ -35,4 +35,5 @@ mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format);
 bool loadOgg();
 mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format);
 bool playAudio();
+bool idleAudio();
 #endif

@@ -15,7 +15,7 @@ private:
 	u16* hitGfx;
 	u16* numberGfx[10];
 	u16* judgeGfx[24];
-	u16* barGfx;
+	u16* barMap;
 	u16* barTopGfx;
 	u16* barBotGfx;
 	u16* scoreGfx[11];

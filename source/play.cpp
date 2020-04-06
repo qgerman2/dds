@@ -19,21 +19,26 @@ using namespace std;
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 
 Play::Play(songdata* song){
+	TIMER0_CR = 0;
+	TIMER1_CR = 0;
 	this->song = song;
 	render = new PlayRender(this);
 	score = new PlayScore(this);
 	input = new PlayInput(this);
 	offset = stod(song->offset) * 1000;
+	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
 
 Play::~Play() {
+	vramSetBankF(VRAM_F_LCD);
+	vramSetBankH(VRAM_H_LCD);
 	delete render;
 	delete score;
 	delete input;
 }
 
 void Play::loop(){
-	//s_play();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
@@ -42,14 +47,12 @@ void Play::loop(){
 		input->update();
 		mmStreamUpdate();
 		swiWaitForVBlank();
-		
 		updateSteps();
 		render->update();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
-		if (state != 1) {
-			return;
-		}
+		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
+		if (state != 1) {return;}
 	}
 }
 
@@ -122,13 +125,13 @@ void Play::updateBeat() {
 
 void Play::updateSteps() {
 	//crear nuevos steps
-	if (!end_of_chart) {
+	if (!cursor_end) {
 		for (int i = cursor; i < beat + parseaheadbeats; i++) {
 			if ((i / 4) > measurecursor) {
 				firstbeat = i;
 				if (!getMeasureAtBeat(i)) {
-					cout << "\nend of chart";
-					end_of_chart = true;
+					cursor_end = true;
+					beat_end = i;
 					break;
 				}
 				cout << "\nmeasure " << (i / 4);

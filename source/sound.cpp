@@ -28,15 +28,16 @@ audio::audio() {
 
 void audio::end() {
 	if (mp3) {
-		cout << "\nmp3 end";
 		mad_synth_finish(&mp3->synth);
 		mad_frame_finish(&mp3->frame);
 		mad_stream_finish(&mp3->stream);
 		delete mp3;
+		mp3 = NULL;
 	}
 	if (ogg) {
 		ov_clear(&ogg->vf);
 		delete ogg;
+		ogg = NULL;
 	}
 	if (inbuf) {
 		fclose(inbuf);
@@ -55,6 +56,7 @@ static signed short MadFixedToSshort(mad_fixed_t Fixed) {
 }
 
 bool loadAudio(string filepath) {
+	audio.end();
 	FILE* inbuf = fopen(filepath.c_str(), "rb");
 	if (!inbuf) {
 		cout << "\nFailed to open sound file " << filepath;
@@ -193,5 +195,12 @@ bool playAudio() {
 		return false;
 	}
 	mmStreamOpen(&audio.stream);
+	return true;
+}
+
+bool idleAudio() {
+	if (audio.ogg || audio.mp3) {
+		return false;
+	}
 	return true;
 }

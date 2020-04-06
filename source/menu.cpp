@@ -19,9 +19,9 @@ Menu::Menu() {
 }
 
 Menu::~Menu() {
+	vramSetBankF(VRAM_F_LCD);
+	vramSetBankH(VRAM_H_LCD);
 	delete wheel;
-	vramSetBankF(VRAM_F_LCD); //bg ext palette
-	vramSetBankH(VRAM_H_LCD); //bg ext palette sub
 }
 
 void Menu::loop() {
