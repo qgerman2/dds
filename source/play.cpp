@@ -51,7 +51,7 @@ void Play::loop(){
 		render->update();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
-		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
+		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0; cout << "\nstate 0";}
 		if (state != 1) {return;}
 	}
 }

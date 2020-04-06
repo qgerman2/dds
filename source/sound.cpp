@@ -38,9 +38,11 @@ void audio::end() {
 		ov_clear(&ogg->vf);
 		delete ogg;
 		ogg = NULL;
+		cout << "\nogg end";
 	}
 	if (inbuf) {
 		fclose(inbuf);
+		cout << "\nclose buffer";
 	}
 	mmStreamClose();
 	stream.sampling_rate = 0;
@@ -176,9 +178,13 @@ bool loadOgg() {
 mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) {
 	char* output = (char*)dest;
 	int res = ov_read(&audio.ogg->vf, output, length * 4, NULL);
-	if (res) {
+	if (res > 0) {
 		length = res / 4;
 	} else {
+		audio.end();
+		length = 0;
+	}
+	if (ov_pcm_tell(&audio.ogg->vf) >= ov_pcm_total(&audio.ogg->vf, -1)) {
 		audio.end();
 		length = 0;
 	}
