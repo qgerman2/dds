@@ -38,11 +38,9 @@ void audio::end() {
 		ov_clear(&ogg->vf);
 		delete ogg;
 		ogg = NULL;
-		cout << "\nogg end";
 	}
 	if (inbuf) {
 		fclose(inbuf);
-		cout << "\nclose buffer";
 	}
 	mmStreamClose();
 	stream.sampling_rate = 0;
