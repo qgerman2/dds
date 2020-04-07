@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
@@ -293,15 +294,13 @@ void PlayRender::update() {
 
 void PlayRender::renderSteps() {
 	for (auto i = 0; i < 4; i++) {
-		//cout << "\n" << i << " " << (play->input->holdCol[i] == play->steps.end());
 		if (play->input->holdCol[i].first && (play->input->holdCol[i].second->y < (HITYOFFSET + 16))) {
 			if (play->input->holdCol[i].second->gfx == NULL) {
 				play->input->holdCol[i].second->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 				dmaCopyHalfWords(3, holdBitmap, play->input->holdCol[i].second->gfx, holdBitmapLen);
-				printf("\nalloc %p", play->input->holdCol[i].second->gfx);
 			}
-			u8 diff = HITYOFFSET + 16 - play->input->holdCol[i].second->y;
-			dmaFillHalfWords(ARGB16(0,0,0,0), play->input->holdCol[i].second->gfx, 32*diff*2);
+			u8 diff = min(HITYOFFSET + 16 - play->input->holdCol[i].second->y, 32);
+			dmaFillHalfWords(ARGB16(0,0,0,0), play->input->holdCol[i].second->gfx, 32 * diff * 2);
 		}
 	}
 	for (auto i = play->steps.begin(); i != play->steps.end(); i++) {

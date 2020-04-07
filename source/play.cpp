@@ -247,8 +247,8 @@ void Play::updateSteps() {
 					if ((n->col == h->col) && (n->type == 5) && (n->beatf == h->startbeatf)) {
 						n->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 						n->height = mod;
-						printf("\nalloc %p", n->gfx);
-						dmaCopyHalfWords(3, holdBitmap, n->gfx, holdBitmapLen / 32 * mod);
+						dmaCopyHalfWords(3, holdBitmap, n->gfx, holdBitmapLen * mod / 32);
+						dmaFillHalfWords(ARGB16(0,0,0,0), &n->gfx[holdBitmapLen * mod / 64], 32*32*2 - (holdBitmapLen * mod / 32));
 						break;
 					}
 				}
@@ -330,7 +330,6 @@ list<step>::iterator Play::removeStep(list<step>::iterator s) {
 	pushSprite(s->sprite);
 	if (s->gfx != nullptr) {
 		oamFreeGfx(&oamMain, s->gfx);
-		printf("\nfree %p", s->gfx);
 	}
 	return steps.erase(s);
 }
