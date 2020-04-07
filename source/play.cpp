@@ -8,6 +8,7 @@
 #include <cmath>
 #include <maxmod9.h>
 #include <vector>
+#include <list>
 #include "play.h"
 #include "play_render.h"
 #include "play_input.h"
@@ -206,8 +207,7 @@ void Play::updateSteps() {
 	int ystart;
 	int yend;
 	int pos = 0;
-	u8 push[4];
-	vector<step>::iterator it;
+	list<step>::iterator it;
 	u32 height;
 	step s;
 	for (auto h = holds.begin(); h != holds.end(); h++) {
@@ -236,28 +236,18 @@ void Play::updateSteps() {
 			s.sprite = popSprite();
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
-			for (int c = 0; c < 4; c++) {
-				push[c] = 0;
-				if (input->holdCol[c] >= it) {
-					push[c] = distance(steps.begin(), input->holdCol[c]) + 1;
-				}
-			}
 			steps.insert(it, s);
-			for (int c = 0; c < 4; c++) {
-				if (push[c] > 0) {
-					input->holdCol[c] = steps.begin();
-					advance(input->holdCol[c], push[c]);
-				}
-			}
 			pos++;
 		}
 		//cortar sprite de ultimo hold
 		if (h->endbeatf > 0) {
-			u8 mod = height % 32;
+			int mod = height % 32;
 			if (mod > 0) {
-				for (auto n = steps.end() - 1; n != steps.begin() - 1; n--) {
+				for (auto n = steps.rbegin(); n != steps.rend(); n++) {
 					if ((n->col == h->col) && (n->type == 5) && (n->beatf == h->startbeatf)) {
 						n->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+						n->height = mod;
+						printf("\nalloc %p", n->gfx);
 						dmaCopyHalfWords(3, holdBitmap, n->gfx, holdBitmapLen / 32 * mod);
 						break;
 					}
@@ -267,7 +257,7 @@ void Play::updateSteps() {
 		}
 	}
 	//actualizar posicion
-	for (auto i = steps.begin(); i != steps.end(); i++) {
+	for (auto i = steps.begin(); i != steps.end();) {
 		if (((i->type == 1) || (i->type == 2)) && !i->disabled && (i->beatf < beatf)) {
 			u32 beatfdiff = beatf - i->beatf;
 			if (beatfdiff > score->judgesWindow[4]) {
@@ -286,16 +276,16 @@ void Play::updateSteps() {
 			i->y += 16 + 32 * i->stepcount;
 		}
 		if (i->y < -32) {
-			removeStep(&i);
+			i = removeStep(i);
+		} else {
+			++i;
 		}
 	}
 }
 
 void Play::newSteps(u16 data, u32 beatf, u8 notetype) {
-	if (data == 0)
-		return;
+	if (data == 0) {return;}
 	bool newstep = false;
-	bool push[4] = {false};
 	//normal steps
 	step s;
 	for (int i = 0; i < 4; i++) {
@@ -325,11 +315,6 @@ void Play::newSteps(u16 data, u32 beatf, u8 notetype) {
 			}
 		}
 		if (newstep) {
-			for (int c = 0; c < 4; c++) {
-				if (input->holdCol[c] == steps.end()) {
-					push[c] = true;
-				}
-			}
 			s.x = (HITXOFFSET + 32 * i);
 			s.y = 100;
 			s.col = i;
@@ -337,27 +322,17 @@ void Play::newSteps(u16 data, u32 beatf, u8 notetype) {
 			s.beatf = beatf;
 			s.notetype = notetype;
 			steps.push_back(s);
-			for (int c = 0; c < 4; c++) {
-				if (push[c]) {
-					input->holdCol[c] = steps.end();
-				}
-			}
 		}
 	}
 }
 
-void Play::removeStep(vector<step>::iterator* s) {
-	pushSprite((*s)->sprite);
-	if ((*s)->gfx != NULL) {
-		oamFreeGfx(&oamMain, (*s)->gfx);
+list<step>::iterator Play::removeStep(list<step>::iterator s) {
+	pushSprite(s->sprite);
+	if (s->gfx != nullptr) {
+		oamFreeGfx(&oamMain, s->gfx);
+		printf("\nfree %p", s->gfx);
 	}
-	for (int i = 0; i < 4; i++) {
-		if (input->holdCol[i] > (*s)) {
-			input->holdCol[i]--;
-		}
-	}
-	steps.erase((*s));
-	(*s)--;
+	return steps.erase(s);
 }
 
 bool Play::getMeasureAtBeat(u32 beat) {

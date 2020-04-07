@@ -1,6 +1,8 @@
 #ifndef PLAYINPUT
 #define PLAYINPUT
 #include <vector>
+#include <utility>
+#include <list>
 #include "play.h"
 class Play;
 class PlayScore;
@@ -16,7 +18,7 @@ private:
 	bool held = false;
 	Play* play;
 public:
-	std::vector<step>::iterator holdCol[4];
+	std::pair<bool, std::list<step>::iterator> holdCol[4];
 	PlayInput(Play* play);
 	~PlayInput();
 	void update();

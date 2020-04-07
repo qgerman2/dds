@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <iostream>
 #include <bitset>
+#include <utility>
 #include "main.h"
 #include "play.h"
 #include "play_score.h"
@@ -19,7 +20,7 @@ const u32 stepKeys = bitset<32> ("110011111111").to_ulong();
 PlayInput::PlayInput(Play* play) {
 	this->play = play;
 	for (int c = 0; c < 4; c++) {
-		holdCol[c] = play->steps.end();
+		holdCol[c].first = false;
 	}
 }
 
@@ -35,8 +36,8 @@ void PlayInput::update() {
 	keysReleased = keysUp();
 	keysHeldd = keysHeld();
 	if (((keysPressed & stepKeys) > 0) || ((keysReleased & stepKeys) > 0) || ((keysHeldd & stepKeys) > 0)) {
-		for (auto s = play->steps.begin(); s != play->steps.end(); s++) {
-			if (stateCol[s->col] == 2) {continue;}
+		for (auto s = play->steps.begin(); s != play->steps.end();) {
+			if (stateCol[s->col] == 2) {++s; continue;}
 			pressed = (keysPressed & colToKeys[s->col]) > 0;
 			released = (keysReleased & colToKeys[s->col]) > 0;
 			held = (keysHeldd & colToKeys[s->col]) > 0;
@@ -45,7 +46,8 @@ void PlayInput::update() {
 				if ((beatfdiff <= play->score->judgesWindow[4]) || (s->type == 5)) {
 					if (stateCol[s->col] == 1) {
 						if (s->type == 5) {
-							holdCol[s->col] = next(s, 0);
+							holdCol[s->col].first = true;
+							holdCol[s->col].second = s;
 							stateCol[s->col] = 2;
 						}
 					}
@@ -54,68 +56,66 @@ void PlayInput::update() {
 							stateCol[s->col] = 1;
 							play->score->add(&(*s), beatfdiff);
 							play->score->addDPTotal();
-							play->removeStep(&s);
+							s = play->removeStep(s);
+							continue;
 						}
 						else if ((s->type != 3) && (s->type != 5)) {
 							stateCol[s->col] = 2;
 							play->score->add(&(*s), beatfdiff);
 							play->score->addDPTotal();
-							play->removeStep(&s);
+							s = play->removeStep(s);
+							continue;
 						}
 					}
 					if (held && !pressed) {
-						if (holdCol[s->col] != play->steps.end()) {
+						if (holdCol[s->col].first) {
 							if (s->type == 5) {
-								if (s->y < (HITYOFFSET - 16)) {
-									holdCol[s->col] = play->steps.end();
+								if (s->y < (HITYOFFSET - 16 + s->height)) {
+									holdCol[s->col].first = false;
 									stateCol[s->col] = 1;
-									play->removeStep(&s);
+									s = play->removeStep(s);
+									continue;
 								}
 							}
 						}
-						if ((holdCol[s->col] != play->steps.end()) || (stateCol[s->col] == 1)) {
+						if (stateCol[s->col] == 1) {
 							if (s->type == 3) {
 								if (play->beatf >= s->beatf) {
-									if (holdCol[s->col] != play->steps.end()) {
-										play->removeStep(&holdCol[s->col]);
-										s--;
-									}
-									holdCol[s->col] = play->steps.end();
 									stateCol[s->col] = 2;
 									play->score->add(&(*s), beatfdiff);
 									play->score->addDPTotal();
-									play->removeStep(&s);
+									s = play->removeStep(s);
+									continue;
 								}
 							}
 						}
 					}
 					if (released) {
-						if (holdCol[s->col] != play->steps.end()) {
+						if (holdCol[s->col].first) {
 							if (s->type == 3) {
-								play->removeStep(&holdCol[s->col]);
-								s--;
-								for (auto n = next(holdCol[s->col], 0); n != s; n++) {
-									if ((n->type == 5) && (n->col == s->col)) {
-										play->removeStep(&n);
-										s--;
-									}
+								for (auto k = s; k != holdCol[s->col].second;) {
+									if (k->type == 5 && k->col == s->col) {
+										k = play->removeStep(k);
+									};
+									k--;
 								}
-								holdCol[s->col] = play->steps.end();
+								holdCol[s->col].first = false;
+								play->removeStep(holdCol[s->col].second);
 								stateCol[s->col] = 2;
-								play->score->add(&(*s), beatfdiff);
-								play->score->addDPTotal();
-								play->removeStep(&s);
+								s = play->removeStep(s);
+								continue;
 							}
 						}
 					}
 				}
 			}
+			++s;
 		}
 	}
 	for (int i = 0; i < 4; i++) {
-		if (holdCol[i] != play->steps.end()) {
+		if (holdCol[i].first) {
 			if ((keysHeldd & colToKeys[i]) == 0) {
-				holdCol[i] = play->steps.end();
+				holdCol[i].first = false;
 				play->score->addDPTotal();
 			}
 		}

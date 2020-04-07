@@ -1,5 +1,6 @@
 #ifndef PLAY
 #define PLAY
+#include <list>
 #include <vector>
 #include "parse.h"
 #define NDSFREQ 32.7284	//khz
@@ -13,12 +14,13 @@ typedef struct step {
 	int y;
 	u8 type;
 	u32 beatf;
-	u8 sprite;
+	int sprite;
 	u8 col;
 	u8 stepcount;
 	u8 notetype;
 	u16* gfx = NULL;
 	bool disabled = false;
+	int height = 0;
 } step;
 typedef struct hold {
 	int col;
@@ -59,7 +61,7 @@ public:
 	songdata* song;
 	u32 beatf;
 	u32 bpmf = 0;
-	std::vector<step> steps;
+	std::list<step> steps;
 	std::vector<hold> holds;
 	Play(songdata* song);
 	~Play();
@@ -67,7 +69,7 @@ public:
 	void updateSteps();
 	void updateBeat();
 	void newSteps(u16 data, u32 beatf, u8 notetype);
-	void removeStep(std::vector<step>::iterator* s);
+	std::list<step>::iterator removeStep(std::list<step>::iterator s);
 	int getNoteType(u32 row);
 	bool getMeasureAtBeat(u32 beat);
 	u32 millis();
