@@ -340,6 +340,7 @@ void MenuWheel::render() {
 		}
 		simpath = bufferitems[buffercursor].smpath;
 		songpath = bufferitems[buffercursor].path;
+		cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);

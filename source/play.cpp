@@ -74,10 +74,14 @@ int Play::getNoteType(u32 row) {
 
 void Play::updateBeat() {
 	time = millis();
-	if (time > uint(-offset)) {
-		time = time + offset;
+	if (offset < 0) {
+		if (time > uint(-offset)) {
+			time = time + offset;
+		} else {
+			time = 0;
+		}
 	} else {
-		time = 0;
+		time = time + offset;
 	}
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
