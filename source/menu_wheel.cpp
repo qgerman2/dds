@@ -243,6 +243,7 @@ void MenuWheel::render() {
 		}
 		simpath = buffer->items[buffer->cursor].smpath;
 		songpath = buffer->items[buffer->cursor].path;
+		stopAudio();
 		//cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
