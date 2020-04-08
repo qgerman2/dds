@@ -83,7 +83,7 @@ PlayRender::PlayRender(Play* play) {
 	loadNumberGfx();
 	loadJudgmentGfx();
 
-	loadSubBackground();
+	//loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
 }

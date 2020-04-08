@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <time.h>
 #include "main.h"
 #include "menu.h"
 #include "menu_wheel.h"
@@ -23,6 +24,7 @@ int bgid;
 Buffer* shared_buffer = NULL;
 
 int main(){
+	srand(time(NULL));
 	videoSetMode(MODE_5_2D);
 	videoSetModeSub(MODE_5_2D);
 	bgExtPaletteEnable();

@@ -9,16 +9,17 @@ typedef struct bufferitem{
 	std::string smpath;
 } bufferitem;
 class Buffer {
+private:
+	bool random = false;
 public:
 	int cursor = BUFFERSIZE / 2;
 	bufferitem items[BUFFERSIZE];
 	int center = 0;
 	std::string fileext;
 	int size = -1;
-	bool random = false;
-	Buffer();
 	void fill();
 	int bufferToFile(int i);
-	int dircountToBuffer(int ic);
+	int dircountToBuffer(int i);
+	void setRandom();
 };
 #endif

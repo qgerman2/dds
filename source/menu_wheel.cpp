@@ -66,6 +66,7 @@ MenuWheel::MenuWheel() {
 		buffer = shared_buffer;
 	} else {
 		buffer = new Buffer();
+		buffer->fill();
 	}
 	loadSongFontGfx();
 	int gfx = 0;

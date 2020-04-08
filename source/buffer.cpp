@@ -4,15 +4,10 @@
 #include <iostream>
 #include <string>
 #include <sys/dir.h>
-#include <time.h>
 #include <map>
 #include "buffer.h"
 
 using namespace std;
-
-Buffer::Buffer() {
-	srand(time(NULL));
-}
 
 void Buffer::fill() {
 	int dircount = -1;
@@ -135,4 +130,8 @@ int Buffer::dircountToBuffer(int i) {
 		return (i + size - center + (BUFFERSIZE / 2));
 	}
 	return -1;
+}
+
+void Buffer::setRandom() {
+	random = true;
 }
