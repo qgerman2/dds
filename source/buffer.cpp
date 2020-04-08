@@ -98,6 +98,7 @@ void Buffer::fill() {
 		center = songmap.find(r / (RAND_MAX / (songcount)))->second;
 		cout << "\nsongcount: " << songcount;
 		cout << "\nsong: " << center;
+		random = false;
 	}
 	//popular rueda
 	parse("/ddr");
