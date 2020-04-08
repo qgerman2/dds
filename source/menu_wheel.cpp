@@ -6,6 +6,7 @@
 #include "main.h"
 #include "render.h"
 #include "menu_wheel.h"
+#include "sound.h"
 #include <font.h>
 #include <song_frame.h>
 #include <group_frame.h>
