@@ -83,7 +83,7 @@ PlayRender::PlayRender(Play* play) {
 	loadNumberGfx();
 	loadJudgmentGfx();
 
-	//loadSubBackground();
+	loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
 }
@@ -159,7 +159,7 @@ void PlayRender::loadLifebarGfx() {
 	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
 	barBotSprite = popSprite();
 	oamSet(&oamMain, barBotSprite, 8, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
-	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 0);
+	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 2);
 	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
 	dmaCopy(barPal, &VRAM_F[1*16*256], barPalLen);
 	barMap = bgGetMapPtr(id);
@@ -235,10 +235,11 @@ void PlayRender::loadFontGfx() {
 }
 
 void PlayRender::loadSubBackground() {
-	int id = bgInitSub(3, BgType_Text8bpp, BgSize_T_256x256, 0, 1);
+	int id = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);
+	bgSetPriority(id, 1);
 	dmaCopy(sub_bgTiles, bgGetGfxPtr(id), sub_bgTilesLen);
 	dmaCopy(sub_bgMap, bgGetMapPtr(id), sub_bgMapLen);
-	dmaCopy(sub_bgPal, &VRAM_H[3*16*256], sub_bgPalLen);
+	dmaCopy(sub_bgPal, &VRAM_H[1*16*256], sub_bgPalLen);
 }
 
 void PlayRender::loadSubScore() {

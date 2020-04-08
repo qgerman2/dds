@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "menu_wheel.h"
 #include "render.h"
+#include <maxmod9.h>
 #include <font.h>
 
 using namespace std;
@@ -28,6 +29,7 @@ void Menu::loop() {
 	while (1) {
 		scanKeys();
 		input();
+		mmStreamUpdate();
 		swiWaitForVBlank();
 		render();
 		oamUpdate(&oamSub);

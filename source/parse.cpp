@@ -17,11 +17,9 @@ static const struct t_bpm empty_bpm;
 static const measure empty_measure;
 
 songdata::~songdata() {
-	int e = 0;
 	for (auto c = this->charts.begin(); c != this->charts.end(); c++) {
 		for (auto m = c->notes.begin(); m != c->notes.end(); m++) {
 			for (auto n = m->begin(); n != m->end(); n++) {
-				e++;
 				delete [] *n;
 			}
 		}
@@ -172,7 +170,6 @@ bool parseNotes(chart* chart) {
 	measure m = empty_measure;
 	int fourcount = 0;
 	int count = -1;
-	int k = 0;
 	FILE* fp = fopen(chart->song->filepath.c_str(), "r");
 	fseek(fp, chart->notes_offset, SEEK_SET);
 	while (nextChar(fp, &c)){
@@ -188,7 +185,6 @@ bool parseNotes(chart* chart) {
 			}
 			if ((count == 0) && (fourcount == 0)) {
 				m.push_back(new u16[4]);
-				k++;
 				for (int i = 0; i <= 3; i++) {
 					m.back()[i] = 0;
 				}	
@@ -213,7 +209,6 @@ bool parseNotes(chart* chart) {
 				break;
 		}
 	}
-	cout << "\ncreado " << k;
 	notes->push_back(m);
 	fclose(fp);
 	return true;

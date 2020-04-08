@@ -88,7 +88,7 @@ bool loadMp3() {
 			cout << "\nsample rate " << audio.stream.sampling_rate;
 			break;
 		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
-			cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);
+			//cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);
 			if (audio.mp3->stream.this_frame == audio.mp3->guard) {
 				audio.end();
 				return false;
@@ -209,4 +209,8 @@ bool idleAudio() {
 		return false;
 	}
 	return true;
+}
+
+void stopAudio() {
+	audio.end();
 }

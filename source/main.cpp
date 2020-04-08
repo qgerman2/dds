@@ -6,18 +6,21 @@
 #include <vector>
 #include "main.h"
 #include "menu.h"
+#include "menu_wheel.h"
 #include "play.h"
 #include "parse.h"
 #include "sound.h"
 #include "artwork.h"
+#include "notice.h"
 #include <font.h>
 
 using namespace std;
 
-int state = 0;
+int state = 2;
 string simpath;
 string songpath;
 int bgid;
+Buffer* shared_buffer = NULL;
 
 int main(){
 	videoSetMode(MODE_5_2D);
@@ -36,8 +39,10 @@ int main(){
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
-	bgid = bgInit(2, BgType_Bmp8, BgSize_B16_256x256, 16, 0);
-	PrintConsole *console = consoleInit(0, 1, BgType_Text4bpp, BgSize_T_256x256, 3, 7, false, false);
+
+	bgid = bgInit(2, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
+
+	PrintConsole *console = consoleInit(0, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 1, false, false);
 	ConsoleFont font;
 	font.gfx = (u16*)fontTiles;
 	font.pal = (u16*)fontPal;
@@ -47,6 +52,7 @@ int main(){
 	font.asciiOffset = 32;
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
+
 	cout << "\ndds alpha -1";
 	while (1) {
 		switch (state) {
@@ -67,11 +73,10 @@ int main(){
 			}
 			break;
 			case (2): {
-				while (1) {
-					mmStreamUpdate();
-					swiWaitForVBlank();
-				}
+				Notice notice;
+				notice.loop();
 			}
+			break;
 		}
 
 	}

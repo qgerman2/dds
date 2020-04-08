@@ -1,6 +1,5 @@
 #include <nds.h>
 #include <fat.h>
-#include <sys/dir.h>
 #include <iostream>
 #include <string>
 #include <functional>
@@ -62,11 +61,15 @@ const int* wheelTiles[] {
 };
 
 MenuWheel::MenuWheel() {
+	if (shared_buffer) {
+		buffer = shared_buffer;
+	} else {
+		buffer = new Buffer();
+	}
 	loadSongFontGfx();
-	fillBuffer();
 	int gfx = 0;
-	for (int i = buffercursor - WHEELVIEWCHAR / 2; i <= buffercursor + WHEELVIEWCHAR / 2; i++) {
-		printToBitmap(gfx * CHARSPRITES, bufferitems[i].name + ' ');
+	for (int i = buffer->cursor - WHEELVIEWCHAR / 2; i <= buffer->cursor + WHEELVIEWCHAR / 2; i++) {
+		printToBitmap(gfx * CHARSPRITES, buffer->items[i].name + ' ');
 		gfx++;
 	}
 	loadFrameBg();
@@ -76,6 +79,10 @@ MenuWheel::MenuWheel() {
 MenuWheel::~MenuWheel() {
 	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
 		oamFreeGfx(&oamSub, songFontGfx[i]);
+	}
+	delete buffer;
+	if (shared_buffer) {
+		shared_buffer = NULL;
 	}
 }
 
@@ -89,8 +96,10 @@ void MenuWheel::loadSongFontGfx() {
 }
 
 void MenuWheel::loadFrameBg() {
-	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 0, 1);
-	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 1);
+	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 4, 4);
+	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 3, 4);
+	bgSetPriority(bg1, 2);
+	bgSetPriority(bg2, 2);
 	int g = 1;
 	//rojo negro
 	for (int i = 0; i < 5; i++) {
@@ -121,24 +130,24 @@ void MenuWheel::loadFrameBg() {
 }
 
 void MenuWheel::next() {
-	buffercursor++;
-	if ((buffercursor - BUFFERSIZE / 2) >= (size - WHEELVIEW / 2)) {
-		buffercursor -= size;
+	buffer->cursor++;
+	if ((buffer->cursor - BUFFERSIZE / 2) >= (buffer->size - WHEELVIEW / 2)) {
+		buffer->cursor -= buffer->size;
 	}
-	else if (buffercursor >= (BUFFERSIZE - WHEELVIEW / 2 - 1)) {
-		buffercenter = buffercenter + (BUFFERSIZE / 2 - WHEELVIEW / 2);
-		if (buffercenter >= size) {
-			buffercenter -= size;
+	else if (buffer->cursor >= (BUFFERSIZE - WHEELVIEW / 2 - 1)) {
+		buffer->center = buffer->center + (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (buffer->center >= buffer->size) {
+			buffer->center -= buffer->size;
 		}
-		buffercursor = BUFFERSIZE / 2;
-		//mover bufferitems
+		buffer->cursor = BUFFERSIZE / 2;
+		//mover buffer->items
 		for (int y = 0; y <= BUFFERSIZE / 2 + WHEELVIEW / 2; y++) {
-			bufferitems[y] = bufferitems[y + BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2) - 1];
+			buffer->items[y] = buffer->items[y + BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2) - 1];
 		}
-		for (int i = buffercursor + WHEELVIEW / 2 + 1; i < BUFFERSIZE; i++) {
-			bufferitems[i].type = -1;
+		for (int i = buffer->cursor + WHEELVIEW / 2 + 1; i < BUFFERSIZE; i++) {
+			buffer->items[i].type = -1;
 		}
-		fillBuffer();
+		buffer->fill();
 	}
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
@@ -153,29 +162,29 @@ void MenuWheel::next() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES + i] = tempFontGfx[i];
 	}
-	printToBitmap((WHEELVIEWCHAR - 1) * CHARSPRITES, bufferitems[buffercursor + WHEELVIEWCHAR / 2].name + ' ');
+	printToBitmap((WHEELVIEWCHAR - 1) * CHARSPRITES, buffer->items[buffer->cursor + WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
 void MenuWheel::prev() {
-	buffercursor--;
-	if ((buffercursor - BUFFERSIZE / 2) <= (WHEELVIEW / 2 - size)) {
-		buffercursor += size;
+	buffer->cursor--;
+	if ((buffer->cursor - BUFFERSIZE / 2) <= (WHEELVIEW / 2 - buffer->size)) {
+		buffer->cursor += buffer->size;
 	}
-	else if (buffercursor <= (WHEELVIEW / 2)) {
-		buffercenter = buffercenter - (BUFFERSIZE / 2 - WHEELVIEW / 2);
-		if (buffercenter < 0) {
-			buffercenter += size;
+	else if (buffer->cursor <= (WHEELVIEW / 2)) {
+		buffer->center = buffer->center - (BUFFERSIZE / 2 - WHEELVIEW / 2);
+		if (buffer->center < 0) {
+			buffer->center += buffer->size;
 		}
-		buffercursor = BUFFERSIZE / 2;
-		//mover bufferitems
+		buffer->cursor = BUFFERSIZE / 2;
+		//mover buffer->items
 		for (int i = BUFFERSIZE - 1; i >= BUFFERSIZE / 2 - WHEELVIEW / 2; i--) {
-			bufferitems[i] = bufferitems[i - (BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2)) + 1];
+			buffer->items[i] = buffer->items[i - (BUFFERSIZE - (BUFFERSIZE / 2 + WHEELVIEW / 2)) + 1];
 		}
-		for (int i = 0; i <= (buffercursor - WHEELVIEW / 2 - 1); i++) {
-			bufferitems[i].type = -1;
+		for (int i = 0; i <= (buffer->cursor - WHEELVIEW / 2 - 1); i++) {
+			buffer->items[i].type = -1;
 		}
-		fillBuffer();
+		buffer->fill();
 	}
 	//mover texto
 	u16* tempFontGfx[CHARSPRITES];
@@ -190,7 +199,7 @@ void MenuWheel::prev() {
 	for (int i = 0; i < CHARSPRITES; i++) {
 		songFontGfx[i] = tempFontGfx[i];
 	}
-	printToBitmap(0, bufferitems[buffercursor - WHEELVIEWCHAR / 2].name + ' ');
+	printToBitmap(0, buffer->items[buffer->cursor - WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
@@ -217,112 +226,6 @@ void MenuWheel::printToBitmap(u8 gfx, string str) {
 	}
 }
 
-void MenuWheel::fillBuffer() {
-	int dircount = -1;
-	int buffercount = 0;
-	//lectura recursiva de directorios
-	function<bool(string)> parse = [&](string dir) -> bool {
-		int pos;
-		DIR *pdir;
-		struct dirent *pent;
-		bool isgroup = false;
-		pdir = opendir(dir.c_str());
-		if (pdir){
-			while ((pent = readdir(pdir)) != NULL) {
-				fileext = "";
-	    		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
-	        		continue;
-	    		}
-	    		if (pent->d_type == DT_DIR) {
-	    			dircount++;
-	    			isgroup = true;
-	    			if (size != -1) {
-	    				pos = dircountToBuffer(dircount);
-	        			if (pos != -1) {
-	        				if (bufferitems[pos].type == -1) {
-	        					wheelitem group;
-		        				group.type = 0;
-		        				group.name = pent->d_name;
-		        				group.path = dir + '/' + pent->d_name;
-		        				bufferitems[pos] = group;
-	        				}
-	        				buffercount++;
-	        			}
-	        		}
-	        		if (parse(dir + '/' + pent->d_name)) {
-	        			return true;
-	        		}
-	    			if (buffercount > BUFFERSIZE) {
-	    				return true;
-	    			}
-	    		}
-	    		else if (!isgroup) {
-	        		for (int i = 0; pent->d_name[i] != '\0'; i++) {
-	        			fileext += pent->d_name[i];
-	        			if (pent->d_name[i] == '.') {
-	        				fileext = "";
-	        			}
-	        		}
-	        		if (fileext == "sm") {
-	        			if (size != -1) {
-	        				pos = dircountToBuffer(dircount);
-		        			if ((pos != -1) && (bufferitems[pos].type == 0)) {
-		        				wheelitem* song = &bufferitems[pos];
-		        				song->type = 1;
-		        				song->smpath = dir + '/' + pent->d_name;
-		        				return false;
-		        			}
-	        			}
-	        		}
-	    		}
-			}
-			closedir(pdir);
-		}
-		return false;
-	};
-	//encontrar total de elementos
-	if (size == -1) {
-		parse("/ddr");
-		size = dircount + 1;
-		dircount = -1;
-	}
-	//popular rueda
-	parse("/ddr");
-	//llenar espacios que faltan
-	if (size < BUFFERSIZE) {
-		for (int i = 0; i < BUFFERSIZE; i++) {
-			if (bufferitems[i].type == -1) {
-				int pos = bufferToFile(i);
-				bufferitems[i] = bufferitems[dircountToBuffer(pos)];
-			}
-		}
-	}
-}
-
-int MenuWheel::bufferToFile(int i) {
-	int pos = buffercenter - (BUFFERSIZE / 2) + i;
-	while (pos >= size) {
-		pos = pos - size;
-	}
-	while (pos < 0) {
-		pos = pos + size;
-	}
-	return pos;
-}
-
-int MenuWheel::dircountToBuffer(int i) {
-	if (abs(buffercenter - i) <= (BUFFERSIZE / 2)) {
-		return (i - buffercenter + (BUFFERSIZE / 2));
-	}
-	else if (abs(buffercenter + size - i) <= (BUFFERSIZE / 2)) {
-		return (i - size - buffercenter + (BUFFERSIZE / 2));
-	}
-	else if (abs(buffercenter - size - i) <= (BUFFERSIZE / 2)) {
-		return (i + size - buffercenter + (BUFFERSIZE / 2));
-	}
-	return -1;
-}
-
 void MenuWheel::render() {
 	int angle = 0;
 	if (frame > 22) {
@@ -338,8 +241,8 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
-		simpath = bufferitems[buffercursor].smpath;
-		songpath = bufferitems[buffercursor].path;
+		simpath = buffer->items[buffer->cursor].smpath;
+		songpath = buffer->items[buffer->cursor].path;
 		cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 440 << 8, 128 << 8, 520 << 8, 96 << 8);
@@ -372,8 +275,8 @@ void MenuWheel::renderChar(int angle) {
 
 void MenuWheel::updateColor() {
 	int item = 0;
-	for (int i = buffercursor - WHEELVIEW / 2; i <= buffercursor + WHEELVIEW / 2; i++) {
-		switch (bufferitems[i].type) {
+	for (int i = buffer->cursor - WHEELVIEW / 2; i <= buffer->cursor + WHEELVIEW / 2; i++) {
+		switch (buffer->items[i].type) {
 			case 0:
 				songFrameColor[item] = 2;
 				break;

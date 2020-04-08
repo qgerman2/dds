@@ -36,4 +36,5 @@ bool loadOgg();
 mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format);
 bool playAudio();
 bool idleAudio();
+void stopAudio();
 #endif
