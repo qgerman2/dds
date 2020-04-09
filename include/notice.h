@@ -3,9 +3,8 @@
 #include "buffer.h"
 class Notice {
 private:
+	Config* config;
 	Buffer* buffer;
-	u16* bgGfx[12];
-	int bgSprite[12];
 	int fadeFrame = 64;
 	bool transition = false;
 	int transitionFrame;

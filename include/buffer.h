@@ -1,6 +1,6 @@
 #ifndef BUFFER
 #define BUFFER
-#define BUFFERSIZE 19
+#define BUFFERSIZE 39
 #include <string>
 typedef struct bufferitem{
 	int type = -1;
@@ -12,10 +12,10 @@ class Buffer {
 private:
 	bool random = false;
 public:
-	int cursor = BUFFERSIZE / 2;
 	bufferitem items[BUFFERSIZE];
-	int center = 0;
 	std::string fileext;
+	int center = 0;
+	int cursor = BUFFERSIZE / 2;
 	int size = -1;
 	void fill();
 	int bufferToFile(int i);

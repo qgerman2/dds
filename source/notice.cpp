@@ -5,13 +5,19 @@
 #include "sound.h"
 #include "notice.h"
 #include "buffer.h"
+#include "render.h"
 #include <notice_bg.h>
 #include <menu_bg.h>
 #include <menu_sub_bg.h>
-#include <bitset>
 
 Notice::Notice() {
 	setBrightness(3, -16);
+
+	for (int i = 0; i < 128; i++) {
+		pushSprite(i);
+		pushSpriteSub(i);
+	}
+	config = new Config();
 
 	shared_buffer = new Buffer();
 	buffer = shared_buffer;
@@ -27,11 +33,13 @@ Notice::Notice() {
 	dmaCopy(notice_bgTiles, bgGetGfxPtr(notice_id), notice_bgTilesLen);
 	dmaCopy(notice_bgMap, bgGetMapPtr(notice_id), notice_bgMapLen);
 	dmaCopy(notice_bgPal, &VRAM_H[1*16*256], notice_bgPalLen);
+	bgSetPriority(notice_id, 2);
 
 	menu_sub_id = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 2, 4);
 	dmaCopy(menu_sub_bgTiles, bgGetGfxPtr(menu_sub_id), menu_sub_bgTilesLen);
 	dmaCopy(menu_sub_bgMap, bgGetMapPtr(menu_sub_id), menu_sub_bgMapLen);
 	dmaCopy(menu_sub_bgPal, &VRAM_H[2*16*256], menu_sub_bgPalLen);
+	bgSetPriority(menu_sub_id, 3);
 
 	menu_id = bgInit(0, BgType_Text8bpp, BgSize_ER_256x256, 0, 1);
 	dmaCopy(menu_bgTiles, bgGetGfxPtr(menu_id), menu_bgTilesLen);
@@ -52,6 +60,7 @@ Notice::~Notice() {
 	bgHide(menu_id);
 	setBrightness(3, 0);
 	REG_BLDCNT_SUB = 0;
+	delete config;
 }
 
 void Notice::loop() {
@@ -64,6 +73,10 @@ void Notice::loop() {
 		if (transition && transitionFrame > 0) {transitionMenuUpdate();}
 		scanKeys();
 		if (keysHeld() & KEY_B) {state = 0;}
+		if (keysHeld() & KEY_X && !config->active) {config->show();}
+		config->update();
+		oamUpdate(&oamSub);
+		bgUpdate();
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		if (state != 2) {return;}

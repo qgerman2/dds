@@ -85,7 +85,7 @@ bool loadMp3() {
 	while (1) {
 		if (mad_frame_decode(&audio.mp3->frame, &audio.mp3->stream) == 0) {
 			audio.stream.sampling_rate = audio.mp3->frame.header.samplerate;
-			cout << "\nsample rate " << audio.stream.sampling_rate;
+			//cout << "\nsample rate " << audio.stream.sampling_rate;
 			break;
 		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
 			//cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);

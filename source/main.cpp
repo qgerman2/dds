@@ -13,10 +13,12 @@
 #include "sound.h"
 #include "artwork.h"
 #include "notice.h"
+#include "config.h"
 #include <font.h>
 
 using namespace std;
 
+struct settings_t settings;
 int state = 2;
 string simpath;
 string songpath;
@@ -38,6 +40,7 @@ int main(){
 	vramSetBankH(VRAM_H_LCD); //bg ext palette sub
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
+
 	if (!fatInitDefault()) {
 		sassert(0, "failed to load libfat");
 	}
@@ -54,8 +57,8 @@ int main(){
 	font.asciiOffset = 32;
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
+	bgSetPriority(console->bgId, 0);
 
-	cout << "\ndds alpha -1";
 	while (1) {
 		switch (state) {
 			case (0): {

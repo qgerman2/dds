@@ -11,9 +11,10 @@ using namespace std;
 
 void Buffer::fill() {
 	int dircount = -1;
+	int buffercount = 0;
+	//seleccion aleatoria de cancion
 	int songcount = 0;
 	map<int, int> songmap;
-	int buffercount = 0;
 	//lectura recursiva de directorios
 	function<bool(string)> parse = [&](string dir) -> bool {
 		int pos;
@@ -59,15 +60,11 @@ void Buffer::fill() {
 	        		}
 	        		if (fileext == "sm") {
 	        			pos = dircountToBuffer(dircount);
-	        			if (items[pos].type == 0) {
-		        			if (size != -1) {
-			        			if (pos != -1) {
-			        				bufferitem* song = &items[pos];
-			        				song->type = 1;
-			        				song->smpath = dir + '/' + pent->d_name;
-			        				return false;
-			        			} 
-			        		}
+	        			if (size != -1 && items[pos].type == 0 && pos != -1) {
+	        				bufferitem* song = &items[pos];
+	        				song->type = 1;
+	        				song->smpath = dir + '/' + pent->d_name;
+	        				return false;
 	        			} else if (random) {
 	        				songmap.insert(pair<int, int>(songcount, dircount));
 	        				songcount++;
@@ -91,8 +88,6 @@ void Buffer::fill() {
 		int r = rand() - 1;
 		if (r < 0) {r = 0;}
 		center = songmap.find(r / (RAND_MAX / (songcount)))->second;
-		cout << "\nsongcount: " << songcount;
-		cout << "\nsong: " << center;
 		random = false;
 	}
 	//popular rueda

@@ -83,9 +83,7 @@ MenuWheel::~MenuWheel() {
 		oamFreeGfx(&oamSub, songFontGfx[i]);
 	}
 	delete buffer;
-	if (shared_buffer) {
-		shared_buffer = NULL;
-	}
+	if (shared_buffer) {shared_buffer = NULL;}
 }
 
 void MenuWheel::loadSongFontGfx() {
@@ -98,8 +96,8 @@ void MenuWheel::loadSongFontGfx() {
 }
 
 void MenuWheel::loadFrameBg() {
-	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 4, 4);
-	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 3, 4);
+	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 3, 4);
+	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 4, 4);
 	bgSetPriority(bg1, 2);
 	bgSetPriority(bg2, 2);
 	int g = 1;
