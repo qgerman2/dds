@@ -22,6 +22,9 @@ Config::Config() {
 		dmaCopy(scoreTiles + 176 + i * 16, numberGfx[i] + 32, 64);
 	}
 	//dmaCopy(scorePal, SPRITE_PALETTE_SUB, scorePalLen);
+	markGfx = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
+	dmaCopy(markTiles, markGfx, markTilesLen);
+	dmaCopy(markPal, SPRITE_PALETTE_SUB + 16, markPalLen);
 	for (int i = 0; i < CONFIGCOUNT; i++) {
 		valueSprites[i] = popSpriteSub();
 	}
@@ -54,5 +57,20 @@ void Config::updateSprites() {
 	oamSet(&oamSub, valueSprites[0], 188, dialog_y + 40 , 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
 	//opacity
 	oamSet(&oamSub, valueSprites[1], 188, dialog_y + 40 + 32, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
-	
+	//startup song
+	if (settings.intro) {
+		oamSet(&oamSub, valueSprites[2], 188, dialog_y + 40 + 32 * 2, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	}
+	//cache banners
+	if (settings.cache) {
+		oamSet(&oamSub, valueSprites[3], 188, dialog_y + 40 + 32 * 3, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	}
+	//cache backgrounds
+	if (settings.cache_bg) {
+		oamSet(&oamSub, valueSprites[4], 188, dialog_y + 40 + 32 * 4, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	}
+	//folder navigation
+	if (settings.folder) {
+		oamSet(&oamSub, valueSprites[5], 188, dialog_y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	}
 }

@@ -18,6 +18,7 @@ private:
 	int valueSprites[CONFIGCOUNT];
 	int cursorSprite;
 	u16* numberGfx[10];
+	u16* markGfx;
 	void updateSprites();
 public:
 	bool active = false;
