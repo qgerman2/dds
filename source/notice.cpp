@@ -9,6 +9,9 @@
 #include <notice_bg.h>
 #include <menu_bg.h>
 #include <menu_sub_bg.h>
+#include <menu_cursor.h>
+
+using namespace std;
 
 Notice::Notice() {
 	setBrightness(3, -16);
@@ -46,6 +49,11 @@ Notice::Notice() {
 	dmaCopy(menu_bgMap, bgGetMapPtr(menu_id), menu_bgMapLen);
 	dmaCopy(menu_bgPal, &VRAM_F[0*16*256], menu_bgPalLen);
 
+	cursorSprite = popSpriteSub();
+	cursorGfx = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_Bmp);
+	dmaCopy(menu_cursorBitmap, cursorGfx, menu_cursorBitmapLen);
+	oamSet(&oamSub, cursorSprite, 16, 64, 0, 0, SpriteSize_64x64, SpriteColorFormat_Bmp, cursorGfx, 0, false, false, false, false, false);
+
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 	for (int i = 0; i < 20; i++) {
@@ -68,9 +76,26 @@ void Notice::loop() {
 		//fade in a advertencia
 		if (fadeFrame > 0) {fadeNoticeUpdate();}
 		//transicion a menu
-		if (transitionTimer > 0) {transitionTimer--;}
-		else if (!transition) {transitionMenu();}
+		if (transitionTimer > 0)  {
+			transitionTimer--;
+		} else if (!transition) {
+			transitionMenu();
+		}
 		if (transition && transitionFrame > 0) {transitionMenuUpdate();}
+		//pestañeo cursor
+		if (cursorAnim == 1) {
+			cursorAlpha++;
+			if (cursorAlpha == 15) {
+				cursorAnim = 2;
+			}
+			oamSetAlpha(&oamSub, cursorSprite, cursorAlpha);
+		} else if (cursorAnim == 2) {
+			cursorAlpha--;
+			if (cursorAlpha == 0) {
+				cursorAnim = 1;
+			}
+			oamSetAlpha(&oamSub, cursorSprite, cursorAlpha);
+		}
 		scanKeys();
 		if (keysHeld() & KEY_B) {state = 0;}
 		if (keysHeld() & KEY_X && !config->active) {config->show();}
@@ -96,13 +121,19 @@ void Notice::fadeNoticeUpdate() {
 void Notice::transitionMenu() {
 	playAudio();
 	transition = true;
-	transitionFrame = 32;
+	transitionFrame = 30;
 	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
-	REG_BLDALPHA_SUB = (transitionFrame / 2) | (16 - (transitionFrame / 2)) << 8;
+	REG_BLDALPHA_SUB = 16;
 }
 
 void Notice::transitionMenuUpdate() {
 	transitionFrame--;
 	REG_BLDALPHA_SUB = (transitionFrame / 2) | (16 - (transitionFrame / 2)) << 8;
 	setBrightness(1, -(transitionFrame / 2));
+	if (transitionFrame == 0) {
+		cursorAnim = 1;
+		cursorAlpha = 0;
+		REG_BLDALPHA_SUB = 0;
+		bgHide(notice_id);
+	}
 }

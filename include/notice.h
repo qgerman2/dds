@@ -12,6 +12,10 @@ private:
 	int notice_id;
 	int menu_id;
 	int menu_sub_id;
+	int cursorAnim = 0;
+	int cursorAlpha;
+	int cursorSprite;
+	u16* cursorGfx;
 public:
 	Notice();
 	~Notice();

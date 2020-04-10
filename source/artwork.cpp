@@ -220,7 +220,7 @@ void errorPng(png_structp png_ptr, png_const_charp msg) {
 }
 
 void warningPng(png_structp png_ptr, png_const_charp msg) {
-	cout << "\nlibpng warning: " << msg;
+	//cout << "\nlibpng warning: " << msg;
 }
 
 bool fromBmp(FILE* bmp, u16* dest, uint width, uint height) {
