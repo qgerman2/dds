@@ -44,14 +44,14 @@ void Play::loop(){
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
 		updateBeat();
+		updateSteps();
 		scanKeys();
 		input->update();
-		mmStreamUpdate();
-		swiWaitForVBlank();
-		updateSteps();
 		render->update();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
+		mmStreamUpdate();
+		swiWaitForVBlank();
 		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
 		if (state != 1) {return;}
 	}
