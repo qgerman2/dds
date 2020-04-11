@@ -13,6 +13,7 @@ class Config {
 private:
 	int dialog_y;
 	int sub_bg;
+	int cursor_bg;
 	int anim = 0;
 	int animFrame;
 	int valueSprites[CONFIGCOUNT];
@@ -23,6 +24,7 @@ private:
 public:
 	bool active = false;
 	Config();
+	void bg();
 	void show();
 	void hide();
 	void update();

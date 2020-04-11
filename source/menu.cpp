@@ -47,7 +47,7 @@ void Menu::input() {
 		else if (keysHeld() & KEY_DOWN) {
 			wheel->playAnim(1);
 		}
-		else if (keysHeld() & KEY_A) {
+		else if (keysDown() & KEY_A) {
 			state = 1;
 		}
 	}

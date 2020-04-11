@@ -12,8 +12,10 @@ private:
 	int notice_id;
 	int menu_id;
 	int menu_sub_id;
+	int cursorPos = 0;
 	int cursorAnim = 0;
-	int cursorAlpha;
+	int cursorAlpha = 0;
+	int cursorPressed = false;
 	int cursorSprite;
 	u16* cursorGfx;
 public:
@@ -23,5 +25,6 @@ public:
 	void fadeNoticeUpdate();
 	void transitionMenu();
 	void transitionMenuUpdate();
+	void cursorUpdate();
 };
 #endif

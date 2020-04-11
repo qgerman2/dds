@@ -87,10 +87,10 @@ void Buffer::fill() {
 	if (random) {
 		int r = rand() - 1;
 		if (r < 0) {r = 0;}
-		center = songmap.find(r / (RAND_MAX / (songcount)))->second;
+		center = songmap.find(r / (RAND_MAX / songcount))->second;
 		random = false;
 	}
-	//popular rueda
+	//popular buffer
 	parse("/ddr");
 	//llenar espacios que faltan
 	if (size < BUFFERSIZE) {

@@ -10,6 +10,7 @@
 #include <menu_bg.h>
 #include <menu_sub_bg.h>
 #include <menu_cursor.h>
+#include <config_cursor.h>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ Notice::Notice() {
 	dmaCopy(notice_bgTiles, bgGetGfxPtr(notice_id), notice_bgTilesLen);
 	dmaCopy(notice_bgMap, bgGetMapPtr(notice_id), notice_bgMapLen);
 	dmaCopy(notice_bgPal, &VRAM_H[1*16*256], notice_bgPalLen);
-	bgSetPriority(notice_id, 2);
+	bgSetPriority(notice_id, 1);
 
 	menu_sub_id = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 2, 4);
 	dmaCopy(menu_sub_bgTiles, bgGetGfxPtr(menu_sub_id), menu_sub_bgTilesLen);
@@ -64,6 +65,7 @@ Notice::Notice() {
 Notice::~Notice() {
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
+	oamFreeGfx(&oamSub, cursorGfx);
 	bgHide(notice_id);
 	bgHide(menu_id);
 	setBrightness(3, 0);
@@ -82,24 +84,9 @@ void Notice::loop() {
 			transitionMenu();
 		}
 		if (transition && transitionFrame > 0) {transitionMenuUpdate();}
-		//pestañeo cursor
-		if (cursorAnim == 1) {
-			cursorAlpha++;
-			if (cursorAlpha == 15) {
-				cursorAnim = 2;
-			}
-			oamSetAlpha(&oamSub, cursorSprite, cursorAlpha);
-		} else if (cursorAnim == 2) {
-			cursorAlpha--;
-			if (cursorAlpha == 0) {
-				cursorAnim = 1;
-			}
-			oamSetAlpha(&oamSub, cursorSprite, cursorAlpha);
-		}
 		scanKeys();
-		if (keysHeld() & KEY_B) {state = 0;}
-		if (keysHeld() & KEY_X && !config->active) {config->show();}
-		config->update();
+		if (!config->active) {cursorUpdate();} 
+		if (config->active) {config->update();}
 		oamUpdate(&oamSub);
 		bgUpdate();
 		mmStreamUpdate();
@@ -111,11 +98,6 @@ void Notice::loop() {
 void Notice::fadeNoticeUpdate() {
 	fadeFrame--;
 	setBrightness(2, -fadeFrame / 4);
-	if (fadeFrame == 0) {
-		for (int i = 0; i < 10; i++) {
-			swiWaitForVBlank();
-		}
-	}
 }
 
 void Notice::transitionMenu() {
@@ -133,7 +115,52 @@ void Notice::transitionMenuUpdate() {
 	if (transitionFrame == 0) {
 		cursorAnim = 1;
 		cursorAlpha = 0;
+		REG_BLDCNT_SUB = BLEND_DST_BG2;
 		REG_BLDALPHA_SUB = 0;
-		bgHide(notice_id);
+		config->bg();
 	}
+}
+
+void Notice::cursorUpdate() {
+	//pestañeo cursor
+	if (cursorAnim == 1) {
+		cursorAlpha++;
+		if (cursorAlpha == 15) {
+			cursorAnim = 2;
+		}
+	} else if (cursorAnim == 2) {
+		cursorAlpha--;
+		if (cursorAlpha == 0) {
+			cursorAnim = 1;
+		}
+	}
+	//posicion cursor
+	u32 keys = keysDown();
+	if (keys & KEY_RIGHT || keys & KEY_LEFT) {
+		cursorAlpha = 0;
+		cursorAnim = 1; 
+		cursorPressed = false;
+	} 
+	if (keys & KEY_RIGHT) {cursorPos++; if (cursorPos > 2) {cursorPos = 0;};}
+	if (keys & KEY_LEFT)  {cursorPos--; if (cursorPos < 0) {cursorPos = 2;};}
+	//activar menus
+	if (keys & KEY_A) {cursorPressed = true;}
+	if (keysUp() & KEY_A && cursorPressed) {
+		cursorPressed = false;
+		cursorAlpha = 0;
+		cursorAnim = 1;
+		switch (cursorPos) {
+			case 0:
+				state = 0;
+				break;
+			case 1:
+				config->show();
+				break;
+			case 2:
+				exit(0);
+				break;
+		}
+	}
+	oamSetXY(&oamSub, cursorSprite, 16 + 80 * cursorPos, 64);
+	oamSetAlpha(&oamSub, cursorSprite, cursorAlpha);
 }

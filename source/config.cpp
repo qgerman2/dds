@@ -6,6 +6,7 @@
 #include <config_sub.h>
 #include <score.h>
 #include <mark.h>
+#include <config_cursor.h>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ Config::Config() {
 	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
 	dmaCopy(config_subMap, bgGetMapPtr(sub_bg), config_subMapLen);
 	dmaCopy(config_subPal, &VRAM_H[3*16*256], config_subPalLen);
-	bgSetPriority(sub_bg, 1);
+	bgSetPriority(sub_bg, 2);
 	bgHide(sub_bg);
 	for (int i = 0; i < 10; i++) {
 		numberGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
@@ -30,11 +31,23 @@ Config::Config() {
 	}
 }
 
+void Config::bg() {
+	vramSetBankH(VRAM_H_LCD);
+	cursor_bg = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);
+	dmaCopy(config_cursorTiles, bgGetGfxPtr(cursor_bg), config_cursorTilesLen);
+	dmaCopy(config_cursorMap, bgGetMapPtr(cursor_bg), config_cursorMapLen);
+	dmaCopy(config_cursorPal, &VRAM_H[1*16*256], config_cursorPalLen);
+	bgHide(cursor_bg);
+	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
+}
+
 void Config::show() {
 	active = true;
 	anim = 1;
-	animFrame = 120;
+	animFrame = 16;
 	bgShow(sub_bg);
+	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
+	REG_BLDALPHA_SUB = 16;
 }
 
 void Config::hide() {
@@ -48,7 +61,13 @@ void Config::update() {
 		dialog_y = animFrame + 32;
 		updateSprites();
 		bgSetScroll(sub_bg, 0, -dialog_y);
-		if (animFrame == 0) {anim = 0;}
+		bgSetScroll(cursor_bg, 0, -dialog_y - 32);
+		REG_BLDALPHA_SUB = (16 - animFrame) | animFrame << 8;
+		if (animFrame == 0) {
+			REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
+			bgShow(cursor_bg);
+			anim = 0;
+		}
 	}
 }
 
