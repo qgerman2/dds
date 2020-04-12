@@ -57,21 +57,22 @@ void Buffer::fill() {
 	        			if (pent->d_name[i] == '.') {
 	        				fileext = "";
 	        			}
-	        		}
-	        		if (fileext == "sm") {
-	        			pos = dircountToBuffer(dircount);
-	        			if (size != -1 && items[pos].type == 0 && pos != -1) {
-	        				bufferitem* song = &items[pos];
-	        				song->type = 1;
-	        				song->smpath = dir + '/' + pent->d_name;
-	        				return false;
-	        			} else if (random) {
-	        				songmap.insert(pair<int, int>(songcount, dircount));
-	        				songcount++;
-	        				return false;
-	        			}
-	        		}
-	    		}
+					}
+					if (fileext == "sm") {
+						pos = dircountToBuffer(dircount);
+						if (size != -1 && items[pos].type == 0 && pos != -1) {
+							bufferitem* song = &items[pos];
+							song->type = 1;
+							song->smpath = dir + '/' + pent->d_name;
+							parseSimFile(&song->song, song->smpath);
+							return false;
+						} else if (random) {
+							songmap.insert(pair<int, int>(songcount, dircount));
+							songcount++;
+							return false;
+						}
+					}
+				}
 			}
 			closedir(pdir);
 		}

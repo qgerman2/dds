@@ -56,6 +56,7 @@ bool parseSimFile(songdata* song, string path) {
 	string buffer = "";
 	string* output = NULL;
 	int key_chart = 0;
+	bool strip_spaces = true;
 	while (nextChar(fp, &p)) {
 		switch (task) {
 			case (IDLE):
@@ -64,6 +65,7 @@ bool parseSimFile(songdata* song, string path) {
 			case (KEY):
 				if (p == ':') {
 					task = VALUE;
+					strip_spaces = true;
 					if (buffer == "TITLE") {output = &song->title;}
 					else if (buffer == "ARTIST") {output = &song->artist;}
 					else if (buffer == "BANNER") {output = &song->banner;}
@@ -91,6 +93,7 @@ bool parseSimFile(songdata* song, string path) {
 				}
 				if (key_chart) {
 					if (output == NULL) {
+						strip_spaces = true;
 						chart* new_chart = &song->charts.back();
 						switch (key_chart) {
 							case 1: output = &new_chart->type; break;
@@ -109,7 +112,12 @@ bool parseSimFile(songdata* song, string path) {
 						output = NULL;
 					}
 				}
-				if (output) {output->append(1, p);}
+				if (strip_spaces && p != ' ' && p != '\n' && p != 0xd) {
+					strip_spaces = false;
+				} 
+				if (output && !strip_spaces) {
+					output->append(1, p);
+				}
 				break;
 		}
 	}
