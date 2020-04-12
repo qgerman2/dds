@@ -4,7 +4,8 @@
 #include "buffer.h"
 #define ASCIIOFFSET 32
 #define CHARWIDTH 10
-#define CHAROFFSET 3
+#define CHARHEIGHT 16
+#define CHAROFFSET 0
 #define CHARSPRITES 3
 #define WHEELANGLE 6
 #define WHEELVIEW 9
@@ -22,14 +23,19 @@ private:
 	int bg1;
 	int bg2;
 	int anim = 0;
+	int difFrameSprite;
+	int difSprite[4];
+	u16* difFrameGfx;
+	u16* difGfx[4];
 	void loadSongFontGfx();
 	void loadFrameBg();
 	void prev();
 	void next();
 	void renderChar(int angle);
-	void printToBitmap(u8 gfx, std::string str);
+	void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str);
 	void updateColor();
 	void updateFrameBg();
+	void updateDif(bufferitem* item);
 public:
 	MenuWheel();
 	~MenuWheel();

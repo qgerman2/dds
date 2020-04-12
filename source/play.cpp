@@ -110,8 +110,8 @@ void Play::updateBeat() {
 			}
 			if (lostbeatsbpm) {
 				for (uint s = 0; s < song->stops.size(); s++) {
-					if ((song->stops[s].beatf > song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
-						if (beatf > song->stops[s].beatf) {
+					if ((song->stops[s].beatf >= song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
+						if (beatf >= song->stops[s].beatf) {
 							u32 offset = song->stops[s].bpmf * song->bpms[i].bpmf;
 							if (beatf - song->stops[s].beatf < offset){
 								beatf = song->stops[s].beatf;

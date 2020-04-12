@@ -57,21 +57,22 @@ void Buffer::fill() {
 	        			if (pent->d_name[i] == '.') {
 	        				fileext = "";
 	        			}
-	        		}
-	        		if (fileext == "sm") {
-	        			pos = dircountToBuffer(dircount);
-	        			if (size != -1 && items[pos].type == 0 && pos != -1) {
-	        				bufferitem* song = &items[pos];
-	        				song->type = 1;
-	        				song->smpath = dir + '/' + pent->d_name;
-	        				return false;
-	        			} else if (random) {
-	        				songmap.insert(pair<int, int>(songcount, dircount));
-	        				songcount++;
-	        				return false;
-	        			}
-	        		}
-	    		}
+					}
+					if (fileext == "sm") {
+						pos = dircountToBuffer(dircount);
+						if (size != -1 && items[pos].type == 0 && pos != -1) {
+							bufferitem* song = &items[pos];
+							song->type = 1;
+							song->smpath = dir + '/' + pent->d_name;
+							parseSimFile(&song->song, song->smpath);
+							return false;
+						} else if (random) {
+							songmap.insert(pair<int, int>(songcount, dircount));
+							songcount++;
+							return false;
+						}
+					}
+				}
 			}
 			closedir(pdir);
 		}
@@ -87,10 +88,10 @@ void Buffer::fill() {
 	if (random) {
 		int r = rand() - 1;
 		if (r < 0) {r = 0;}
-		center = songmap.find(r / (RAND_MAX / (songcount)))->second;
+		center = songmap.find(r / (RAND_MAX / songcount))->second;
 		random = false;
 	}
-	//popular rueda
+	//popular buffer
 	parse("/ddr");
 	//llenar espacios que faltan
 	if (size < BUFFERSIZE) {
