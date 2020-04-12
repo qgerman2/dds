@@ -48,7 +48,7 @@ void Menu::input() {
 			wheel->playAnim(1);
 		}
 		else if (keysDown() & KEY_A) {
-			state = 1;
+			wheel->showDif();
 		}
 	}
 }

@@ -10,6 +10,7 @@
 #define WHEELANGLE 6
 #define WHEELVIEW 9
 #define WHEELVIEWCHAR 7
+#define DIFVIEW 4
 class MenuWheel {
 private:
 	Buffer* buffer;
@@ -27,8 +28,16 @@ private:
 	int difSprite[4];
 	u16* difFrameGfx;
 	u16* difGfx[4];
+	const int difX = 32;
+	const int difY = 32;
+	int difCursor = 0;
+	int difView = 0;
+	int difSize;
+	int difArrowSprite[2];
+	u16* difArrowGfx;
 	void loadSongFontGfx();
 	void loadFrameBg();
+	void loadDif();
 	void prev();
 	void next();
 	void renderChar(int angle);
@@ -41,6 +50,8 @@ public:
 	~MenuWheel();
 	void playAnim(int anim);
 	void render();
+	void showDif();
+	void hideDif();
 	int frame = 0;
 };
 #endif

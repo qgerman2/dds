@@ -11,7 +11,7 @@
 #include <group_frame.h>
 #include <song_font.h>
 #include <dif_frame.h>
-#include <dif_font.h>
+#include <dif_arrow.h>
 
 using namespace std;
 
@@ -77,23 +77,7 @@ MenuWheel::MenuWheel() {
 	}
 	loadFrameBg();
 	updateFrameBg();
-	for (int i = 0; i < 4; i++) {
-		difSprite[i] = popSpriteSub();
-		difGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_Bmp);
-		dmaFillHalfWords(ARGB16(1, 31, 15, i * 6), difGfx[i], 128 * 64);
-		oamSet(&oamSub, difSprite[i], (i % 2) * 64, (i / 2) * 64, 0, 15, SpriteSize_64x64, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);	
-	}
-	printToBitmap(&difGfx[0], 2, 0, "02 Easy");
-	printToBitmap(&difGfx[0], 2, 16, "07 Beginner");
-	printToBitmap(&difGfx[2], 2, 0, "13 Normal");
-	printToBitmap(&difGfx[2], 2, 16, "22 Challenge");
-
-	difFrameSprite = popSpriteSub();
-	difFrameGfx = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_16Color);
-	dmaCopy(dif_frameTiles, difFrameGfx, dif_frameTilesLen);
-	//dmaCopy(dif_framePal, SPRITE_PALETTE_SUB, dif_framePalLen);
-	oamRotateScale(&oamSub, 1, 0, 1 << 7, 1 << 7);
-	oamSet(&oamSub, difFrameSprite, 32 - 8, 32 - 8, 0, 0, SpriteSize_64x64, SpriteColorFormat_16Color, difFrameGfx, 1, true, false, false, false, false);
+	loadDif();
 }
 
 MenuWheel::~MenuWheel() {
@@ -145,6 +129,25 @@ void MenuWheel::loadFrameBg() {
 	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][0], song_framePalLen);
 	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][1], song_framePalLen);
 	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[3][2], group_framePalLen);
+}
+
+void MenuWheel::loadDif() {
+	for (int i = 0; i < 2; i++) {
+		difArrowSprite[i] = popSpriteSub();
+	}
+	difArrowGfx = oamAllocateGfx(&oamSub, SpriteSize_8x8, SpriteColorFormat_16Color);
+	dmaCopy(dif_arrowTiles, difArrowGfx, dif_arrowTilesLen);
+	dmaCopy(dif_arrowPal, SPRITE_PALETTE_SUB + 16, dif_arrowPalLen);
+	oamRotateScale(&oamSub, 1, 0, 1 << 8, -1 << 8);
+	for (int i = 0; i < 4; i++) {
+		difSprite[i] = popSpriteSub();
+		difGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_Bmp);
+	}
+	difFrameSprite = popSpriteSub();
+	difFrameGfx = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_16Color);
+	dmaCopy(dif_frameTiles, difFrameGfx, dif_frameTilesLen);
+	dmaCopy(dif_framePal, SPRITE_PALETTE_SUB, dif_framePalLen);
+	oamRotateScale(&oamSub, 2, 0, 1 << 7, 1 << 7);
 }
 
 void MenuWheel::next() {
@@ -262,8 +265,8 @@ void MenuWheel::render() {
 		}
 		simpath = buffer->items[buffer->cursor].smpath;
 		songpath = buffer->items[buffer->cursor].path;
-		updateDif(&buffer->items[buffer->cursor]);
 		stopAudio();
+		hideDif();
 		//cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
@@ -340,7 +343,32 @@ void MenuWheel::updateFrameBg() {
 }
 
 void MenuWheel::updateDif(bufferitem* item) {
+	difSize = item->song.charts.size();
+	difCursor = 0;
+	difView = 0;
 	for (auto i = item->song.charts.begin(); i < item->song.charts.end(); i++) {
-		//printBitmap(i - item->song.charts.begin(), i->meter + " " + i->difficulty);
+		int count = i - item->song.charts.begin();
+		if (count > DIFVIEW) {break;}
+		printToBitmap(&difGfx[(count / 2) * 2], 2, (count % 2) * 27, i->meter + " " + i->difficulty);
 	}
+}
+
+void MenuWheel::showDif() {
+	updateDif(&buffer->items[buffer->cursor]);
+	for (int i = 0; i < 4; i++) {
+		oamSet(&oamSub, difSprite[i], difX + 4 + (i % 2) * 64, difY + 16 + (i / 2) * 54, 0, 15, SpriteSize_64x64, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);
+	}
+	oamSet(&oamSub, difArrowSprite[0], difX + 60, difY + 5, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, difArrowGfx, 1, false, false, false, false, false);
+	oamSet(&oamSub, difArrowSprite[1], difX + 60, difY + 115, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, difArrowGfx, 0, false, false, false, false, false);
+	oamSet(&oamSub, difFrameSprite, difX, difY, 0, 0, SpriteSize_64x64, SpriteColorFormat_16Color, difFrameGfx, 2, true, false, false, false, false);
+}
+
+void MenuWheel::hideDif() {
+	for (int i = 0; i < 4; i++) {
+		oamClearSprite(&oamSub, difSprite[i]);
+	}
+	for (int i = 0; i < 2; i++) {
+		oamClearSprite(&oamSub, difArrowSprite[i]);
+	}
+	oamClearSprite(&oamSub, difFrameSprite);
 }
