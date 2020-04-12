@@ -11,11 +11,7 @@
 #include <group_frame.h>
 #include <song_font.h>
 #include <dif_frame.h>
-<<<<<<< HEAD
 #include <dif_arrow.h>
-=======
-#include <dif_font.h>
->>>>>>> ad4ef25ce7c46f6ec0fe12f208a6dafd3de94f12
 
 using namespace std;
 
@@ -81,27 +77,7 @@ MenuWheel::MenuWheel() {
 	}
 	loadFrameBg();
 	updateFrameBg();
-<<<<<<< HEAD
 	loadDif();
-=======
-	for (int i = 0; i < 4; i++) {
-		difSprite[i] = popSpriteSub();
-		difGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_Bmp);
-		dmaFillHalfWords(ARGB16(1, 31, 15, i * 6), difGfx[i], 128 * 64);
-		oamSet(&oamSub, difSprite[i], (i % 2) * 64, (i / 2) * 64, 0, 15, SpriteSize_64x64, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);	
-	}
-	printToBitmap(&difGfx[0], 2, 0, "02 Easy");
-	printToBitmap(&difGfx[0], 2, 16, "07 Beginner");
-	printToBitmap(&difGfx[2], 2, 0, "13 Normal");
-	printToBitmap(&difGfx[2], 2, 16, "22 Challenge");
-
-	difFrameSprite = popSpriteSub();
-	difFrameGfx = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_16Color);
-	dmaCopy(dif_frameTiles, difFrameGfx, dif_frameTilesLen);
-	//dmaCopy(dif_framePal, SPRITE_PALETTE_SUB, dif_framePalLen);
-	oamRotateScale(&oamSub, 1, 0, 1 << 7, 1 << 7);
-	oamSet(&oamSub, difFrameSprite, 32 - 8, 32 - 8, 0, 0, SpriteSize_64x64, SpriteColorFormat_16Color, difFrameGfx, 1, true, false, false, false, false);
->>>>>>> ad4ef25ce7c46f6ec0fe12f208a6dafd3de94f12
 }
 
 MenuWheel::~MenuWheel() {
@@ -289,7 +265,6 @@ void MenuWheel::render() {
 		}
 		simpath = buffer->items[buffer->cursor].smpath;
 		songpath = buffer->items[buffer->cursor].path;
-		updateDif(&buffer->items[buffer->cursor]);
 		stopAudio();
 		hideDif();
 		//cout << "\n" << songpath;
@@ -368,7 +343,6 @@ void MenuWheel::updateFrameBg() {
 }
 
 void MenuWheel::updateDif(bufferitem* item) {
-<<<<<<< HEAD
 	difSize = item->song.charts.size();
 	difCursor = 0;
 	difView = 0;
@@ -397,9 +371,4 @@ void MenuWheel::hideDif() {
 		oamClearSprite(&oamSub, difArrowSprite[i]);
 	}
 	oamClearSprite(&oamSub, difFrameSprite);
-=======
-	for (auto i = item->song.charts.begin(); i < item->song.charts.end(); i++) {
-		//printBitmap(i - item->song.charts.begin(), i->meter + " " + i->difficulty);
-	}
->>>>>>> ad4ef25ce7c46f6ec0fe12f208a6dafd3de94f12
 }
