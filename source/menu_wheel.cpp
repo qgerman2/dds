@@ -9,9 +9,6 @@
 #include <font.h>
 #include <song_frame.h>
 #include <group_frame.h>
-#include <song_font.h>
-#include <dif_frame.h>
-#include <dif_arrow.h>
 
 using namespace std;
 
@@ -62,7 +59,8 @@ const int* wheelTiles[] {
 	}
 };
 
-MenuWheel::MenuWheel() {
+MenuWheel::MenuWheel(Menu* menu) {
+	this->menu = menu;
 	if (shared_buffer) {
 		buffer = shared_buffer;
 	} else {
@@ -72,16 +70,15 @@ MenuWheel::MenuWheel() {
 	loadSongFontGfx();
 	int gfx = 0;
 	for (int i = buffer->cursor - WHEELVIEWCHAR / 2; i <= buffer->cursor + WHEELVIEWCHAR / 2; i++) {
-		printToBitmap(&songFontGfx[gfx * CHARSPRITES], CHARSPRITES, 8, buffer->items[i].name + ' ');
+		printToBitmap(&songFontGfx[gfx * SONGSPRITES], SONGSPRITES, 8, buffer->items[i].name + ' ');
 		gfx++;
 	}
 	loadFrameBg();
 	updateFrameBg();
-	loadDif();
 }
 
 MenuWheel::~MenuWheel() {
-	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
+	for (int i = 0; i < SONGSPRITES * WHEELVIEWCHAR; i++) {
 		oamFreeGfx(&oamSub, songFontGfx[i]);
 	}
 	delete buffer;
@@ -89,10 +86,10 @@ MenuWheel::~MenuWheel() {
 }
 
 void MenuWheel::loadSongFontGfx() {
-	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
+	for (int i = 0; i < SONGSPRITES * WHEELVIEWCHAR; i++) {
 		songFontSprite[i] = popSpriteSub();
 	}
-	for (int i = 0; i < CHARSPRITES * WHEELVIEWCHAR; i++) {
+	for (int i = 0; i < SONGSPRITES * WHEELVIEWCHAR; i++) {
 		songFontGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x32, SpriteColorFormat_Bmp);
 	}
 }
@@ -131,25 +128,6 @@ void MenuWheel::loadFrameBg() {
 	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[3][2], group_framePalLen);
 }
 
-void MenuWheel::loadDif() {
-	for (int i = 0; i < 2; i++) {
-		difArrowSprite[i] = popSpriteSub();
-	}
-	difArrowGfx = oamAllocateGfx(&oamSub, SpriteSize_8x8, SpriteColorFormat_16Color);
-	dmaCopy(dif_arrowTiles, difArrowGfx, dif_arrowTilesLen);
-	dmaCopy(dif_arrowPal, SPRITE_PALETTE_SUB + 16, dif_arrowPalLen);
-	oamRotateScale(&oamSub, 1, 0, 1 << 8, -1 << 8);
-	for (int i = 0; i < 4; i++) {
-		difSprite[i] = popSpriteSub();
-		difGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_Bmp);
-	}
-	difFrameSprite = popSpriteSub();
-	difFrameGfx = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_16Color);
-	dmaCopy(dif_frameTiles, difFrameGfx, dif_frameTilesLen);
-	dmaCopy(dif_framePal, SPRITE_PALETTE_SUB, dif_framePalLen);
-	oamRotateScale(&oamSub, 2, 0, 1 << 7, 1 << 7);
-}
-
 void MenuWheel::next() {
 	buffer->cursor++;
 	if ((buffer->cursor - BUFFERSIZE / 2) >= (buffer->size - WHEELVIEW / 2)) {
@@ -171,19 +149,19 @@ void MenuWheel::next() {
 		buffer->fill();
 	}
 	//mover texto
-	u16* tempFontGfx[CHARSPRITES];
-	for (int i = 0; i < CHARSPRITES; i++) {
+	u16* tempFontGfx[SONGSPRITES];
+	for (int i = 0; i < SONGSPRITES; i++) {
 		tempFontGfx[i] = songFontGfx[i];
 	}
 	for (int y = 0; y < WHEELVIEWCHAR - 1; y++) {
-		for (int i = 0; i < CHARSPRITES; i++) {
-			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y + 1) * CHARSPRITES + i];
+		for (int i = 0; i < SONGSPRITES; i++) {
+			songFontGfx[y * SONGSPRITES + i] = songFontGfx[(y + 1) * SONGSPRITES + i];
 		}
 	}
-	for (int i = 0; i < CHARSPRITES; i++) {
-		songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES + i] = tempFontGfx[i];
+	for (int i = 0; i < SONGSPRITES; i++) {
+		songFontGfx[(WHEELVIEWCHAR - 1) * SONGSPRITES + i] = tempFontGfx[i];
 	}
-	printToBitmap(&songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES], 3, 8, buffer->items[buffer->cursor + WHEELVIEWCHAR / 2].name + ' ');
+	printToBitmap(&songFontGfx[(WHEELVIEWCHAR - 1) * SONGSPRITES], 3, 8, buffer->items[buffer->cursor + WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
@@ -208,41 +186,43 @@ void MenuWheel::prev() {
 		buffer->fill();
 	}
 	//mover texto
-	u16* tempFontGfx[CHARSPRITES];
-	for (int i = 0; i < CHARSPRITES; i++) {
-		tempFontGfx[i] = songFontGfx[(WHEELVIEWCHAR - 1) * CHARSPRITES + i];
+	u16* tempFontGfx[SONGSPRITES];
+	for (int i = 0; i < SONGSPRITES; i++) {
+		tempFontGfx[i] = songFontGfx[(WHEELVIEWCHAR - 1) * SONGSPRITES + i];
 	}
 	for (int y = WHEELVIEWCHAR - 1; y > 0; y--) {
-		for (int i = 0; i < CHARSPRITES; i++) {
-			songFontGfx[y * CHARSPRITES + i] = songFontGfx[(y - 1) * CHARSPRITES + i];
+		for (int i = 0; i < SONGSPRITES; i++) {
+			songFontGfx[y * SONGSPRITES + i] = songFontGfx[(y - 1) * SONGSPRITES + i];
 		}
 	}
-	for (int i = 0; i < CHARSPRITES; i++) {
+	for (int i = 0; i < SONGSPRITES; i++) {
 		songFontGfx[i] = tempFontGfx[i];
 	}
 	printToBitmap(&songFontGfx[0], 3, 8, buffer->items[buffer->cursor - WHEELVIEWCHAR / 2].name + ' ');
 	updateFrameBg();
 }
 
-void MenuWheel::printToBitmap(u16** gfx, int sprites, int y_offset, string str) {
-	int c;
-	int x;
-	int s;
-	for (uint i = 0; i < str.length(); i++) {
-		c = int(str[i]) - ASCIIOFFSET;
-		x = i * CHARWIDTH;
-		s = x / 64;
-		if ((x + CHARWIDTH) > (sprites * 64)) {
-			break;
-		}
-		for (int y = 0; y < CHARHEIGHT; y++) {
-			if ((x % 64) > (64 - CHARWIDTH)) {
-				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET, gfx[s] + (y + y_offset) * 64 + i * CHARWIDTH - (s * 64), (((s + 1) * 64) - x) * 2);
-				//oh no
-				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET + (((s + 1) * 64) - x), gfx[s + 1] + (y + y_offset) * 64 + i * CHARWIDTH + (((s + 1) * 64) - x) - ((s + 1) * 64), (CHARWIDTH * 2) - ((((s + 1) * 64) - x) * 2));
+void MenuWheel::input() {
+	if (frame == 0) {
+		if (keysDown() & KEY_UP) {
+			if (!menu->dif->active) {
+				playAnim(-1);
+			} else {
+				menu->dif->prev();
 			}
-			else {
-				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET, gfx[s] + (y + y_offset) * 64 + i * CHARWIDTH - (s * 64), CHARWIDTH * 2);
+		}
+		else if (keysDown() & KEY_DOWN) {
+			if (!menu->dif->active) {
+				playAnim(1);
+			} else {
+				menu->dif->next();
+			}
+		}
+		else if (keysDown() & KEY_A) {
+			if (!menu->dif->active) {
+				menu->dif->show(&buffer->items[buffer->cursor]);
+			} else {
+				menu->dif->hide();
 			}
 		}
 	}
@@ -266,7 +246,7 @@ void MenuWheel::render() {
 		simpath = buffer->items[buffer->cursor].smpath;
 		songpath = buffer->items[buffer->cursor].path;
 		stopAudio();
-		hideDif();
+		menu->dif->hide();
 		//cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
@@ -288,10 +268,10 @@ void MenuWheel::renderChar(int angle) {
 	int scale = 256;
 	int o = ((scale - 256) * 64) / 256;
 	for (int i = -3; i <= 3; i++) {
-		for (int c = 0; c < CHARSPRITES; c++) {
+		for (int c = 0; c < SONGSPRITES; c++) {
 			int x = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 60;
 			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 32;
-			oamSet(&oamSub, songFontSprite[CHARSPRITES * (-i + 3) + c], x - 85, y + 48, 1, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[CHARSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
+			oamSet(&oamSub, songFontSprite[SONGSPRITES * (-i + 3) + c], x - 85, y + 48, 1, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[SONGSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (i * WHEELANGLE) * 32768 / 360 + angle, (1 << 16) / scale, 256);
 	}
@@ -340,35 +320,4 @@ void MenuWheel::updateFrameBg() {
 		tileOffset += tilesLen[i];
 		t = 0;
 	}
-}
-
-void MenuWheel::updateDif(bufferitem* item) {
-	difSize = item->song.charts.size();
-	difCursor = 0;
-	difView = 0;
-	for (auto i = item->song.charts.begin(); i < item->song.charts.end(); i++) {
-		int count = i - item->song.charts.begin();
-		if (count > DIFVIEW) {break;}
-		printToBitmap(&difGfx[(count / 2) * 2], 2, (count % 2) * 27, i->meter + " " + i->difficulty);
-	}
-}
-
-void MenuWheel::showDif() {
-	updateDif(&buffer->items[buffer->cursor]);
-	for (int i = 0; i < 4; i++) {
-		oamSet(&oamSub, difSprite[i], difX + 4 + (i % 2) * 64, difY + 16 + (i / 2) * 54, 0, 15, SpriteSize_64x64, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);
-	}
-	oamSet(&oamSub, difArrowSprite[0], difX + 60, difY + 5, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, difArrowGfx, 1, false, false, false, false, false);
-	oamSet(&oamSub, difArrowSprite[1], difX + 60, difY + 115, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, difArrowGfx, 0, false, false, false, false, false);
-	oamSet(&oamSub, difFrameSprite, difX, difY, 0, 0, SpriteSize_64x64, SpriteColorFormat_16Color, difFrameGfx, 2, true, false, false, false, false);
-}
-
-void MenuWheel::hideDif() {
-	for (int i = 0; i < 4; i++) {
-		oamClearSprite(&oamSub, difSprite[i]);
-	}
-	for (int i = 0; i < 2; i++) {
-		oamClearSprite(&oamSub, difArrowSprite[i]);
-	}
-	oamClearSprite(&oamSub, difFrameSprite);
 }

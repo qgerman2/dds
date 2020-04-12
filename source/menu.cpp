@@ -2,6 +2,7 @@
 #include <iostream>
 #include "main.h"
 #include "menu.h"
+#include "menu_dif.h"
 #include "menu_wheel.h"
 #include "render.h"
 #include <maxmod9.h>
@@ -14,7 +15,8 @@ Menu::Menu() {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
-	wheel = new MenuWheel();
+	dif = new MenuDif();
+	wheel = new MenuWheel(this);
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
@@ -22,6 +24,7 @@ Menu::Menu() {
 Menu::~Menu() {
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
+	delete dif;
 	delete wheel;
 }
 
@@ -40,17 +43,7 @@ void Menu::loop() {
 }
 
 void Menu::input() {
-	if (wheel->frame == 0) {
-		if (keysHeld() & KEY_UP) {
-			wheel->playAnim(-1);
-		}
-		else if (keysHeld() & KEY_DOWN) {
-			wheel->playAnim(1);
-		}
-		else if (keysDown() & KEY_A) {
-			wheel->showDif();
-		}
-	}
+	wheel->input();
 }
 
 void Menu::render() {

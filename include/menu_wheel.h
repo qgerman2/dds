@@ -1,57 +1,40 @@
 #ifndef MENUWHEEL
 #define MENUWHEEL
 #include <string>
+#include "menu.h"
 #include "buffer.h"
-#define ASCIIOFFSET 32
-#define CHARWIDTH 10
-#define CHARHEIGHT 16
-#define CHAROFFSET 0
-#define CHARSPRITES 3
 #define WHEELANGLE 6
 #define WHEELVIEW 9
 #define WHEELVIEWCHAR 7
-#define DIFVIEW 4
+#define SONGSPRITES 3
+class Menu;
 class MenuWheel {
 private:
+	Menu* menu;
 	Buffer* buffer;
 	const int tilesYOffset[5] = {-1, 3, 9, 13, 15};
 	bufferitem wheelitems[WHEELVIEW];
-	u16* songFontGfx[CHARSPRITES * WHEELVIEWCHAR];
-	u8 songFontSprite[CHARSPRITES * WHEELVIEWCHAR];
+	u16* songFontGfx[SONGSPRITES * WHEELVIEWCHAR];
+	u8 songFontSprite[SONGSPRITES * WHEELVIEWCHAR];
 	u8 songFrameColor[WHEELVIEW];
 	int tilesLen[5];
 	int tilesTotalLen = 0;
 	int bg1;
 	int bg2;
 	int anim = 0;
-	int difFrameSprite;
-	int difSprite[4];
-	u16* difFrameGfx;
-	u16* difGfx[4];
-	const int difX = 32;
-	const int difY = 32;
-	int difCursor = 0;
-	int difView = 0;
-	int difSize;
-	int difArrowSprite[2];
-	u16* difArrowGfx;
 	void loadSongFontGfx();
 	void loadFrameBg();
-	void loadDif();
 	void prev();
 	void next();
 	void renderChar(int angle);
-	void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str);
 	void updateColor();
 	void updateFrameBg();
-	void updateDif(bufferitem* item);
 public:
-	MenuWheel();
+	MenuWheel(Menu* menu);
 	~MenuWheel();
 	void playAnim(int anim);
+	void input();
 	void render();
-	void showDif();
-	void hideDif();
 	int frame = 0;
 };
 #endif

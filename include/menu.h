@@ -1,10 +1,12 @@
 #ifndef MENU
 #define MENU
+#include "menu_dif.h"
 #include "menu_wheel.h"
 class Menu {
 private:
-	MenuWheel* wheel;
 public:
+	MenuDif* dif;
+	MenuWheel* wheel;
 	Menu();
 	~Menu();
 	void loop();

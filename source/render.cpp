@@ -1,5 +1,8 @@
 #include <nds.h>
 #include <iostream>
+#include <string>
+#include "render.h"
+#include <song_font.h>
 
 bool sprites[128];
 bool spritesSub[128];
@@ -40,4 +43,28 @@ int popSpriteSub() {
 void pushSpriteSub(int i) {
 	spritesSub[i] = TRUE;
 	oamClearSprite(&oamSub, i);
+}
+
+void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
+	int c;
+	int x;
+	int s;
+	for (uint i = 0; i < str.length(); i++) {
+		c = int(str[i]) - ASCIIOFFSET;
+		x = i * CHARWIDTH;
+		s = x / 64;
+		if ((x + CHARWIDTH) > (sprites * 64)) {
+			break;
+		}
+		for (int y = 0; y < CHARHEIGHT; y++) {
+			if ((x % 64) > (64 - CHARWIDTH)) {
+				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET, gfx[s] + (y + y_offset) * 64 + i * CHARWIDTH - (s * 64), (((s + 1) * 64) - x) * 2);
+				//oh no
+				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET + (((s + 1) * 64) - x), gfx[s + 1] + (y + y_offset) * 64 + i * CHARWIDTH + (((s + 1) * 64) - x) - ((s + 1) * 64), (CHARWIDTH * 2) - ((((s + 1) * 64) - x) * 2));
+			}
+			else {
+				dmaCopy(song_fontBitmap + CHARWIDTH * y + (CHARWIDTH * CHARHEIGHT) * c + CHAROFFSET, gfx[s] + (y + y_offset) * 64 + i * CHARWIDTH - (s * 64), CHARWIDTH * 2);
+			}
+		}
+	}
 }
