@@ -28,6 +28,7 @@ private:
 	int difSprite[4];
 	u16* difFrameGfx;
 	u16* difGfx[4];
+<<<<<<< HEAD
 	const int difX = 32;
 	const int difY = 32;
 	int difCursor = 0;
@@ -35,6 +36,8 @@ private:
 	int difSize;
 	int difArrowSprite[2];
 	u16* difArrowGfx;
+=======
+>>>>>>> ad4ef25ce7c46f6ec0fe12f208a6dafd3de94f12
 	void loadSongFontGfx();
 	void loadFrameBg();
 	void loadDif();
