@@ -1,6 +1,6 @@
 #ifndef CONFIG
 #define CONFIG
-#define CONFIGCOUNT 6
+#define CONFIGCOUNT 5
 struct settings_t {
 	int speed = 4;
 	int opacity = 9;
@@ -11,13 +11,19 @@ struct settings_t {
 };
 class Config {
 private:
-	int dialog_y;
+	int y;
+	int y_f;
+	int y_dest;
+	const int y_min = -32;
+	const int y_max = -CONFIGCOUNT * 32 + 198;
+	int height;
 	int sub_bg;
 	int cursor_bg;
-	int anim = 0;
+	int state = 0;
 	int animFrame;
 	int valueSprites[CONFIGCOUNT];
 	int cursorSprite;
+	int cursor = 0;
 	u16* numberGfx[10];
 	u16* markGfx;
 	void updateSprites();
@@ -28,5 +34,8 @@ public:
 	void show();
 	void hide();
 	void update();
+	void input();
+	void next();
+	void prev();
 };
 #endif
