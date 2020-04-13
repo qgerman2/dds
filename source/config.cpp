@@ -33,6 +33,13 @@ Config::Config() {
 	}
 }
 
+Config::~Config() {
+	for (int i = 0; i < 10; i++) {
+		oamFreeGfx(&oamSub, numberGfx[i]);
+	}
+	oamFreeGfx(&oamSub, markGfx);
+}
+
 void Config::bg() {
 	vramSetBankH(VRAM_H_LCD);
 	cursor_bg = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);

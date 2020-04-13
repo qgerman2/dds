@@ -33,6 +33,7 @@ private:
 public:
 	bool active = false;
 	Config();
+	~Config();
 	void bg();
 	void show();
 	void hide();

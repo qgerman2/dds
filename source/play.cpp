@@ -132,7 +132,10 @@ void Play::updateBeat() {
 void Play::updateSteps() {
 	//crear nuevos steps
 	if (!cursor_end) {
-		for (int i = cursor; i < beat + parseaheadbeats; i++) {
+		int i = cursor;
+		while (1) {
+			uint beat_y = (((i << (MINUTEFRAC + BPMFRAC)) >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + HITYOFFSET;
+			if (beat_y > 192 + 32) {break;}
 			if ((i / 4) > measurecursor) {
 				firstbeat = i;
 				if (!getMeasureAtBeat(i)) {
@@ -206,6 +209,7 @@ void Play::updateSteps() {
 					break;
 			}
 			cursor = i + 1;
+			i++;
 		}
 	}
 	//crear steps por holds

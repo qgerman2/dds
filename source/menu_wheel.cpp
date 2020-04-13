@@ -253,8 +253,8 @@ void MenuWheel::renderChar(int angle) {
 	int o = ((scale - 256) * 64) / 256;
 	for (int i = -3; i <= 3; i++) {
 		for (int c = 0; c < SONGSPRITES; c++) {
-			int x = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 60;
-			int y = (((370 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 32;
+			int x = (((390 - (63 * c) - (o * (c * 2 + 1) / 2)) * cosLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 60;
+			int y = (((390 - (63 * c) - (o * (c * 2 + 1) / 2)) * sinLerp((180 + i * -WHEELANGLE) * 32768 / 360 - angle)) >> 12) + 32;
 			oamSet(&oamSub, songFontSprite[SONGSPRITES * (-i + 3) + c], x - 85, y + 48, 1, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, songFontGfx[SONGSPRITES * (i + 3) + c], i + 3 + 7, false, false, false, false, false);
 		}
 		oamRotateScale(&oamSub, i + 3 + 7, (i * WHEELANGLE) * 32768 / 360 + angle, (1 << 16) / scale, 256);

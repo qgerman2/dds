@@ -33,7 +33,6 @@ class PlayScore;
 class PlayInput;
 class Play {
 private:
-	u8 parseaheadbeats = 12;
 	u32 time;
 	int bpmindex = -1;
 	u32 minutef;
