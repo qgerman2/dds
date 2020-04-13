@@ -23,6 +23,8 @@ private:
 	int animFrame;
 	int valueSprites[CONFIGCOUNT];
 	int cursorSprite;
+	int cursorAnim;
+	int cursorFrame;
 	int cursor = 0;
 	u16* numberGfx[10];
 	u16* markGfx;

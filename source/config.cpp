@@ -76,6 +76,10 @@ void Config::update() {
 				bgSetScroll(cursor_bg, 0, y - 32);
 				bgShow(cursor_bg);
 				state = IDLE;
+				REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG3;
+				cursorFrame = 0;
+				cursorAnim = 1;
+				REG_BLDALPHA_SUB = 16 << 8;
 			}
 			break;
 		}
@@ -87,15 +91,21 @@ void Config::update() {
 			REG_BLDALPHA_SUB = animFrame | (16 - animFrame) << 8;
 			//fin del fadeout
 			if (animFrame == 0) {
+				bgHide(sub_bg);
 				hideSprites();
 				active = false;
 				state = IDLE;
 			}
 			break;
 		}
-		case IDLE:
+		case IDLE: 
 		case PREV:
 		case NEXT: {
+			if (cursorAnim > 0) {cursorFrame++;}
+			else if (cursorAnim < 0) {cursorFrame--;}
+			if (cursorFrame == 0) {cursorAnim = 1;}
+			else if (cursorFrame == 16) {cursorAnim = -1;}
+			REG_BLDALPHA_SUB = cursorFrame | (16 - cursorFrame) << 8;
 			input();
 			if (state == NEXT || state == PREV) {
 				animFrame--;
@@ -106,6 +116,8 @@ void Config::update() {
 					y = y_dest;
 					y_f = y << 8;
 					state = IDLE;
+					REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG3;
+					REG_BLDALPHA_SUB = 16 << 8;
 				}
 				bgSetScroll(sub_bg, 0, y);
 				bgSetScroll(cursor_bg, 0, y - 32 * (cursor + 1));
@@ -131,6 +143,8 @@ void Config::next() {
 		if (y_dest < y_min) {y_dest = y_min;}
 		if (y_dest > y_max) {y_dest = y_max;}
 		state = NEXT;
+		cursorFrame = 0;
+		cursorAnim = 1;
 	}
 }
 
@@ -144,6 +158,8 @@ void Config::prev() {
 		if (y_dest < y_min) {y_dest = y_min;}
 		if (y_dest > y_max) {y_dest = y_max;}
 		state = PREV;
+		cursorFrame = 0;
+		cursorAnim = 1;
 	}
 }
 
