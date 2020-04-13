@@ -18,6 +18,7 @@ private:
 	int cursorPressed = false;
 	int cursorSprite;
 	u16* cursorGfx;
+	bool ready = true;
 public:
 	Notice();
 	~Notice();

@@ -13,4 +13,7 @@ int popSpriteSub();
 void pushSprite(int i);
 void pushSpriteSub(int i);
 void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str);
+void fadeIn();
+void fadeOut();
+void fade(bool in);
 #endif

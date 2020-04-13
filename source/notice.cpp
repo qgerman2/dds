@@ -23,16 +23,6 @@ Notice::Notice() {
 	}
 	config = new Config();
 
-	shared_buffer = new Buffer();
-	buffer = shared_buffer;
-	buffer->setRandom();
-	buffer->fill();
-	songpath = buffer->items[BUFFERSIZE / 2].path;
-	simpath = buffer->items[BUFFERSIZE / 2].smpath;
-	songdata song;
-	parseSimFile(&song, simpath);
-	loadAudio(songpath + "/" + song.music);
-
 	notice_id = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);
 	dmaCopy(notice_bgTiles, bgGetGfxPtr(notice_id), notice_bgTilesLen);
 	dmaCopy(notice_bgMap, bgGetMapPtr(notice_id), notice_bgMapLen);
@@ -55,20 +45,42 @@ Notice::Notice() {
 	dmaCopy(menu_cursorBitmap, cursorGfx, menu_cursorBitmapLen);
 	oamSet(&oamSub, cursorSprite, 16, 64, 0, 0, SpriteSize_64x64, SpriteColorFormat_Bmp, cursorGfx, 0, false, false, false, false, false);
 
+	if (!shared_buffer) {
+		shared_buffer = new Buffer();
+		buffer = shared_buffer;
+		buffer->setRandom();
+		buffer->fill();
+		songpath = buffer->items[BUFFERSIZE / 2].path;
+		simpath = buffer->items[BUFFERSIZE / 2].smpath;
+		songdata song;
+		parseSimFile(&song, simpath);
+		loadAudio(songpath + "/" + song.music);
+		for (int i = 0; i < 20; i++) {
+			swiWaitForVBlank();
+		}
+	} else {
+		bgHide(notice_id);
+		fadeFrame = 0;
+		transitionTimer = 0;
+		transitionFrame = 0;
+		cursorAnim = 1;
+		cursorAlpha = 0;
+		transition = true;
+		config->bg();
+		ready = false;
+	}
+
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
-	for (int i = 0; i < 20; i++) {
-		swiWaitForVBlank();
-	}
 }
 
 Notice::~Notice() {
+	fadeOut();
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	oamFreeGfx(&oamSub, cursorGfx);
 	bgHide(notice_id);
 	bgHide(menu_id);
-	setBrightness(3, 0);
 	REG_BLDCNT_SUB = 0;
 	delete config;
 }
@@ -92,6 +104,10 @@ void Notice::loop() {
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		if (state != 2) {return;}
+		if (!ready) {
+			ready = true;
+			fadeIn();
+		}
 	}
 }
 

@@ -81,8 +81,12 @@ MenuWheel::~MenuWheel() {
 	for (int i = 0; i < SONGSPRITES * WHEELVIEWCHAR; i++) {
 		oamFreeGfx(&oamSub, songFontGfx[i]);
 	}
-	delete buffer;
-	if (shared_buffer) {shared_buffer = NULL;}
+	if (state == 1) {
+		delete buffer;
+		if (shared_buffer) {shared_buffer = NULL;}
+	} else if (state == 2) {
+		shared_buffer = buffer;
+	}
 }
 
 void MenuWheel::loadSongFontGfx() {
@@ -235,7 +239,6 @@ void MenuWheel::render() {
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
-	bgUpdate();
 	renderChar(angle);
 	if (frame > 0) {
 		frame--;

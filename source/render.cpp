@@ -1,5 +1,5 @@
 #include <nds.h>
-#include <iostream>
+#include <maxmod9.h>
 #include <string>
 #include "render.h"
 #include <song_font.h>
@@ -20,10 +20,7 @@ int popSprite() {
 
 void pushSprite(int i) {
 	if (i < 0 || i > 128) {
-		std::cout << "\nattempt to remove " << i;
-		while (1) {
-			swiWaitForVBlank();
-		}
+		sassert(0, "attempt to remove out of range sprite");
 	}
 	sprites[i] = TRUE;
 	oamClearSprite(&oamMain, i);
@@ -41,6 +38,9 @@ int popSpriteSub() {
 }
 
 void pushSpriteSub(int i) {
+	if (i < 0 || i > 128) {
+		sassert(0, "attempt to remove out of range sprite");
+	}
 	spritesSub[i] = TRUE;
 	oamClearSprite(&oamSub, i);
 }
@@ -67,4 +67,25 @@ void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
 			}
 		}
 	}
+}
+
+void fadeOut() {
+	fade(false);
+}
+
+void fadeIn() {
+	fade(true);
+}
+
+void fade(bool in) {
+	int frame = 16;
+	do {
+		int brightness;
+		if (in) {brightness = -frame;}
+		else {brightness = -16 + frame;}
+		setBrightness(3, brightness);
+		mmStreamUpdate();
+		swiWaitForVBlank();
+		frame--;
+	} while (frame > 0);
 }
