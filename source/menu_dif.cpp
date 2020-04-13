@@ -1,3 +1,5 @@
+#include <nds.h>
+#include "main.h"
 #include "menu_dif.h"
 #include "render.h"
 #include "buffer.h"
@@ -31,7 +33,12 @@ MenuDif::MenuDif() {
 }
 
 MenuDif::~MenuDif() {
-
+	oamFreeGfx(&oamSub, cursorGfx);
+	oamFreeGfx(&oamSub, arrowGfx);
+	oamFreeGfx(&oamSub, frameGfx);
+	for (int i = 0; i < 4; i++) {
+		oamFreeGfx(&oamSub, gfx[i]);
+	}
 }
 
 void MenuDif::update() {
@@ -41,6 +48,16 @@ void MenuDif::update() {
 		printToBitmap(&gfx[(c / 2) * 2], 2, (c % 2) * 27, i->meter + " " + i->difficulty);
 		c++;
 		if (c > DIFVIEW) {break;}
+	}
+	if (view < size - 4) {
+		oamSet(&oamSub, arrowSprite[1], x + 60, y + 115, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, arrowGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, arrowSprite[1]);
+	}
+	if (view > 0) {
+		oamSet(&oamSub, arrowSprite[0], x + 60, y + 5, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, arrowGfx, 1, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, arrowSprite[0]);
 	}
 }
 
@@ -53,10 +70,6 @@ void MenuDif::show(bufferitem* item) {
 	update();
 	for (int i = 0; i < 4; i++) {
 		oamSet(&oamSub, sprite[i], x + 4 + (i % 2) * 64, y + 16 + (i / 2) * 54, 0, 15, SpriteSize_64x64, SpriteColorFormat_Bmp, gfx[i], 0, false, false, false, false, false);
-	}
-	//oamSet(&oamSub, difArrowSprite[0], difX + 60, difY + 5, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, difArrowGfx, 1, false, false, false, false, false);
-	if (size > 4) {
-		oamSet(&oamSub, arrowSprite[1], x + 60, y + 115, 0, 1, SpriteSize_8x8, SpriteColorFormat_16Color, arrowGfx, 0, false, false, false, false, false);
 	}
 	oamSet(&oamSub, cursorSprite, x - 5, y + 20, 0, 2, SpriteSize_8x8, SpriteColorFormat_16Color, cursorGfx, 0, false, false, false, false, false);
 	oamSet(&oamSub, frameSprite, x, y, 0, 0, SpriteSize_64x64, SpriteColorFormat_16Color, frameGfx, 2, true, false, false, false, false);
@@ -72,6 +85,16 @@ void MenuDif::hide() {
 	}
 	oamClearSprite(&oamSub, cursorSprite);
 	oamClearSprite(&oamSub, frameSprite);
+}
+
+void MenuDif::input() {
+	if (keysDown() & KEY_UP) {prev();}
+	else if (keysDown() & KEY_DOWN) {next();}
+	else if (keysDown() & KEY_B) {hide();}
+	else if (keysDown() & KEY_A) {
+		songchart = cursor + view;
+		state = 1;
+	}
 }
 
 void MenuDif::next() {

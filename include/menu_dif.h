@@ -27,6 +27,7 @@ public:
 	~MenuDif();
 	void show(bufferitem* item);
 	void hide();
+	void input();
 	void next();
 	void prev();
 };

@@ -8,6 +8,7 @@ extern struct settings_t settings;
 extern int state;
 extern std::string simpath;
 extern std::string songpath;
+extern int songchart;
 extern int bgid;
 extern Buffer* shared_buffer;
 extern bool nocash;

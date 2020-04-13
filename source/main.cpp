@@ -22,6 +22,7 @@ struct settings_t settings;
 int state = 2;
 string simpath;
 string songpath;
+int songchart;
 int bgid;
 Buffer* shared_buffer = NULL;
 bool nocash = false;
@@ -75,13 +76,14 @@ int main(){
 			}
 			break;
 			case (1): {
+				cout << "\nchart number: " << songchart;
 				songdata song;
 				parseSimFile(&song, simpath);
-				parseChart(&song);
+				parseChart(&song, songchart);
 				loadAudio(songpath + "/" + song.music);
 				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
 				playAudio();
-				Play play(&song);
+				Play play(&song, songchart);
 				play.loop();
 			}
 			break;

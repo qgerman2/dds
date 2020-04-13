@@ -204,26 +204,10 @@ void MenuWheel::prev() {
 
 void MenuWheel::input() {
 	if (frame == 0) {
-		if (keysDown() & KEY_UP) {
-			if (!menu->dif->active) {
-				playAnim(-1);
-			} else {
-				menu->dif->prev();
-			}
-		}
-		else if (keysDown() & KEY_DOWN) {
-			if (!menu->dif->active) {
-				playAnim(1);
-			} else {
-				menu->dif->next();
-			}
-		}
+		if (keysDown() & KEY_UP) {playAnim(-1);}
+		else if (keysDown() & KEY_DOWN) {playAnim(1);}
 		else if (keysDown() & KEY_A) {
-			if (!menu->dif->active) {
-				menu->dif->show(&buffer->items[buffer->cursor]);
-			} else {
-				menu->dif->hide();
-			}
+			menu->dif->show(&buffer->items[buffer->cursor]);
 		}
 	}
 }

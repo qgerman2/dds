@@ -222,9 +222,9 @@ bool parseNotes(chart* chart) {
 	return true;
 } 
 
-bool parseChart(songdata* song) {
+bool parseChart(songdata* song, int chart) {
 	parseBPMS(song, false);
 	parseBPMS(song, true);
-	parseNotes(&song->charts.back());
+	parseNotes(&song->charts.at(chart));
 	return true;
 }

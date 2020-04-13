@@ -75,5 +75,5 @@ bool nextChar(FILE* input, int* output);
 bool parseNotes(chart* chart);
 bool parseBPMS(songdata* song, bool parseStops);
 bool parseSimFile(songdata* song, std::string path);
-bool parseChart(songdata* song);
+bool parseChart(songdata* song, int chart);
 #endif

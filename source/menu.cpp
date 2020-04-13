@@ -43,7 +43,11 @@ void Menu::loop() {
 }
 
 void Menu::input() {
-	wheel->input();
+	if (dif->active) {
+		dif->input();
+	} else {
+		wheel->input();
+	}
 }
 
 void Menu::render() {
