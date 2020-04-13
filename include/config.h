@@ -27,6 +27,7 @@ private:
 	u16* numberGfx[10];
 	u16* markGfx;
 	void updateSprites();
+	void hideSprites();
 public:
 	bool active = false;
 	Config();

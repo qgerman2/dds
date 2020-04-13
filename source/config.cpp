@@ -10,7 +10,7 @@
 
 using namespace std;
 
-enum STATE {IDLE, FADEIN, NEXT, PREV};
+enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
 Config::Config() {
 	sub_bg = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 7, 3);
@@ -47,43 +47,70 @@ void Config::show() {
 	active = true;
 	state = FADEIN;
 	animFrame = 16;
+	cursor = 0;
 	bgShow(sub_bg);
+	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
+	REG_BLDALPHA_SUB = 16 << 8;
+}
+
+void Config::hide() {
+	state = FADEOUT;
+	animFrame = 16;
+	bgHide(cursor_bg);
 	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
 	REG_BLDALPHA_SUB = 16;
 }
 
-void Config::hide() {
-	active = false;
-}
-
 void Config::update() {
-	if (state == FADEIN) {
-		animFrame--;
-		y = -animFrame - 32;
-		updateSprites();
-		bgSetScroll(sub_bg, 0, y);
-		REG_BLDALPHA_SUB = (16 - animFrame) | animFrame << 8;
-		if (animFrame == 0) {
-			y = -32;
-			y_f = y << 8;			
-			bgSetScroll(cursor_bg, 0, y - 32);
-			bgShow(cursor_bg);
-			state = 0;
-		}
-	} else {
-		input();
-		if (state != IDLE) {
+	switch (state) {
+		case FADEIN: {
 			animFrame--;
-			y_f = y_f + (((y_dest - y) << 16) / (6 << 8));
-			y = y_f >> 8;
+			y = -animFrame - 32;
 			updateSprites();
+			bgSetScroll(sub_bg, 0, y);
+			REG_BLDALPHA_SUB = (16 - animFrame) | animFrame << 8;
+			//fin del fadein
 			if (animFrame == 0) {
-				y = y_dest;
+				y = -32;
 				y_f = y << 8;
+				bgSetScroll(cursor_bg, 0, y - 32);
+				bgShow(cursor_bg);
 				state = IDLE;
 			}
+			break;
+		}
+		case FADEOUT: {
+			animFrame--;
+			y = y - 1;
+			updateSprites();
 			bgSetScroll(sub_bg, 0, y);
-			bgSetScroll(cursor_bg, 0, y - 32 * (cursor + 1));
+			REG_BLDALPHA_SUB = animFrame | (16 - animFrame) << 8;
+			//fin del fadeout
+			if (animFrame == 0) {
+				hideSprites();
+				active = false;
+				state = IDLE;
+			}
+			break;
+		}
+		case IDLE:
+		case PREV:
+		case NEXT: {
+			input();
+			if (state == NEXT || state == PREV) {
+				animFrame--;
+				y_f = y_f + (((y_dest - y) << 16) / (6 << 8));
+				y = y_f >> 8;
+				updateSprites();
+				if (animFrame == 0) {
+					y = y_dest;
+					y_f = y << 8;
+					state = IDLE;
+				}
+				bgSetScroll(sub_bg, 0, y);
+				bgSetScroll(cursor_bg, 0, y - 32 * (cursor + 1));
+			}
+			break;
 		}
 	}
 }
@@ -91,6 +118,7 @@ void Config::update() {
 void Config::input() {
 	if (keysDown() & KEY_DOWN) {next();}
 	else if (keysDown() & KEY_UP) {prev();}
+	else if (keysDown() & KEY_B) {hide();}
 }
 
 void Config::next() {
@@ -139,5 +167,11 @@ void Config::updateSprites() {
 	//folder navigation
 	if (settings.folder) {
 		//oamSet(&oamSub, valueSprites[5], 188, y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	}
+}
+
+void Config::hideSprites() {
+	for (int i = 0; i < CONFIGCOUNT; i++) {
+		oamClearSprite(&oamSub, valueSprites[i]);
 	}
 }
