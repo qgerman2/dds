@@ -12,6 +12,7 @@
 #include "parse.h"
 #include "sound.h"
 #include "artwork.h"
+#include "render.h"
 #include "notice.h"
 #include "config.h"
 #include <font.h>
@@ -83,8 +84,8 @@ int main(){
 				parseSimFile(&song, simpath);
 				parseChart(&song, songchart);
 				loadAudio(songpath + "/" + song.music);
+				setBrightness(1, 0);
 				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
-				playAudio();
 				Play play(&song, songchart);
 				play.loop();
 			}

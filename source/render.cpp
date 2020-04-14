@@ -69,23 +69,23 @@ void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
 	}
 }
 
-void fadeOut() {
-	fade(false);
+void fadeOut(int screen) {
+	fade(false, screen);
 }
 
-void fadeIn() {
-	fade(true);
+void fadeIn(int screen) {
+	fade(true, screen);
 }
 
-void fade(bool in) {
+void fade(bool in, int screen) {
 	int frame = 16;
 	do {
 		int brightness;
 		if (in) {brightness = -frame;}
 		else {brightness = -16 + frame;}
-		setBrightness(3, brightness);
+		setBrightness(screen, brightness);
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		frame--;
-	} while (frame > 0);
+	} while (frame > -1);
 }

@@ -67,6 +67,7 @@ Notice::Notice() {
 		cursorAlpha = 0;
 		transition = true;
 		config->bg();
+		REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
 		ready = false;
 	}
 
@@ -75,7 +76,7 @@ Notice::Notice() {
 }
 
 Notice::~Notice() {
-	fadeOut();
+	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	oamFreeGfx(&oamSub, cursorGfx);
@@ -106,7 +107,7 @@ void Notice::loop() {
 		if (state != 2) {return;}
 		if (!ready) {
 			ready = true;
-			fadeIn();
+			fadeIn(3);
 		}
 	}
 }

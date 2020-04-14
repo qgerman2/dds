@@ -24,6 +24,7 @@ Menu::Menu() {
 	dmaCopy(wheel_bgTiles, bgGetGfxPtr(top_id), wheel_bgTilesLen);
 	dmaCopy(wheel_bgMap, bgGetMapPtr(top_id), wheel_bgMapLen);
 	dmaCopy(wheel_bgPal, &VRAM_F[0*16*256], wheel_bgPalLen);
+	bgSetPriority(top_id, 3);
 
 	int sub_id = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);
 	dmaCopy(wheel_sub_bgTiles, bgGetGfxPtr(sub_id), wheel_sub_bgTilesLen);
@@ -36,7 +37,7 @@ Menu::Menu() {
 }
 
 Menu::~Menu() {
-	fadeOut();
+	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	delete dif;
@@ -50,13 +51,14 @@ void Menu::loop() {
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		render();
+		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
 		if (state != 0) {
 			return;
 		}
 		if (!ready) {
 			ready = true;
-			fadeIn();
+			fadeIn(3);
 		}
 	}
 }

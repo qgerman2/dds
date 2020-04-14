@@ -33,6 +33,7 @@ Play::Play(songdata* song, int chart){
 }
 
 Play::~Play() {
+	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	delete render;
@@ -41,6 +42,14 @@ Play::~Play() {
 }
 
 void Play::loop(){
+	updateBeat();
+	updateSteps();
+	render->update();
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
+	fadeIn(2);
+	
+	playAudio();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
