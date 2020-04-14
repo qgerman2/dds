@@ -15,6 +15,7 @@
 #include "render.h"
 #include "notice.h"
 #include "config.h"
+#include "pause.h"
 #include <font.h>
 
 using namespace std;
@@ -105,6 +106,10 @@ int main(){
 				notice.loop();
 			}
 			break;
+			case (3): {
+				Pause pause;
+				pause.loop();
+			}
 		}
 	}
 	return 0;
