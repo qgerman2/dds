@@ -33,6 +33,7 @@ Play::Play(songdata* song, int chart){
 }
 
 Play::~Play() {
+	shared_play = NULL;
 	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
@@ -42,29 +43,29 @@ Play::~Play() {
 }
 
 void Play::loop(){
-	updateBeat();
-	updateSteps();
-	render->update();
-	oamUpdate(&oamMain);
-	oamUpdate(&oamSub);
+	frame();
+	shared_play = this;
 	fadeIn(2);
-	
 	playAudio();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
-		updateBeat();
-		updateSteps();
-		scanKeys();
-		input->update();
-		render->update();
-		oamUpdate(&oamMain);
-		oamUpdate(&oamSub);
+		//frame();
 		mmStreamUpdate();
 		swiWaitForVBlank();
 		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
 		if (state != 1) {return;}
 	}
+}
+
+void Play::frame() {
+	updateBeat();
+	updateSteps();
+	scanKeys();
+	input->update();
+	render->update();
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
 }
 
 int Play::getNoteType(u32 row) {

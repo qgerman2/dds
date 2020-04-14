@@ -66,6 +66,7 @@ public:
 	Play(songdata* song, int chart);
 	~Play();
 	void loop();
+	void frame();
 	void updateSteps();
 	void updateBeat();
 	void newSteps(u16 data, u32 beatf, u8 notetype);

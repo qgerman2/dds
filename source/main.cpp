@@ -26,7 +26,14 @@ string songpath;
 int songchart;
 int bgid;
 Buffer* shared_buffer = NULL;
+Play* shared_play = NULL;
 bool nocash = false;
+
+void vblank_interrupt() {
+	if (shared_play) {
+		shared_play->frame();
+	}
+}
 
 int main(){
 	srand(time(NULL));
@@ -70,6 +77,9 @@ int main(){
 		nocash = true;
 		cout << "\nRunning on no$gba";
 	}
+
+	//play frame
+	irqSet(IRQ_VBLANK, vblank_interrupt);
 
 	while (1) {
 		switch (state) {
