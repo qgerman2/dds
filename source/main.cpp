@@ -16,19 +16,10 @@
 #include "notice.h"
 #include "config.h"
 #include "pause.h"
+#include "globals.h"
 #include <font.h>
 
 using namespace std;
-
-struct settings_t settings;
-int state = 2;
-string simpath;
-string songpath;
-int songchart;
-int bgid;
-Buffer* shared_buffer = NULL;
-Play* shared_play = NULL;
-bool nocash = false;
 
 void vblank_interrupt() {
 	if (shared_play) {

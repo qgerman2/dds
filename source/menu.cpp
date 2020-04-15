@@ -1,6 +1,6 @@
 #include <nds.h>
 #include <iostream>
-#include "main.h"
+#include "globals.h"
 #include "menu.h"
 #include "menu_dif.h"
 #include "menu_wheel.h"

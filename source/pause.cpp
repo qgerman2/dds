@@ -1,6 +1,6 @@
 #include <nds.h>
 #include <iostream>
-#include "main.h"
+#include "globals.h"
 #include "render.h"
 #include "pause.h"
 #include <play_quit.h>

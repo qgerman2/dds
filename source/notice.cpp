@@ -1,7 +1,7 @@
 #include <nds.h>
 #include <iostream>
 #include <string>
-#include "main.h"
+#include "globals.h"
 #include "sound.h"
 #include "notice.h"
 #include "buffer.h"

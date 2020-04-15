@@ -1,5 +1,6 @@
 #ifndef CONFIG
 #define CONFIG
+#include <nds.h>
 #define CONFIGCOUNT 5
 struct settings_t {
 	int speed = 4;

@@ -1,7 +1,7 @@
 #include <nds.h>
 #include <iostream>
 #include "parse.h"
-#include "main.h"
+#include "globals.h"
 #include "sound.h"
 #include <hold.h>
 #include <bitset>

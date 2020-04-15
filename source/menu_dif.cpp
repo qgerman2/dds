@@ -1,5 +1,5 @@
 #include <nds.h>
-#include "main.h"
+#include "globals.h"
 #include "menu_dif.h"
 #include "render.h"
 #include "buffer.h"

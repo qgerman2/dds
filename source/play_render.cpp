@@ -30,7 +30,7 @@
 #include <barTop.h>
 
 #include <sub_bg.h>
-#include <score.h>
+#include <score_numbers.h>
 
 using namespace std;
 
@@ -248,10 +248,10 @@ void PlayRender::loadSubScore() {
 	}
 	for (int i = 0; i < 11; i++) {
 		scoreGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
-		dmaCopy(scoreTiles + i * 16, scoreGfx[i], 64);
-		dmaCopy(scoreTiles + 176 + i * 16, scoreGfx[i] + 32, 64);
+		dmaCopy(score_numbersTiles + i * 16, scoreGfx[i], 64);
+		dmaCopy(score_numbersTiles + 176 + i * 16, scoreGfx[i] + 32, 64);
 	}
-	dmaCopy(scorePal, SPRITE_PALETTE_SUB, scorePalLen);
+	dmaCopy(score_numbersPal, SPRITE_PALETTE_SUB, score_numbersPalLen);
 	oamSet(&oamSub, scoreSprite[9], 216 - 4 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
 	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);
 }

@@ -2,7 +2,7 @@
 #include <fat.h>
 #include <iostream>
 #include <string>
-#include "main.h"
+#include "globals.h"
 #include "render.h"
 #include "menu_wheel.h"
 #include "sound.h"

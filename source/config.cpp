@@ -1,12 +1,13 @@
 #include <nds.h>
 #include <iostream>
-#include "main.h"
+#include "globals.h"
 #include "config.h"
 #include "render.h"
 #include <config_sub.h>
-#include <score.h>
+//#include <score.h>
 #include <mark.h>
 #include <config_cursor.h>
+#include <score_numbers.h>
 
 using namespace std;
 
@@ -21,8 +22,8 @@ Config::Config() {
 	bgHide(sub_bg);
 	for (int i = 0; i < 10; i++) {
 		numberGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
-		dmaCopy(scoreTiles + i * 16, numberGfx[i], 64);
-		dmaCopy(scoreTiles + 176 + i * 16, numberGfx[i] + 32, 64);
+		dmaCopy(score_numbersTiles + i * 16, numberGfx[i], 64);
+		dmaCopy(score_numbersTiles + 176 + i * 16, numberGfx[i] + 32, 64);
 	}
 	//dmaCopy(scorePal, SPRITE_PALETTE_SUB, scorePalLen);
 	markGfx = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
