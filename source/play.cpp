@@ -35,7 +35,7 @@ Play::Play(songdata* song, int chart){
 Play::~Play() {
 	shared_play = NULL;
 	if (!idleAudio()) {stopAudio();}
-	if (state == 0) {
+	if (state == 4) {
 		fadeOut(3);
 		vramSetBankF(VRAM_F_LCD);
 		vramSetBankH(VRAM_H_LCD);
@@ -56,7 +56,7 @@ void Play::loop(){
 		//frame();
 		mmStreamUpdate();
 		swiWaitForVBlank();
-		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
+		if (cursor_end && beat >= beat_end && idleAudio()) {state = 4;}
 		if (keysDown() & KEY_START) {state = 3;}
 		if (state != 1) {return;}
 	}

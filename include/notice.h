@@ -1,5 +1,6 @@
 #ifndef NOTICE
 #define NOTICE
+#include "config.h"
 #include "buffer.h"
 class Notice {
 private:

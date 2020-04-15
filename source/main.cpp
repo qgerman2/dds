@@ -17,6 +17,7 @@
 #include "config.h"
 #include "pause.h"
 #include "globals.h"
+#include "score.h"
 #include <font.h>
 
 using namespace std;
@@ -100,6 +101,10 @@ int main(){
 			case (3): {
 				Pause pause;
 				pause.loop();
+			}
+			case (4): {
+				Score score;
+				score.loop();
 			}
 		}
 	}

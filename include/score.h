@@ -13,6 +13,7 @@ public:
 	Score();
 	~Score();
 	void loop();
+	void input();
 	void render();
 };
 #endif
