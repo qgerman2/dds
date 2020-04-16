@@ -35,7 +35,6 @@ Play::Play() {
 	TIMER0_CR = 0;
 	TIMER1_CR = 0;
 	this->song = song;
-	this->chart = chart;
 	render = new PlayRender(this);
 	score = new PlayScore(this);
 	input = new PlayInput(this);
@@ -371,10 +370,10 @@ list<step>::iterator Play::removeStep(list<step>::iterator s) {
 }
 
 bool Play::getMeasureAtBeat(u32 beat) {
-	if (beat / 4 > song->charts.at(chart).notes.size() - 1) {
+	if (beat / 4 > song->charts.at(songchart).notes.size() - 1) {
 		return false;
 	}
-	m = &song->charts.at(chart).notes.at(beat / 4);
+	m = &song->charts.at(songchart).notes.at(beat / 4);
 	return true;
 }
 
