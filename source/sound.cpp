@@ -42,9 +42,8 @@ void audio::end() {
 	}
 	if (inbuf) {
 		fclose(inbuf);
+		inbuf = NULL;
 	}
-	mmStreamClose();
-	stream.sampling_rate = 0;
 }
 
 static signed short MadFixedToSshort(mad_fixed_t Fixed) {
@@ -208,9 +207,14 @@ bool idleAudio() {
 	if (audio.ogg || audio.mp3) {
 		return false;
 	}
+	if (audio.stream.sampling_rate > 0) {
+		mmStreamClose();
+		audio.stream.sampling_rate = 0;
+	}
 	return true;
 }
 
 void stopAudio() {
 	audio.end();
+	idleAudio();
 }

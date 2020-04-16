@@ -23,4 +23,6 @@ extern Buffer* shared_buffer;
 extern score_t* shared_score;
 //true when running on no$gba
 extern bool nocash;
+//bool to avoid refreshing artwork on reset
+extern bool keep_artwork;
 #endif

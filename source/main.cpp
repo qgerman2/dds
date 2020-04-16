@@ -82,14 +82,7 @@ int main(){
 			}
 			break;
 			case (1): {
-				cout << "\nchart number: " << songchart;
-				songdata song;
-				parseSimFile(&song, simpath);
-				parseChart(&song, songchart);
-				loadAudio(songpath + "/" + song.music);
-				setBrightness(1, 0);
-				loadArtwork(songpath + "/" + song.bg, bgGetGfxPtr(bgid), 256, 192);
-				Play play(&song, songchart);
+				Play play;
 				play.loop();
 			}
 			break;
@@ -102,10 +95,12 @@ int main(){
 				Pause pause;
 				pause.loop();
 			}
+			break;
 			case (4): {
 				Score score;
 				score.loop();
 			}
+			break;
 		}
 	}
 	return 0;

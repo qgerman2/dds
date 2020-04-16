@@ -15,3 +15,4 @@ Buffer* shared_buffer = NULL;
 Play* shared_play = NULL;
 score_t* shared_score;
 bool nocash = false;
+bool keep_artwork = false;

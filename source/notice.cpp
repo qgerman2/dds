@@ -102,7 +102,7 @@ void Notice::loop() {
 		if (config->active) {config->update();}
 		oamUpdate(&oamSub);
 		bgUpdate();
-		mmStreamUpdate();
+		if (!idleAudio()) {mmStreamUpdate();}
 		swiWaitForVBlank();
 		if (state != 2) {return;}
 		if (!ready) {

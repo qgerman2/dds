@@ -9,6 +9,7 @@
 #include <maxmod9.h>
 #include <vector>
 #include <list>
+#include "artwork.h"
 #include "play.h"
 #include "play_render.h"
 #include "play_input.h"
@@ -19,7 +20,18 @@ using namespace std;
 
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 
-Play::Play(songdata* song, int chart){
+Play::Play() {
+	song = new songdata;
+	parseSimFile(song, simpath);
+	parseChart(song, songchart);
+	swiWaitForVBlank();
+	loadAudio(songpath + "/" + song->music);
+	setBrightness(1, 0);
+	if (!keep_artwork) {
+		loadArtwork(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
+	} else {
+		keep_artwork = false;
+	}
 	TIMER0_CR = 0;
 	TIMER1_CR = 0;
 	this->song = song;
@@ -34,7 +46,7 @@ Play::Play(songdata* song, int chart){
 
 Play::~Play() {
 	shared_play = NULL;
-	if (!idleAudio()) {stopAudio();}
+	stopAudio();
 	if (state == 4) {
 		fadeOut(3);
 		vramSetBankF(VRAM_F_LCD);
@@ -43,6 +55,7 @@ Play::~Play() {
 	delete render;
 	delete score;
 	delete input;
+	delete song;
 }
 
 void Play::loop(){
@@ -54,7 +67,7 @@ void Play::loop(){
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
 	while (1) {
 		//frame();
-		mmStreamUpdate();
+		if (!idleAudio()) {mmStreamUpdate();}
 		swiWaitForVBlank();
 		if (cursor_end && beat >= beat_end && idleAudio()) {state = 4;}
 		if (keysDown() & KEY_START) {state = 3;}

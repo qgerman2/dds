@@ -5,6 +5,7 @@
 #include "menu_dif.h"
 #include "menu_wheel.h"
 #include "render.h"
+#include "sound.h"
 #include <maxmod9.h>
 #include <font.h>
 #include <wheel_bg.h>
@@ -37,6 +38,7 @@ Menu::Menu() {
 }
 
 Menu::~Menu() {
+	if (state == 1) {stopAudio();}
 	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
@@ -48,7 +50,7 @@ void Menu::loop() {
 	while (1) {
 		scanKeys();
 		input();
-		mmStreamUpdate();
+		if (!idleAudio()) {mmStreamUpdate();}
 		swiWaitForVBlank();
 		render();
 		oamUpdate(&oamMain);

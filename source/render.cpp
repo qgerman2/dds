@@ -1,4 +1,5 @@
 #include <nds.h>
+#include "sound.h"
 #include <maxmod9.h>
 #include <string>
 #include "render.h"
@@ -84,7 +85,7 @@ void fade(bool in, int screen) {
 		if (in) {brightness = -frame;}
 		else {brightness = -16 + frame;}
 		setBrightness(screen, brightness);
-		mmStreamUpdate();
+		if (!idleAudio()) {mmStreamUpdate();}
 		swiWaitForVBlank();
 		frame--;
 	} while (frame > -1);

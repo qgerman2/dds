@@ -51,6 +51,7 @@ void Pause::input() {
 	} else if (keysDown() & KEY_A) {
 		switch (cursor) {
 			case 0:
+				keep_artwork = true;
 				state = 1;
 				break;
 			case 1:

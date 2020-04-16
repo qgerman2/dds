@@ -63,7 +63,7 @@ public:
 	u32 bpmf = 0;
 	std::list<step> steps;
 	std::vector<hold> holds;
-	Play(songdata* song, int chart);
+	Play();
 	~Play();
 	void loop();
 	void frame();
