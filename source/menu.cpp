@@ -38,7 +38,9 @@ Menu::Menu() {
 }
 
 Menu::~Menu() {
-	if (state == 1) {stopAudio();}
+	if (state == 1) {
+		stopAudio();
+	}
 	fadeOut(3);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);

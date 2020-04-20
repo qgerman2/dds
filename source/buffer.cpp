@@ -5,6 +5,7 @@
 #include <string>
 #include <sys/dir.h>
 #include <map>
+#include "globals.h"
 #include "buffer.h"
 
 using namespace std;
@@ -90,6 +91,9 @@ void Buffer::fill() {
 		if (r < 0) {r = 0;}
 		center = songmap.find(r / (RAND_MAX / songcount))->second;
 		random = false;
+	} else {
+		center = buffer_center;
+		cursor = buffer_cursor;
 	}
 	//popular buffer
 	parse("/ddr");

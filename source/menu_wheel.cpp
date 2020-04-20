@@ -82,6 +82,8 @@ MenuWheel::~MenuWheel() {
 		oamFreeGfx(&oamSub, songFontGfx[i]);
 	}
 	if (state == 1) {
+		buffer_center = buffer->center;
+		buffer_cursor = buffer->cursor;
 		delete buffer;
 		if (shared_buffer) {shared_buffer = NULL;}
 	} else if (state == 2) {

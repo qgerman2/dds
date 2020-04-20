@@ -55,14 +55,12 @@ void PlayInput::update() {
 						if (s->type == 2) { //hold
 							stateCol[s->col] = 1;
 							play->score->add(&(*s), beatfdiff);
-							play->score->addDPTotal();
 							s = play->removeStep(s);
 							continue;
 						}
 						else if ((s->type != 3) && (s->type != 5)) {
 							stateCol[s->col] = 2;
 							play->score->add(&(*s), beatfdiff);
-							play->score->addDPTotal();
 							s = play->removeStep(s);
 							continue;
 						}
@@ -83,7 +81,6 @@ void PlayInput::update() {
 								if (play->beatf >= s->beatf) {
 									stateCol[s->col] = 2;
 									play->score->add(&(*s), beatfdiff);
-									play->score->addDPTotal();
 									s = play->removeStep(s);
 									continue;
 								}
@@ -100,6 +97,7 @@ void PlayInput::update() {
 									k--;
 								}
 								holdCol[s->col].first = false;
+								play->score->add(&(*s), beatfdiff);
 								play->removeStep(holdCol[s->col].second);
 								stateCol[s->col] = 2;
 								s = play->removeStep(s);
@@ -116,7 +114,6 @@ void PlayInput::update() {
 		if (holdCol[i].first) {
 			if ((keysHeldd & colToKeys[i]) == 0) {
 				holdCol[i].first = false;
-				play->score->addDPTotal();
 			}
 		}
 	}

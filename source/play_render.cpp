@@ -25,12 +25,9 @@
 #include <boo.h>
 #include <miss.h>
 
-#include <bar.h>
-#include <barBot.h>
-#include <barTop.h>
-
 #include <sub_bg.h>
 #include <score_numbers.h>
+#include <score_numbers2.h>
 
 using namespace std;
 
@@ -79,11 +76,10 @@ PlayRender::PlayRender(Play* play) {
 	oamSetPalette(&oamMain, right, 1);
 
 	loadStepGfx();
-	loadLifebarGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
 
-	//loadSubBackground();
+	loadSubBackground();
 	loadSubScore();
 	//loadFontGfx();
 }
@@ -102,8 +98,6 @@ PlayRender::~PlayRender() {
 	for (int i = 0; i < 24; i++) {
 		oamFreeGfx(&oamMain, judgeGfx[i]);
 	}
-	oamFreeGfx(&oamMain, barTopGfx);
-	oamFreeGfx(&oamMain, barBotGfx);
 	for (int i = 0; i < 11; i++) {
 		oamFreeGfx(&oamSub, scoreGfx[i]);
 	}
@@ -146,23 +140,6 @@ void PlayRender::loadStepGfx() {
 		}
 	}
 	dmaCopy(stepPal, SPRITE_PALETTE + 16 * 15, stepPalLen);
-}
-
-void PlayRender::loadLifebarGfx() {
-	barTopGfx = oamAllocateGfx(&oamMain, SpriteSize_16x8, SpriteColorFormat_16Color);
-	dmaCopy(barTopTiles, barTopGfx, barTopTilesLen);
-	dmaCopy(barTopPal, SPRITE_PALETTE + 32, barTopPalLen);
-	barTopSprite = popSprite();
-	oamSet(&oamMain, barTopSprite, 16, 19, 0, 2, SpriteSize_16x8, SpriteColorFormat_16Color, barTopGfx, 2, false, false, false, false, false);
-	barBotGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-	dmaCopy(barBotTiles, barBotGfx, barBotTilesLen);
-	dmaCopy(barBotPal, SPRITE_PALETTE + 32 + 16, barBotPalLen);
-	barBotSprite = popSprite();
-	oamSet(&oamMain, barBotSprite, 8, 152, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, barBotGfx, 2, false, false, false, false, false);
-	int id = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 3, 2);
-	dmaCopy(barTiles, bgGetGfxPtr(id), barTilesLen);
-	dmaCopy(barPal, &VRAM_F[1*16*256], barPalLen);
-	barMap = bgGetMapPtr(id);
 }
 
 void PlayRender::loadNumberGfx() {
@@ -254,39 +231,18 @@ void PlayRender::loadSubScore() {
 	dmaCopy(score_numbersPal, SPRITE_PALETTE_SUB, score_numbersPalLen);
 	oamSet(&oamSub, scoreSprite[9], 216 - 4 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);			
 	oamSet(&oamSub, scoreSprite[10], 216 - 8 * 16, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, scoreGfx[10], 0, false, false, false, false, false);
-}
-
-void PlayRender::renderLifebar() {
-	u8 t;
-	segments++;
-	if (segments > 28) {
-		segments = 0;
+	for (int i = 0; i < (3 * 6); i++) {
+		pointSprite[i] = popSpriteSub();
 	}
-	for (int y = 0; y < 9; y++) {
-		if (y > 8 - ((segments - 1) / 3)) {
-			barMap[2 + (y*2+3)*32] = 1;
-			barMap[3 + (y*2+3)*32] = 2;
-			barMap[2 + (y*2+4)*32] = 3;
-			barMap[3 + (y*2+4)*32] = 4;
-		}
-		else if ((y == 8 - ((segments - 1) / 3)) && (segments != 0)) {
-			t = 2 - (segments+2)%3;
-			barMap[2 + (y*2+3)*32] = 5 + t*4;
-			barMap[3 + (y*2+3)*32] = 6 + t*4;
-			barMap[2 + (y*2+4)*32] = 7 + t*4;
-			barMap[3 + (y*2+4)*32] = 8 + t*4;
-		}
-		else {
-			barMap[2 + (y*2+3)*32] = 17;
-			barMap[3 + (y*2+3)*32] = 18;
-			barMap[2 + (y*2+4)*32] = 19;
-			barMap[3 + (y*2+4)*32] = 20;
-		}
+	for (int i = 0; i < 10; i++) {
+		pointGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
+		dmaCopy(score_numbers2Tiles + i * 16, pointGfx[i], 64);
+		dmaCopy(score_numbers2Tiles + 160 + i * 16, pointGfx[i] + 32, 64);
 	}
+	dmaCopy(score_numbersPal, SPRITE_PALETTE_SUB + 16, score_numbersPalLen);
 }
 
 void PlayRender::update() {
-	renderLifebar();
 	renderSteps();
 	renderCombo();
 	renderJudgment();
@@ -416,16 +372,17 @@ void PlayRender::renderJudgment() {
 }
 
 void PlayRender::renderSubScore() {
+	//score
 	string n;
-	if ((prevscore != play->score->score) && (scoreFrame > 0)) {
-		int chunk = (play->score->score - prevscore) / 10;
+	if ((prevscore != newscore) && (scoreFrame > 0)) {
+		int chunk = (newscore - prevscore) / 10;
 		n = to_string(prevscore + chunk * (11 - scoreFrame));
 		if (scoreFrame == 1) {
-			prevscore = play->score->score;
+			prevscore = newscore;
 		}
 	}
 	else {
-		n = to_string(play->score->score);
+		n = to_string(newscore);
 	}
 	int offset = 9 - n.length();
 	int x = 0;
@@ -440,6 +397,16 @@ void PlayRender::renderSubScore() {
 		x++;
 	}
 	scoreFrame--;
+	//points
+	static int pow10[3] = {1, 10, 100};
+	for (int i = 0; i < 6; i++) {
+		int col = i / 3;
+		int row = i % 3;
+		for (int x = 0; x < 3; x++) {
+			int number = (play->score->score->points[i] / pow10[x]) % 10;
+			oamSet(&oamSub, pointSprite[i * 3 + x], 80 + col * 112 + (2 - x) * 8, 32 + row * 16, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, pointGfx[number], 0, false, false, false, false, false);
+		}
+	}
 }
 
 void PlayRender::playJudgmentAnim(u8 anim) {

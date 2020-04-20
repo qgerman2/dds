@@ -193,10 +193,12 @@ mm_word mm_ogg_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 bool playAudio() {
 	if (!(audio.mp3 || audio.ogg)) {
 		cout << "\nNo audio loaded";
+		audio.end();
 		return false;
 	}
 	if (audio.stream.sampling_rate <= 0) {
 		cout << "\nInvalid sampling rate";
+		audio.end();
 		return false;
 	}
 	mmStreamOpen(&audio.stream);

@@ -68,7 +68,7 @@ void Play::loop(){
 		//frame();
 		if (!idleAudio()) {mmStreamUpdate();}
 		swiWaitForVBlank();
-		if (cursor_end && beat >= beat_end && idleAudio()) {state = 4;}
+		if (cursor_end && beat >= beat_end && idleAudio()) {state = 0;}
 		if (keysDown() & KEY_START) {state = 3;}
 		if (state != 1) {return;}
 	}
@@ -297,12 +297,7 @@ void Play::updateSteps() {
 			u32 beatfdiff = beatf - i->beatf;
 			if (beatfdiff > score->judgesWindow[4]) {
 				//se paso una nota
-				render->playJudgmentAnim(11);
-				score->addDPTotal();
-				if (i->type == 2) {
-					score->addDPTotal(); //la cola del hold igual vale 2dp
-				}
-				score->dropCombo();
+				score->miss(&(*i));
 				i->disabled = true;
 			}
 		}

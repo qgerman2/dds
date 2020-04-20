@@ -15,21 +15,19 @@ private:
 	u16* hitGfx;
 	u16* numberGfx[10];
 	u16* judgeGfx[24];
-	u16* barMap;
-	u16* barTopGfx;
-	u16* barBotGfx;
 	u16* scoreGfx[11];
-	u8 barTopSprite;
-	u8 barBotSprite;
+	u16* pointGfx[10];
 	u8 comboSprite[3];
 	u8 judgeSprite[2];
 	u8 scoreSprite[11];
+	u8 pointSprite[3 * 6];
 	u8 scoreFrame = 0;
 	u8 segments = 0;
 	u8 judgeFrame = 0;
 	u8 judgeAnim = 254;
 public:
-	u32 prevscore;
+	int newscore;
+	int prevscore;
 	PlayRender(Play* play);
 	~PlayRender();
 	void update();
