@@ -29,6 +29,7 @@ private:
 	void renderChar(int angle);
 	void updateColor();
 	void updateFrameBg();
+	void updateSong();
 public:
 	MenuWheel(Menu* menu);
 	~MenuWheel();

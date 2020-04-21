@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "menu_dif.h"
 #include "menu_wheel.h"
+#include "menu_high.h"
 #include "render.h"
 #include "sound.h"
 #include <maxmod9.h>
@@ -20,6 +21,7 @@ Menu::Menu() {
 	}
 	dif = new MenuDif();
 	wheel = new MenuWheel(this);
+	high = new MenuHigh();
 
 	int top_id = bgInit(0, BgType_Text8bpp, BgSize_ER_256x256, 0, 1);
 	dmaCopy(wheel_bgTiles, bgGetGfxPtr(top_id), wheel_bgTilesLen);
@@ -46,6 +48,7 @@ Menu::~Menu() {
 	vramSetBankH(VRAM_H_LCD);
 	delete dif;
 	delete wheel;
+	delete high;
 }
 
 void Menu::loop() {
@@ -81,5 +84,6 @@ void Menu::input() {
 
 void Menu::render() {
 	wheel->render();
+	high->render();
 	bgUpdate();
 }

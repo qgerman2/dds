@@ -1,5 +1,6 @@
 #include <nds.h>
 #include <iostream>
+#include <vector>
 #include "globals.h"
 #include "play.h"
 #include "play_render.h"
@@ -132,6 +133,18 @@ void ScoreSave(string path, score_t* score) {
 		}
 		fclose(file);
 	}
+}
+
+void ScoreLoad(string path, vector<score_p>* scores) {
+	string filepath = path + "/highscore";
+	FILE* file = fopen(filepath.c_str(), "rb");
+	if (!file) {return;}
+	while (1) {
+		score_p entry;
+		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
+		scores->push_back(entry);
+	}
+	fclose(file);
 }
 
 bool ScoreRead(FILE* infile, score_t* best, score_t* last) {

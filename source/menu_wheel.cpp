@@ -67,6 +67,7 @@ MenuWheel::MenuWheel(Menu* menu) {
 		buffer = new Buffer();
 		buffer->fill();
 	}
+	updateSong();
 	loadSongFontGfx();
 	int gfx = 0;
 	for (int i = buffer->cursor - WHEELVIEWCHAR / 2; i <= buffer->cursor + WHEELVIEWCHAR / 2; i++) {
@@ -208,6 +209,13 @@ void MenuWheel::prev() {
 	updateFrameBg();
 }
 
+void MenuWheel::updateSong() {
+	simpath = buffer->items[buffer->cursor].smpath;
+	songpath = buffer->items[buffer->cursor].path;
+	menu->dif->hide();
+	menu->high->update(&buffer->items[buffer->cursor].scores);
+}
+
 void MenuWheel::input() {
 	if (frame == 0) {
 		if (keysDown() & KEY_UP) {playAnim(-1);}
@@ -233,11 +241,8 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
-		simpath = buffer->items[buffer->cursor].smpath;
-		songpath = buffer->items[buffer->cursor].path;
+		updateSong();
 		stopAudio();
-		menu->dif->hide();
-		//cout << "\n" << songpath;
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);

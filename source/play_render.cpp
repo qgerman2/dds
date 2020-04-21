@@ -101,6 +101,9 @@ PlayRender::~PlayRender() {
 	for (int i = 0; i < 11; i++) {
 		oamFreeGfx(&oamSub, scoreGfx[i]);
 	}
+	for (int i = 0; i < 10; i++) {
+		oamFreeGfx(&oamSub, pointGfx[i]);
+	}
 }
 
 void PlayRender::loadStepGfx() {
@@ -398,13 +401,13 @@ void PlayRender::renderSubScore() {
 	}
 	scoreFrame--;
 	//points
-	static int pow10[3] = {1, 10, 100};
+	static const int pow10[3] = {1, 10, 100};
 	for (int i = 0; i < 6; i++) {
 		int col = i / 3;
 		int row = i % 3;
 		for (int x = 0; x < 3; x++) {
-			int number = (play->score->score->points[i] / pow10[x]) % 10;
-			oamSet(&oamSub, pointSprite[i * 3 + x], 80 + col * 112 + (2 - x) * 8, 32 + row * 16, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, pointGfx[number], 0, false, false, false, false, false);
+			int digit = (play->score->score->points[i] / pow10[x]) % 10;
+			oamSet(&oamSub, pointSprite[i * 3 + x], 80 + col * 112 + (2 - x) * 8, 32 + row * 16, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, pointGfx[digit], 0, false, false, false, false, false);
 		}
 	}
 }

@@ -2,13 +2,16 @@
 #define BUFFER
 #define BUFFERSIZE 39
 #include <string>
+#include <vector>
 #include "parse.h"
+#include "play_score.h"
 typedef struct bufferitem{
 	int type = -1;
 	std::string name;
 	std::string path;
 	std::string smpath;
 	songdata song;
+	std::vector<score_p> scores;
 } bufferitem;
 class Buffer {
 private:

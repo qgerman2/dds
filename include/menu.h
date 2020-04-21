@@ -2,6 +2,7 @@
 #define MENU
 #include "menu_dif.h"
 #include "menu_wheel.h"
+#include "menu_high.h"
 class Menu {
 private:
 	int top_id;
@@ -10,6 +11,7 @@ private:
 public:
 	MenuDif* dif;
 	MenuWheel* wheel;
+	MenuHigh* high;
 	Menu();
 	~Menu();
 	void loop();

@@ -7,6 +7,7 @@
 #include <map>
 #include "globals.h"
 #include "buffer.h"
+#include "play_score.h"
 
 using namespace std;
 
@@ -66,6 +67,7 @@ void Buffer::fill() {
 							song->type = 1;
 							song->smpath = dir + '/' + pent->d_name;
 							parseSimFile(&song->song, song->smpath);
+							ScoreLoad(song->path, &song->scores);
 							return false;
 						} else if (random) {
 							songmap.insert(pair<int, int>(songcount, dircount));
