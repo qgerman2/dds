@@ -143,9 +143,9 @@ void ScoreLoad(string path, vector<score_p>* scores) {
 		return;
 	}
 	while (1) {
-		scores->emplace_back();
-		score_p* entry = &scores->back();
-		if (!ScoreRead(file, &entry->best, &entry->last)) {break;}
+		score_p entry;
+		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
+		scores->push_back(entry);
 	}
 	fclose(file);
 }
