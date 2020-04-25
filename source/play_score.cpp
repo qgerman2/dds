@@ -138,11 +138,14 @@ void ScoreSave(string path, score_t* score) {
 void ScoreLoad(string path, vector<score_p>* scores) {
 	string filepath = path + "/highscore";
 	FILE* file = fopen(filepath.c_str(), "rb");
-	if (!file) {return;}
+	if (!file) {
+		scores->emplace_back();
+		return;
+	}
 	while (1) {
-		score_p entry;
-		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
-		scores->push_back(entry);
+		scores->emplace_back();
+		score_p* entry = &scores->back();
+		if (!ScoreRead(file, &entry->best, &entry->last)) {break;}
 	}
 	fclose(file);
 }

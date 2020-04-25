@@ -3,7 +3,7 @@
 #include <string>
 #include "play.h"
 typedef struct score_t {
-	u32 chart;
+	u32 chart = 0;
 	u32 points[6] = {0};
 	u32 max_combo = 0;
 } score_t;
