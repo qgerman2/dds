@@ -140,9 +140,8 @@ void ScoreLoad(string path, vector<score_p>* scores) {
 	FILE* file = fopen(filepath.c_str(), "rb");
 	if (!file) {
 		scores->emplace_back();
-		return;
 	}
-	while (1) {
+	while (file) {
 		score_p entry;
 		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
 		scores->push_back(entry);
