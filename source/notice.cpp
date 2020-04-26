@@ -100,6 +100,7 @@ void Notice::loop() {
 		scanKeys();
 		if (!config->active) {cursorUpdate();} 
 		if (config->active) {config->update();}
+		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
 		bgUpdate();
 		if (!idleAudio()) {mmStreamUpdate();}

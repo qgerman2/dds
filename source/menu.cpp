@@ -44,8 +44,6 @@ Menu::~Menu() {
 		stopAudio();
 	}
 	fadeOut(3);
-	oamUpdate(&oamMain);
-	oamUpdate(&oamSub);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	delete dif;
