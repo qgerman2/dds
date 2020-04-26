@@ -115,6 +115,7 @@ void MenuHigh::draw() {
 	for (int i = 0; i < 6; i++) {
 		rawscore += score->points[i] * worth[i];
 	}
+	if (rawscore < 0) {rawscore = 0;}
 	//score
 	string n = to_string(rawscore);
 	int offset = 9 - n.length();
