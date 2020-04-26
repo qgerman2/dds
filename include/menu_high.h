@@ -13,6 +13,10 @@ private:
 	u16* pointGfx[10];
 	u8 scoreSprite[11];
 	u8 pointSprite[3 * 6];
+	u8 difSprite[2];
+	u16* difGfx[2];
+	u8 lastBestSprite;
+	u16* lastBestGfx[2];
 public:
 	MenuHigh();
 	~MenuHigh();

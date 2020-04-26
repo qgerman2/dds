@@ -31,6 +31,17 @@ MenuHigh::MenuHigh() {
 		dmaCopy(score_numbers2Tiles + 160 + i * 16, pointGfx[i] + 32, 64);
 	}
 	dmaFillHalfWords(ARGB16(1, 13, 13, 13), SPRITE_PALETTE + 16 + 1, 16);
+	for (int i = 0; i < 2; i++) {
+		difSprite[i] = popSprite();
+		difGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_64x32, SpriteColorFormat_Bmp);
+		oamSet(&oamMain, difSprite[i], 40 + i * 64, 112, 0, 0, SpriteSize_64x32, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);
+	}
+	lastBestSprite = popSprite();
+	for (int i = 0; i < 2; i++) {
+		lastBestGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_64x32, SpriteColorFormat_16Color);
+		dmaCopy(bestlastTiles + i * 128, lastBestGfx[i], 512);
+	}
+	oamSet(&oamMain, lastBestSprite, 174, 112, 0, 0, SpriteSize_64x32, SpriteColorFormat_16Color, lastBestGfx[1], 0, false, false, false, false, false);
 }
 
 MenuHigh::~MenuHigh() {
@@ -40,6 +51,11 @@ MenuHigh::~MenuHigh() {
 	for (int i = 0; i < 10; i++) {
 		oamFreeGfx(&oamMain, pointGfx[i]);
 	}
+	for (int i = 0; i < 2; i++) {
+		oamFreeGfx(&oamMain, difGfx[i]);
+		oamFreeGfx(&oamMain, lastBestGfx[i]);
+	}
+
 }
 
 void MenuHigh::render() {
@@ -93,6 +109,7 @@ void MenuHigh::draw() {
 	} else {
 		score = &scores->at(count / 2).best;
 	}
+	oamSetGfx(&oamMain, lastBestSprite, SpriteSize_64x32, SpriteColorFormat_16Color, lastBestGfx[1 - count % 2]);
 	int rawscore = 0;
 	for (int i = 0; i < 6; i++) {
 		rawscore += score->points[i] * worth[i];
@@ -121,4 +138,6 @@ void MenuHigh::draw() {
 			oamSet(&oamMain, pointSprite[i * 3 + x], 91 + col * 112 + (2 - x) * 8, 145 + row * 16, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, pointGfx[digit], 0, false, false, false, false, false);
 		}
 	}
+	//dif
+	printToBitmap(&difGfx[0], 2, 0, scores->at(count / 2).dif);
 }

@@ -2,6 +2,7 @@
 #define PLAYSCORE
 #include <string>
 #include "play.h"
+#include "parse.h"
 typedef struct score_t {
 	u32 chart = 0;
 	u32 points[6] = {0};
@@ -10,6 +11,7 @@ typedef struct score_t {
 typedef struct score_p{
 	score_t last;
 	score_t best;
+	std::string dif = "No records";
 } score_p;
 class Play;
 class PlayRender;
@@ -32,7 +34,7 @@ public:
 };
 extern const int worth[6];
 void ScoreSave(std::string path, score_t* score);
-void ScoreLoad(std::string path, std::vector<score_p>* scores);
+void ScoreLoad(std::string path, std::vector<score_p>* scores, songdata* song);
 bool ScoreRead(FILE* infile, score_t* best, score_t* last);
 bool ScoreWrite(FILE* infile, score_t* score);
 bool ScoreIsPB(score_t* current, score_t* best);

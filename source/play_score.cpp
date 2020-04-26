@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include "globals.h"
+#include "buffer.h"
+#include "parse.h"
 #include "play.h"
 #include "play_render.h"
 #include "play_score.h"
@@ -135,7 +137,7 @@ void ScoreSave(string path, score_t* score) {
 	}
 }
 
-void ScoreLoad(string path, vector<score_p>* scores) {
+void ScoreLoad(string path, vector<score_p>* scores, songdata* song) {
 	string filepath = path + "/highscore";
 	FILE* file = fopen(filepath.c_str(), "rb");
 	if (!file) {
@@ -144,6 +146,7 @@ void ScoreLoad(string path, vector<score_p>* scores) {
 	while (file) {
 		score_p entry;
 		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
+		entry.dif = song->charts.at(entry.best.chart).difficulty;
 		scores->push_back(entry);
 	}
 	fclose(file);

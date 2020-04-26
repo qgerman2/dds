@@ -67,7 +67,7 @@ void Buffer::fill() {
 							song->type = 1;
 							song->smpath = dir + '/' + pent->d_name;
 							parseSimFile(&song->song, song->smpath);
-							ScoreLoad(song->path, &song->scores);
+							ScoreLoad(song->path, &song->scores, &song->song);
 							return false;
 						} else if (random) {
 							songmap.insert(pair<int, int>(songcount, dircount));
