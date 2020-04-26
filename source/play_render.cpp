@@ -43,10 +43,6 @@ const u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
 
 PlayRender::PlayRender(Play* play) {
 	this->play = play;
-	for (int i = 0; i < 128; i++) {
-		pushSprite(i);
-		pushSpriteSub(i);
-	}
 	prevscore = 0;
 	tapGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	tailGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);

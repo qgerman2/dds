@@ -21,12 +21,18 @@ using namespace std;
 u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
 
 Play::Play() {
+	for (int i = 0; i < 128; i++) {
+		pushSprite(i);
+		pushSpriteSub(i);
+	}
 	song = new songdata;
 	parseSimFile(song, simpath);
 	parseChart(song, songchart);
 	loadAudio(songpath + "/" + song->music);
 	clearBitmapBg(bgid);
 	setBrightness(1, 0);
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
 	if (!keep_artwork) {
 		loadArtwork(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
 	} else {
