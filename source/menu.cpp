@@ -19,6 +19,7 @@ Menu::Menu() {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
+	clearBitmapBg(bgid);
 	dif = new MenuDif();
 	high = new MenuHigh();
 	wheel = new MenuWheel(this);
@@ -65,7 +66,6 @@ void Menu::loop() {
 		}
 		if (!ready) {
 			ready = true;
-			clearBitmapBg(bgid);
 			fadeIn(3);
 		}
 	}
