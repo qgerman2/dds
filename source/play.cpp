@@ -25,7 +25,6 @@ Play::Play() {
 	parseSimFile(song, simpath);
 	parseChart(song, songchart);
 	loadAudio(songpath + "/" + song->music);
-	bgShow(bgid);
 	clearBitmapBg(bgid);
 	setBrightness(1, 0);
 	if (!keep_artwork) {
