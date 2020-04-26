@@ -64,6 +64,8 @@ int main(){
 	consoleSetFont(console, &font);
 	bgSetPriority(console->bgId, 0);
 
+	ConfigLoad();
+
 	//check if running on no$gba
 	if (strncmp((char*)0x4FFFA00, "no$gba", 6) == 0) {
 		nocash = true;

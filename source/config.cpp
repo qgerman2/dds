@@ -11,8 +11,10 @@
 
 using namespace std;
 
+enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG};
 enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
+//todo: reduce verbosity
 Config::Config() {
 	sub_bg = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 7, 3);
 	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
@@ -67,6 +69,7 @@ void Config::hide() {
 	bgHide(cursor_bg);
 	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
 	REG_BLDALPHA_SUB = 16;
+	ConfigSave();
 }
 
 void Config::update() {
@@ -119,7 +122,7 @@ void Config::update() {
 				animFrame--;
 				y_f = y_f + (((y_dest - y) << 16) / (6 << 8));
 				y = y_f >> 8;
-				updateSprites();
+				//updateSprites();
 				if (animFrame == 0) {
 					y = y_dest;
 					y_f = y << 8;
@@ -130,6 +133,7 @@ void Config::update() {
 				bgSetScroll(sub_bg, 0, y);
 				bgSetScroll(cursor_bg, 0, y - 32 * (cursor + 1));
 			}
+			updateSprites();
 			break;
 		}
 	}
@@ -139,6 +143,9 @@ void Config::input() {
 	if (keysDown() & KEY_DOWN) {next();}
 	else if (keysDown() & KEY_UP) {prev();}
 	else if (keysDown() & KEY_B) {hide();}
+	else if (keysDown() & KEY_A) {toggle();}
+	else if (keysDown() & KEY_RIGHT) {increase();}
+	else if (keysDown() & KEY_LEFT) {decrease();}
 }
 
 void Config::next() {
@@ -173,24 +180,26 @@ void Config::prev() {
 
 void Config::updateSprites() {
 	//speed
-	oamSet(&oamSub, valueSprites[0], 188, -y + 40 , 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
+	oamSet(&oamSub, valueSprites[0], 188, -y + 40 , 0, 3, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
 	//opacity
-	oamSet(&oamSub, valueSprites[1], 188, -y + 40 + 32, 0, 0, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
+	oamSet(&oamSub, valueSprites[1], 188, -y + 40 + 32, 0, 3, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
 	//startup song
 	if (settings.intro) {
 		oamSet(&oamSub, valueSprites[2], 188, -y + 40 + 32 * 2, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, valueSprites[2]);
 	}
 	//cache banners
 	if (settings.cache) {
 		oamSet(&oamSub, valueSprites[3], 188, -y + 40 + 32 * 3, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, valueSprites[3]);
 	}
 	//cache backgrounds
 	if (settings.cache_bg) {
 		oamSet(&oamSub, valueSprites[4], 188, -y + 40 + 32 * 4, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
-	}
-	//folder navigation
-	if (settings.folder) {
-		//oamSet(&oamSub, valueSprites[5], 188, y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, valueSprites[4]);
 	}
 }
 
@@ -198,4 +207,78 @@ void Config::hideSprites() {
 	for (int i = 0; i < CONFIGCOUNT; i++) {
 		oamClearSprite(&oamSub, valueSprites[i]);
 	}
+}
+
+void Config::toggle() {
+	switch (cursor) {
+		case STARTUPSONG:
+			settings.intro = !settings.intro;
+			break;
+		case CACHEBANNERS:
+			settings.cache = !settings.cache;
+			break;
+		case CACHEBG:
+			settings.cache_bg = !settings.cache_bg;
+			break;
+	}
+}
+
+void Config::increase() {
+	switch (cursor) {
+		case SPEED:
+			settings.speed++;
+			break;
+		case BGOPACITY:
+			settings.opacity++;
+			break;
+	}
+	ConfigCheck();
+}
+
+void Config::decrease() {
+	switch (cursor) {
+		case SPEED:
+			settings.speed--;
+			break;
+		case BGOPACITY:
+			settings.opacity--;
+			break;
+	}
+	ConfigCheck();
+}
+
+void ConfigLoad() {
+	FILE* file = fopen(CONFIGPATH, "rb");
+	if (file) {
+		cout << "\nLoading config";
+		fread(&settings.speed, 4, 1, file);
+		fread(&settings.opacity, 4, 1, file);
+		fread(&settings.intro, 4, 1, file);
+		fread(&settings.cache, 4, 1, file);
+		fread(&settings.cache_bg, 4, 1, file);
+		fclose(file);
+		ConfigCheck();
+	} else {
+		ConfigSave();
+	}
+}
+
+void ConfigSave() {
+	FILE* file = fopen(CONFIGPATH, "wb");
+	if (file) {
+		cout << "\nSaving config";
+		fwrite(&settings.speed, 4, 1, file);
+		fwrite(&settings.opacity, 4, 1, file);
+		fwrite(&settings.intro, 1, 1, file);
+		fwrite(&settings.cache, 1, 1, file);
+		fwrite(&settings.cache_bg, 1, 1, file);
+		fclose(file);
+	}
+}
+
+void ConfigCheck() {
+	if (settings.speed < 1) {settings.speed = 1;}
+	if (settings.speed > 9) {settings.speed = 9;}
+	if (settings.opacity < 0) {settings.opacity = 0;}
+	if (settings.opacity > 9) {settings.opacity = 9;}
 }

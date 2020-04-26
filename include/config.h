@@ -2,13 +2,13 @@
 #define CONFIG
 #include <nds.h>
 #define CONFIGCOUNT 5
+#define CONFIGPATH "/ddr/settings"
 struct settings_t {
 	int speed = 4;
 	int opacity = 9;
 	bool intro = true;
 	bool cache = true;
 	bool cache_bg = false;
-	bool folder = true;
 };
 class Config {
 private:
@@ -31,6 +31,9 @@ private:
 	u16* markGfx;
 	void updateSprites();
 	void hideSprites();
+	void toggle();
+	void increase();
+	void decrease();
 public:
 	bool active = false;
 	Config();
@@ -43,4 +46,7 @@ public:
 	void next();
 	void prev();
 };
+void ConfigLoad();
+void ConfigSave();
+void ConfigCheck();
 #endif
