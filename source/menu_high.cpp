@@ -106,11 +106,11 @@ void MenuHigh::draw() {
 	if (count >= scores->size() * 2) {return;}
 	score_t* score;
 	if (count % 2 == 0) {
-		score = &scores->at(count / 2).last;
-	} else {
 		score = &scores->at(count / 2).best;
+	} else {
+		score = &scores->at(count / 2).last;
 	}
-	oamSetGfx(&oamMain, lastBestSprite, SpriteSize_64x32, SpriteColorFormat_16Color, lastBestGfx[1 - count % 2]);
+	oamSetGfx(&oamMain, lastBestSprite, SpriteSize_64x32, SpriteColorFormat_16Color, lastBestGfx[count % 2]);
 	int rawscore = 0;
 	for (int i = 0; i < 6; i++) {
 		rawscore += score->points[i] * worth[i];
