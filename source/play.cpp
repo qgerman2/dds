@@ -24,7 +24,6 @@ Play::Play() {
 	song = new songdata;
 	parseSimFile(song, simpath);
 	parseChart(song, songchart);
-	swiWaitForVBlank();
 	loadAudio(songpath + "/" + song->music);
 	setBrightness(1, 0);
 	if (!keep_artwork) {
@@ -35,8 +34,8 @@ Play::Play() {
 	TIMER0_CR = 0;
 	TIMER1_CR = 0;
 	this->song = song;
-	render = new PlayRender(this);
 	score = new PlayScore(this);
+	render = new PlayRender(this);
 	input = new PlayInput(this);
 	offset = stod(song->offset) * 1000;
 	vramSetBankF(VRAM_F_BG_EXT_PALETTE_SLOT01);
@@ -46,7 +45,7 @@ Play::Play() {
 Play::~Play() {
 	shared_play = NULL;
 	stopAudio();
-	if (state == 4) {
+	if (state == 0) {
 		fadeOut(3);
 		vramSetBankF(VRAM_F_LCD);
 		vramSetBankH(VRAM_H_LCD);

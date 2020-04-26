@@ -26,8 +26,8 @@ private:
 	u8 judgeFrame = 0;
 	u8 judgeAnim = 254;
 public:
-	int newscore;
-	int prevscore;
+	int newscore = 0;
+	int prevscore = 0;
 	PlayRender(Play* play);
 	~PlayRender();
 	void update();

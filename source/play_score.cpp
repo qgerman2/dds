@@ -28,6 +28,7 @@ PlayScore::PlayScore(Play* play) {
 
 PlayScore::~PlayScore() {
 	ScoreSave(songpath, score);
+	delete score;
 }
 
 void PlayScore::add(step* s, u32 beatfdiff) {
