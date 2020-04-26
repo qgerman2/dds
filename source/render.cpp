@@ -95,3 +95,8 @@ void fade(bool in, int screen) {
 		frame--;
 	} while (frame > -1);
 }
+
+void clearBitmapBg(int id) {
+	u16* gfx = bgGetGfxPtr(id);
+	dmaFillHalfWords(0, gfx, 512 * 192);
+}

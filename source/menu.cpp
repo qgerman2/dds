@@ -65,6 +65,7 @@ void Menu::loop() {
 		}
 		if (!ready) {
 			ready = true;
+			bgHide(bgid);
 			fadeIn(3);
 		}
 	}

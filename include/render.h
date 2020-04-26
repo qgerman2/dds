@@ -16,4 +16,5 @@ void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str);
 void fadeIn(int screen);
 void fadeOut(int screen);
 void fade(bool in, int screen);
+void clearBitmapBg(int id);
 #endif
