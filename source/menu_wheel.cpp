@@ -6,6 +6,7 @@
 #include "render.h"
 #include "menu_wheel.h"
 #include "sound.h"
+#include "artwork.h"
 #include <font.h>
 #include <song_frame.h>
 #include <group_frame.h>
@@ -213,7 +214,11 @@ void MenuWheel::updateSong() {
 	simpath = buffer->items[buffer->cursor].smpath;
 	songpath = buffer->items[buffer->cursor].path;
 	menu->dif->hide();
+
 	menu->high->update(&buffer->items[buffer->cursor].scores);
+	if (!loadArtwork(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80)) {
+		clearBitmapBg(bgid);
+	}
 }
 
 void MenuWheel::input() {
@@ -234,6 +239,8 @@ void MenuWheel::render() {
 	else if (frame > 0) {
 		angle = 12 * (frame) * anim;
 	}
+	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
+	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	if (frame == 22) {
 		if (anim > 0) {
 			next();
@@ -241,11 +248,10 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
+		bgUpdate();
 		updateSong();
 		stopAudio();
 	}
-	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
-	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	renderChar(angle);
 	if (frame > 0) {
 		frame--;
