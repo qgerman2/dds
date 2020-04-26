@@ -60,16 +60,15 @@ PlayRender::PlayRender(Play* play) {
 
 	dmaCopy(tapPal, SPRITE_PALETTE, tapPalLen);
 	dmaCopy(hitPal, SPRITE_PALETTE + 16, hitPalLen);
-	setRotData();
 
 	u8 left = popSprite();
 	u8 up = popSprite();
 	u8 down = popSprite();
 	u8 right = popSprite();
-	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 0, false, false, false, false, false);
-	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 1, false, false, false, false, false);
-	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 2, false, false, false, false, false);
-	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 3, false, false, false, false, false);
+	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 20, false, false, false, false, false);
+	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 21, false, false, false, false, false);
+	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 22, false, false, false, false, false);
+	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 23, false, false, false, false, false);
 	oamSetPalette(&oamMain, left, 1);
 	oamSetPalette(&oamMain, down, 1);
 	oamSetPalette(&oamMain, up, 1);
@@ -143,6 +142,10 @@ void PlayRender::loadStepGfx() {
 		}
 	}
 	dmaCopy(stepPal, SPRITE_PALETTE + 16 * 15, stepPalLen);
+	oamRotateScale(&oamMain, 20, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 21, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 22, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 23, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
 }
 
 void PlayRender::loadNumberGfx() {
@@ -268,10 +271,10 @@ void PlayRender::renderSteps() {
 			switch (i->type) {
 				case (1):
 				case (2):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
 					break;
 				case (5):
 					if (i->gfx != NULL) {
@@ -422,11 +425,4 @@ void PlayRender::playJudgmentAnim(u8 anim) {
 
 void PlayRender::playScoreAnim() {
 	scoreFrame = 10;
-}
-
-void PlayRender::setRotData() {
-	oamRotateScale(&oamMain, 0, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamMain, 1, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamMain, 2, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamMain, 3, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
 }

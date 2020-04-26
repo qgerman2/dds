@@ -40,6 +40,7 @@ MenuHigh::MenuHigh() {
 	for (int i = 0; i < 2; i++) {
 		lastBestGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_64x32, SpriteColorFormat_16Color);
 		dmaCopy(bestlastTiles + i * 128, lastBestGfx[i], 512);
+		dmaFillHalfWords(0, lastBestGfx[i] + 256, 512);
 	}
 	oamSet(&oamMain, lastBestSprite, 174, 112, 0, 0, SpriteSize_64x32, SpriteColorFormat_16Color, lastBestGfx[1], 0, false, false, false, false, false);
 }

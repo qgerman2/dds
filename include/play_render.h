@@ -45,6 +45,5 @@ public:
 	void renderSubScore();
 	void playJudgmentAnim(u8 anim);
 	void playScoreAnim();
-	void setRotData();
 };
 #endif
