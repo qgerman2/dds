@@ -27,7 +27,9 @@ PlayScore::PlayScore(Play* play) {
 }
 
 PlayScore::~PlayScore() {
-	ScoreSave(songpath, score);
+	if (state == 0) {
+		ScoreSave(songpath, score);
+	}
 	delete score;
 }
 
