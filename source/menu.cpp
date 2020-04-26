@@ -20,8 +20,8 @@ Menu::Menu() {
 		pushSpriteSub(i);
 	}
 	dif = new MenuDif();
-	wheel = new MenuWheel(this);
 	high = new MenuHigh();
+	wheel = new MenuWheel(this);
 
 	int top_id = bgInit(0, BgType_Text8bpp, BgSize_ER_256x256, 0, 1);
 	dmaCopy(wheel_bgTiles, bgGetGfxPtr(top_id), wheel_bgTilesLen);

@@ -142,18 +142,23 @@ void ScoreLoad(string path, vector<score_p>* scores, songdata* song) {
 	FILE* file = fopen(filepath.c_str(), "rb");
 	if (!file) {
 		scores->emplace_back();
+	} else {
+		while (1) {
+			score_p entry;
+			if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
+			int chart;
+			chart = entry.best.chart;
+			if (chart > -1 && chart < int(song->charts.size())) {
+				entry.dif = song->charts[chart].difficulty;
+			}
+			scores->push_back(entry);
+		}
+		fclose(file);
 	}
-	while (file) {
-		score_p entry;
-		if (!ScoreRead(file, &entry.best, &entry.last)) {break;}
-		entry.dif = song->charts.at(entry.best.chart).difficulty;
-		scores->push_back(entry);
-	}
-	fclose(file);
 }
 
 bool ScoreRead(FILE* infile, score_t* best, score_t* last) {
-	u32 chart;
+	int chart;
 	if (!fread(&chart, 4, 1, infile)) {
 		return false;
 	}
