@@ -79,6 +79,7 @@ void MenuDif::hide() {
 	active = false;
 	for (int i = 0; i < 4; i++) {
 		oamClearSprite(&oamSub, sprite[i]);
+		dmaFillHalfWords(0, gfx[i], 128 * 64);
 	}
 	for (int i = 0; i < 2; i++) {
 		oamClearSprite(&oamSub, arrowSprite[i]);

@@ -1,5 +1,6 @@
 #include <nds.h>
 #include "sound.h"
+#include <iostream>
 #include <maxmod9.h>
 #include <string>
 #include "render.h"
@@ -48,7 +49,8 @@ void pushSpriteSub(int i) {
 
 void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
 	for (int i = 0; i < sprites; i++) {
-		dmaFillHalfWords(0, gfx[i], 128 * 32);
+		int row = (y_offset + 15) / 32;
+		dmaFillHalfWords(0, gfx[i] + row * 64 * 32, 128 * 32);
 	}
 	int c;
 	int x;
