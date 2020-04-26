@@ -47,6 +47,9 @@ void pushSpriteSub(int i) {
 }
 
 void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
+	for (int i = 0; i < sprites; i++) {
+		dmaFillHalfWords(0, gfx[i], 128 * 32);
+	}
 	int c;
 	int x;
 	int s;
