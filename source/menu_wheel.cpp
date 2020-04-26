@@ -6,6 +6,7 @@
 #include "render.h"
 #include "menu_wheel.h"
 #include "sound.h"
+#include "cache.h"
 #include "artwork.h"
 #include <font.h>
 #include <song_frame.h>
@@ -214,9 +215,8 @@ void MenuWheel::updateSong() {
 	simpath = buffer->items[buffer->cursor].smpath;
 	songpath = buffer->items[buffer->cursor].path;
 	menu->dif->hide();
-
 	menu->high->update(&buffer->items[buffer->cursor].scores);
-	if (!loadArtwork(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80)) {
+	if (!loadCache(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80)) {
 		clearBitmapBg(bgid);
 	}
 }
