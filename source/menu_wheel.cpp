@@ -216,7 +216,13 @@ void MenuWheel::updateSong() {
 	songpath = buffer->items[buffer->cursor].path;
 	menu->dif->hide();
 	menu->high->update(&buffer->items[buffer->cursor].scores);
-	if (!loadCache(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80)) {
+	bool success = false;
+	if (settings.cache) {
+		success = loadCache(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80);
+	} else {
+		success = loadArtwork(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80);
+	}
+	if (!success) {
 		clearBitmapBg(bgid);
 	}
 }

@@ -259,6 +259,7 @@ void ConfigLoad() {
 		fclose(file);
 		ConfigCheck();
 	} else {
+		cout << "\nFailed to load config file";
 		ConfigSave();
 	}
 }
