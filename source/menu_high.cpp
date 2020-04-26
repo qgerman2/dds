@@ -34,7 +34,7 @@ MenuHigh::MenuHigh() {
 	for (int i = 0; i < 2; i++) {
 		difSprite[i] = popSprite();
 		difGfx[i] = oamAllocateGfx(&oamMain, SpriteSize_64x32, SpriteColorFormat_Bmp);
-		oamSet(&oamMain, difSprite[i], 40 + i * 64, 112, 0, 0, SpriteSize_64x32, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);
+		oamSet(&oamMain, difSprite[i], 40 + i * 64, 112, 0, 15, SpriteSize_64x32, SpriteColorFormat_Bmp, difGfx[i], 0, false, false, false, false, false);
 	}
 	lastBestSprite = popSprite();
 	for (int i = 0; i < 2; i++) {
