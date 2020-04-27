@@ -30,12 +30,12 @@ Play::Play() {
 	parseSimFile(song, simpath);
 	parseChart(song, songchart);
 	loadAudio(songpath + "/" + song->music);
-	clearBitmapBg(bgid);
 	setBrightness(1, 0);
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
 	if (settings.opacity > 0) {
 		if (!keep_artwork) {
+			clearBitmapBg(bgid);
 			if (settings.cache_bg) {
 				loadCache(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
 			} else {
