@@ -4,7 +4,7 @@
 #define CONFIGCOUNT 6
 #define CONFIGPATH "/ddr/settings"
 struct settings_t {
-	int speed = 4;
+	int speed = 3;
 	int opacity = 9;
 	bool intro = true;
 	bool cache = true;
