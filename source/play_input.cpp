@@ -68,7 +68,7 @@ void PlayInput::update() {
 					if (held && !pressed) {
 						if (holdCol[s->col].first) {
 							if (s->type == 5) {
-								if (s->y < (HITYOFFSET - 16 + s->height)) {
+								if (s->y < (HITYOFFSET - 16 + (32 - s->height))) {
 									holdCol[s->col].first = false;
 									stateCol[s->col] = 1;
 									s = play->removeStep(s);
@@ -78,12 +78,12 @@ void PlayInput::update() {
 						}
 						if (stateCol[s->col] == 1) {
 							if (s->type == 3) {
-								if (play->beatf >= s->beatf) {
+								//if (play->beatf >= s->beatf) {
 									stateCol[s->col] = 2;
-									play->score->add(&(*s), beatfdiff);
+									play->score->add(&(*s), 0);
 									s = play->removeStep(s);
 									continue;
-								}
+								//}
 							}
 						}
 					}

@@ -6,7 +6,7 @@
 #define NDSFREQ 32.7284	//khz
 #define BPMFRAC 8
 #define MINUTEFRAC 14
-#define BEATFSCREENYFRAC 16
+#define BEATFSCREENYFRAC 14
 #define HITY 22 //posicion y donde achuntarle a las flechas
 #define NDSHEIGHT 192
 typedef struct step {
@@ -73,6 +73,7 @@ public:
 	int getNoteType(u32 row);
 	bool getMeasureAtBeat(u32 beat);
 	u32 millis();
+	int beatfToY(u32 beatf1, u32 beatf2);
 };
 extern u32 beatfperiod;
 #endif

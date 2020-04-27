@@ -48,8 +48,7 @@ Play::Play() {
 			keep_artwork = false;
 		}
 	}
-	TIMER0_CR = 0;
-	TIMER1_CR = 0;
+	swiWaitForVBlank();
 	this->song = song;
 	score = new PlayScore(this);
 	render = new PlayRender(this);
@@ -67,6 +66,8 @@ Play::~Play() {
 		vramSetBankF(VRAM_F_LCD);
 		vramSetBankH(VRAM_H_LCD);
 	}
+	TIMER0_CR = 0;
+	TIMER1_CR = 0;
 	delete render;
 	delete score;
 	delete input;
@@ -176,8 +177,7 @@ void Play::updateSteps() {
 	if (!cursor_end) {
 		int i = cursor;
 		while (1) {
-			uint beat_y = (((i << (MINUTEFRAC + BPMFRAC)) >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + HITYOFFSET;
-			if (beat_y > 192 + 32) {break;}
+			if (beatfToY(i << (MINUTEFRAC + BPMFRAC), beatf) + HITYOFFSET > 192 + 32) {break;}
 			if ((i / 4) > measurecursor) {
 				firstbeat = i;
 				if (!getMeasureAtBeat(i)) {
@@ -262,7 +262,7 @@ void Play::updateSteps() {
 	u32 height;
 	step s;
 	for (auto h = holds.begin(); h != holds.end(); h++) {
-		ystart = ((h->startbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
+		ystart = beatfToY(h->startbeatf, beatf) + 16;
 		if (ystart > NDSHEIGHT) {
 			continue;
 		}
@@ -273,7 +273,7 @@ void Play::updateSteps() {
 		}
 		height = NDSHEIGHT - ystart;
 		if (h->endbeatf > 0) {
-			yend = ((h->endbeatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + 16;
+			yend = beatfToY(h->endbeatf, beatf) + 16;
 			height = yend - ystart;
 		}
 		while (((height + 32 - 1) / 32) > h->stepcount) {
@@ -287,6 +287,7 @@ void Play::updateSteps() {
 			s.sprite = popSprite();
 			s.beatf = h->startbeatf;
 			s.stepcount = h->stepcount - 1;
+			s.height = 32;
 			steps.insert(it, s);
 			pos++;
 		}
@@ -317,7 +318,7 @@ void Play::updateSteps() {
 				i->disabled = true;
 			}
 		}
-		i->y = ((i->beatf >> BEATFSCREENYFRAC) - (beatf >> BEATFSCREENYFRAC)) + HITYOFFSET;
+		i->y = beatfToY(i->beatf, beatf) + HITYOFFSET;
 		if (i->type == 5) { //holds
 			i->y += 16 + 32 * i->stepcount;
 		}
@@ -390,4 +391,10 @@ bool Play::getMeasureAtBeat(u32 beat) {
 
 u32 Play::millis() {
 	return (timerTick(0) + (timerTick(1) << 16)) / NDSFREQ;
+}
+
+int Play::beatfToY(u32 beatf1, u32 beatf2) {
+	int dif = beatf1 - beatf2;
+	dif = dif * settings.speed / 9;
+	return (dif >> BEATFSCREENYFRAC);
 }
