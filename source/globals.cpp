@@ -11,6 +11,7 @@ std::string simpath;
 std::string songpath;
 int songchart;
 int bgid;
+int consoleid;
 Buffer* shared_buffer = NULL;
 Play* shared_play = NULL;
 int buffer_center = 0;

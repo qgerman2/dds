@@ -14,6 +14,8 @@ extern std::string songpath;
 extern int songchart;
 //bitmap background for artwork
 extern int bgid;
+//console background
+extern int consoleid;
 //play pointer for vblank interrupt
 extern Play* shared_play;
 //buffer pointer shared between wheel and main menu

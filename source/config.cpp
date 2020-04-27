@@ -11,7 +11,7 @@
 
 using namespace std;
 
-enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG};
+enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG, DEBUG};
 enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
 //todo: reduce verbosity
@@ -201,6 +201,12 @@ void Config::updateSprites() {
 	} else {
 		oamClearSprite(&oamSub, valueSprites[4]);
 	}
+	//debug console
+	if (settings.debug && (-y + 40 + 32 * 5) < 192) { //fixme
+		oamSet(&oamSub, valueSprites[5], 188, -y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, valueSprites[5]);
+	}
 }
 
 void Config::hideSprites() {
@@ -219,6 +225,14 @@ void Config::toggle() {
 			break;
 		case CACHEBG:
 			settings.cache_bg = !settings.cache_bg;
+			break;
+		case DEBUG:
+			settings.debug = !settings.debug;
+			if (settings.debug) {
+				bgShow(consoleid);
+			} else {
+				bgHide(consoleid);
+			}
 			break;
 	}
 }
@@ -256,6 +270,7 @@ void ConfigLoad() {
 		fread(&settings.intro, 4, 1, file);
 		fread(&settings.cache, 4, 1, file);
 		fread(&settings.cache_bg, 4, 1, file);
+		fread(&settings.debug, 4, 1, file);
 		fclose(file);
 		ConfigCheck();
 	} else {
@@ -273,6 +288,7 @@ void ConfigSave() {
 		fwrite(&settings.intro, 1, 1, file);
 		fwrite(&settings.cache, 1, 1, file);
 		fwrite(&settings.cache_bg, 1, 1, file);
+		fwrite(&settings.debug, 1, 1, file);
 		fclose(file);
 	}
 }

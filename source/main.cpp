@@ -63,8 +63,14 @@ int main(){
 	font.convertSingleColor = false;
 	consoleSetFont(console, &font);
 	bgSetPriority(console->bgId, 0);
+	consoleid = console->bgId;
+	bgHide(consoleid);
 
 	ConfigLoad();
+
+	if (settings.debug) {
+		bgShow(consoleid);
+	}
 
 	//check if running on no$gba
 	if (strncmp((char*)0x4FFFA00, "no$gba", 6) == 0) {
