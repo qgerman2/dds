@@ -78,12 +78,12 @@ void PlayInput::update() {
 						}
 						if (stateCol[s->col] == 1) {
 							if (s->type == 3) {
-								//if (play->beatf >= s->beatf) {
+								if (play->beatf >= s->beatf) {
 									stateCol[s->col] = 2;
 									play->score->add(&(*s), 0);
 									s = play->removeStep(s);
 									continue;
-								//}
+								}
 							}
 						}
 					}
