@@ -75,12 +75,11 @@ Play::~Play() {
 }
 
 void Play::loop(){
-	frame();
-	shared_play = this;
 	fadeIn(2);
 	playAudio();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
+	shared_play = this;
 	while (1) {
 		//frame();
 		if (!idleAudio()) {mmStreamUpdate();}
