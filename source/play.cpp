@@ -309,19 +309,19 @@ void Play::updateSteps() {
 	}
 	//actualizar posicion
 	for (auto i = steps.begin(); i != steps.end();) {
+		i->y = beatfToY(i->beatf, beatf) + HITYOFFSET;
 		if (((i->type == 1) || (i->type == 2)) && !i->disabled && (i->beatf < beatf)) {
 			u32 beatfdiff = beatf - i->beatf;
-			if (beatfdiff > score->judgesWindow[4]) {
+			if (beatfdiff > score->judgesWindow[4] || i->y < -32) {
 				//se paso una nota
 				score->miss(&(*i));
 				i->disabled = true;
 			}
 		}
-		i->y = beatfToY(i->beatf, beatf) + HITYOFFSET;
 		if (i->type == 5) { //holds
 			i->y += 16 + 32 * i->stepcount;
 		}
-		if (i->disabled && i->y < -32) {
+		if (i->y < -32) {
 			i = removeStep(i);
 		} else {
 			++i;
