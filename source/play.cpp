@@ -321,7 +321,7 @@ void Play::updateSteps() {
 		if (i->type == 5) { //holds
 			i->y += 16 + 32 * i->stepcount;
 		}
-		if (i->y < -32) {
+		if (i->disabled && i->y < -32) {
 			i = removeStep(i);
 		} else {
 			++i;
