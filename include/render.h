@@ -17,4 +17,5 @@ void fadeIn(int screen);
 void fadeOut(int screen);
 void fade(bool in, int screen);
 void clearBitmapBg(int id);
+void darkenBitmapBg(int id, int opacity);
 #endif

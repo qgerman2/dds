@@ -4,6 +4,7 @@
 #include <maxmod9.h>
 #include <string>
 #include "render.h"
+#include "artwork.h"
 #include <song_font.h>
 
 bool sprites[128];
@@ -99,4 +100,20 @@ void fade(bool in, int screen) {
 void clearBitmapBg(int id) {
 	u16* gfx = bgGetGfxPtr(id);
 	dmaFillHalfWords(0, gfx, 512 * 192);
+}
+
+void darkenBitmapBg(int id, int opacity) {
+	u16* gfx = bgGetGfxPtr(id);
+	for (int x = 0; x < 256; x++) {
+		for (int y = 0; y < 192; y++) {
+			u16 p = gfx[x + y * 256];
+			u8 b = (p & BLUEMASK) >> 10;
+			b = ((b << 10) / (9 << 5) * opacity) >> 5;
+			u8 g = (p & GREENMASK) >> 5;
+			g = ((g << 10) / (9 << 5) * opacity) >> 5;
+			u8 r = p & REDMASK;
+			r = ((r << 10) / (9 << 5) * opacity) >> 5;
+			gfx[x + y * 256] = ARGB16(1, r, g, b);
+		}
+	}
 }

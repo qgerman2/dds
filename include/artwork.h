@@ -4,6 +4,9 @@
 #define COLORFRAC 7
 #define NDSWIDTH 256
 #define PNGBUFFER 2500
+#define REDMASK 0b000000000011111
+#define GREENMASK 0b000001111100000
+#define BLUEMASK 0b111110000000000
 #include <nds.h>
 #include <string>
 #include <jpeglib.h>
@@ -37,9 +40,9 @@ struct bmp {
 	u32 size_pixel = 99;
 	u32 print_res = 2835;
 	u32 zero = 0;
-	u32 red_mask  = 0b111110000000000;
-	u32 green_mask= 0b000001111100000;
-	u32 blue_mask = 0b000000000011111;
+	u32 red_mask  = REDMASK;
+	u32 green_mask= GREENMASK;
+	u32 blue_mask = BLUEMASK;
 };
 bool loadArtwork(std::string filepath, u16* dest, uint width, uint height);
 bool processFile(FILE** infile, std::string);

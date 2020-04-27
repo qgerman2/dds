@@ -9,6 +9,7 @@
 #include <maxmod9.h>
 #include <vector>
 #include <list>
+#include "cache.h"
 #include "artwork.h"
 #include "play.h"
 #include "play_render.h"
@@ -33,10 +34,19 @@ Play::Play() {
 	setBrightness(1, 0);
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
-	if (!keep_artwork) {
-		loadArtwork(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
-	} else {
-		keep_artwork = false;
+	if (settings.opacity > 0) {
+		if (!keep_artwork) {
+			if (settings.cache_bg) {
+				loadCache(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
+			} else {
+				loadArtwork(songpath + "/" + song->bg, bgGetGfxPtr(bgid), 256, 192);
+			}
+			if (settings.opacity < 9) {
+				darkenBitmapBg(bgid, settings.opacity);
+			}
+		} else {
+			keep_artwork = false;
+		}
 	}
 	TIMER0_CR = 0;
 	TIMER1_CR = 0;

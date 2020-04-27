@@ -327,9 +327,9 @@ bool exportArtwork(string filepath, u16* buffer, uint width, uint height) {
 	fwrite(&(info.print_res), 4, 1, bmp);
 	fwrite(&(info.zero), 4, 1, bmp);
 	fwrite(&(info.zero), 4, 1, bmp);
-	fwrite(&(info.blue_mask), 4, 1, bmp);
-	fwrite(&(info.green_mask), 4, 1, bmp);
 	fwrite(&(info.red_mask), 4, 1, bmp);
+	fwrite(&(info.green_mask), 4, 1, bmp);
+	fwrite(&(info.blue_mask), 4, 1, bmp);
 	fwrite(&(info.zero), 4, 1, bmp);
 	for (int y = height - 1; y >= 0; y--) {
 		fwrite(&buffer[width * y], 2, width, bmp);

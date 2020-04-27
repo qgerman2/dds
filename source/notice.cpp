@@ -54,7 +54,9 @@ Notice::Notice() {
 		simpath = buffer->items[BUFFERSIZE / 2].smpath;
 		songdata song;
 		parseSimFile(&song, simpath);
-		loadAudio(songpath + "/" + song.music);
+		if (settings.intro) {
+			loadAudio(songpath + "/" + song.music);
+		}
 		for (int i = 0; i < 20; i++) {
 			swiWaitForVBlank();
 		}
@@ -119,7 +121,9 @@ void Notice::fadeNoticeUpdate() {
 }
 
 void Notice::transitionMenu() {
-	playAudio();
+	if (settings.intro) {
+		playAudio();
+	}
 	transition = true;
 	transitionFrame = 30;
 	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
