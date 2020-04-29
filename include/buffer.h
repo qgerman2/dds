@@ -1,6 +1,6 @@
 #ifndef BUFFER
 #define BUFFER
-#define BUFFERSIZE 39
+#define BUFFERSIZE 19
 #include <string>
 #include <vector>
 #include "parse.h"
@@ -19,12 +19,13 @@ private:
 public:
 	bufferitem items[BUFFERSIZE];
 	std::string fileext;
-	int center = 0;
+	int center;
 	int cursor = BUFFERSIZE / 2;
 	int size = -1;
 	void fill();
 	int bufferToFile(int i);
 	int dircountToBuffer(int i);
 	void setRandom();
+	void clear();
 };
 #endif

@@ -232,9 +232,30 @@ void MenuWheel::input() {
 		if (keysDown() & KEY_UP) {playAnim(-1);}
 		else if (keysDown() & KEY_DOWN) {playAnim(1);}
 		else if (keysDown() & KEY_A) {
-			menu->dif->show(&buffer->items[buffer->cursor]);
+			bufferitem* item = &buffer->items[buffer->cursor];
+			switch (item->type) {
+				case 1:
+					menu->dif->show(item);
+					break;
+				case 0:
+					rebuildBuffer(item->path);
+					break;
+			}
 		}
 	}
+}
+
+void MenuWheel::rebuildBuffer(string path) {
+	buffer->clear();
+	bufferpath = path;
+	buffer->fill();
+	updateFrameBg();
+	int gfx = 0;
+	for (int i = buffer->cursor - WHEELVIEWCHAR / 2; i <= buffer->cursor + WHEELVIEWCHAR / 2; i++) {
+		printToBitmap(&songFontGfx[gfx * SONGSPRITES], SONGSPRITES, 8, buffer->items[i].name + ' ');
+		gfx++;
+	}
+	updateSong();
 }
 
 void MenuWheel::render() {
@@ -299,6 +320,13 @@ void MenuWheel::updateColor() {
 }
 
 void MenuWheel::updateFrameBg() {
+	cout << "\n--cursor: " << buffer->cursor << " center: " << buffer->center;
+	for (int i = 0; i < BUFFERSIZE; i++) {
+		cout << "\n" << i << " " << buffer->items[i].name;
+		if (buffer->cursor == i) {
+			cout << "<-";
+		}
+	}
 	updateColor();
 	int tileOffset = 1;
 	int t = 0;

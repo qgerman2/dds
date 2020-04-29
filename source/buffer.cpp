@@ -12,13 +12,14 @@
 using namespace std;
 
 void Buffer::fill() {
+	cout << "\nbufferfill: " << bufferpath;
 	int dircount = -1;
 	int buffercount = 0;
 	//seleccion aleatoria de cancion
 	int songcount = 0;
 	map<int, int> songmap;
 	//lectura recursiva de directorios
-	function<bool(string)> parse = [&](string dir) -> bool {
+	function<bool(string, int)> parse = [&](string dir, int depth) -> bool {
 		int pos;
 		DIR *pdir;
 		struct dirent *pent;
@@ -30,7 +31,7 @@ void Buffer::fill() {
 	    		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
 	        		continue;
 	    		}
-	    		if (pent->d_type == DT_DIR) {
+	    		if (depth == 0 && pent->d_type == DT_DIR) {
 	    			dircount++;
 	    			isgroup = true;
 	    			if (size != -1) {
@@ -46,7 +47,7 @@ void Buffer::fill() {
 	        				buffercount++;
 	        			}
 	        		}
-	        		if (parse(dir + '/' + pent->d_name)) {
+	        		if (parse(dir + '/' + pent->d_name, depth + 1)) {
 	        			return true;
 	        		}
 	    			if (buffercount > BUFFERSIZE) {
@@ -83,7 +84,7 @@ void Buffer::fill() {
 	};
 	//encontrar total de elementos
 	if (size == -1) {
-		parse("/ddr");
+		parse(bufferpath.c_str(), 0);
 		size = dircount + 1;
 		dircount = -1;
 	}
@@ -98,7 +99,7 @@ void Buffer::fill() {
 		cursor = buffer_cursor;
 	}
 	//popular buffer
-	parse("/ddr");
+	parse(bufferpath.c_str(), 0);
 	//llenar espacios que faltan
 	if (size < BUFFERSIZE) {
 		for (int i = 0; i < BUFFERSIZE; i++) {
@@ -107,6 +108,15 @@ void Buffer::fill() {
 				items[i] = items[dircountToBuffer(pos)];
 			}
 		}
+	}
+}
+
+void Buffer::clear() {
+	size = -1;
+	buffer_center = 0;
+	buffer_cursor = BUFFERSIZE / 2;
+	for (int i = 0; i < BUFFERSIZE; i++) {
+		items[i].type = -1;
 	}
 }
 

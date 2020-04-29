@@ -15,6 +15,7 @@ int consoleid;
 Buffer* shared_buffer = NULL;
 Play* shared_play = NULL;
 int buffer_center = 0;
-int buffer_cursor = 0;
+int buffer_cursor = BUFFERSIZE / 2;
 bool nocash = false;
 bool keep_artwork = false;
+std::string bufferpath = "/dds";

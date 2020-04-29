@@ -2,7 +2,7 @@
 #define CONFIG
 #include <nds.h>
 #define CONFIGCOUNT 6
-#define CONFIGPATH "/ddr/settings"
+#define CONFIGPATH "/dds/settings"
 struct settings_t {
 	int speed = 3;
 	int opacity = 9;

@@ -30,6 +30,7 @@ private:
 	void updateColor();
 	void updateFrameBg();
 	void updateSong();
+	void rebuildBuffer(std::string path);
 public:
 	MenuWheel(Menu* menu);
 	~MenuWheel();

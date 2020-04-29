@@ -27,4 +27,6 @@ extern int buffer_cursor;
 extern bool nocash;
 //bool to avoid refreshing artwork on reset
 extern bool keep_artwork;
+//buffer wheel path
+extern std::string bufferpath;
 #endif
