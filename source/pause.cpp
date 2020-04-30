@@ -25,7 +25,7 @@ Pause::Pause() {
 }
 
 Pause::~Pause() {
-	fadeOut(3);
+	fadeOut(3, true);
 	oamFreeGfx(&oamMain, cursorGfx);
 	oamFreeGfx(&oamMain, frameGfx);
 }

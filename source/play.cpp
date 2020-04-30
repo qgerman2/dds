@@ -62,7 +62,7 @@ Play::~Play() {
 	shared_play = NULL;
 	stopAudio();
 	if (state == 0) {
-		fadeOut(3);
+		fadeOut(3, true);
 		vramSetBankF(VRAM_F_LCD);
 		vramSetBankH(VRAM_H_LCD);
 	}
@@ -75,7 +75,7 @@ Play::~Play() {
 }
 
 void Play::loop(){
-	fadeIn(2);
+	fadeIn(2, false);
 	playAudio();
 	TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
 	TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
@@ -91,6 +91,7 @@ void Play::loop(){
 }
 
 void Play::frame() {
+	fadeUpdate();
 	updateBeat();
 	updateSteps();
 	scanKeys();

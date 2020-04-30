@@ -78,7 +78,7 @@ Notice::Notice() {
 }
 
 Notice::~Notice() {
-	fadeOut(3);
+	fadeOut(3, true);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	oamFreeGfx(&oamSub, cursorGfx);
@@ -106,11 +106,12 @@ void Notice::loop() {
 		oamUpdate(&oamSub);
 		bgUpdate();
 		if (!idleAudio()) {mmStreamUpdate();}
+		fadeUpdate();
 		swiWaitForVBlank();
 		if (state != 2) {return;}
 		if (!ready) {
 			ready = true;
-			fadeIn(3);
+			fadeIn(3, false);
 		}
 	}
 }

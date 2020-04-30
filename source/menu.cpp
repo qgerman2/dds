@@ -44,7 +44,7 @@ Menu::~Menu() {
 	if (state == 1) {
 		stopAudio();
 	}
-	fadeOut(3);
+	fadeOut(3, true);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	delete dif;
@@ -57,7 +57,7 @@ void Menu::loop() {
 		scanKeys();
 		input();
 		if (!idleAudio()) {mmStreamUpdate();}
-		swiWaitForVBlank();
+		fadeUpdate();
 		render();
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
@@ -66,8 +66,9 @@ void Menu::loop() {
 		}
 		if (!ready) {
 			ready = true;
-			fadeIn(3);
+			fadeIn(3, false);
 		}
+		swiWaitForVBlank();
 	}
 }
 

@@ -76,25 +76,49 @@ void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str) {
 	}
 }
 
-void fadeOut(int screen) {
-	fade(false, screen);
+int fadeFrame = -1;
+int fadeAnim = 0;
+int fadeScreen = 0;
+
+void fadeOut(int screen, bool blocking) {
+	fadeFrame = 16;
+	fadeAnim = 0;
+	fadeScreen = screen;
+	setBrightness(fadeScreen, 0);
+	if (blocking) {
+		while (fadeFrame > 0) {
+			fadeUpdate();
+			swiWaitForVBlank();
+		}
+	}
 }
 
-void fadeIn(int screen) {
-	fade(true, screen);
+void fadeIn(int screen, bool blocking) {
+	fadeFrame = 16;
+	fadeAnim = 1;
+	fadeScreen = screen;
+	setBrightness(fadeScreen, -16);
+	if (blocking) {
+		while (fadeFrame > 0) {
+			fadeUpdate();
+			swiWaitForVBlank();
+		}
+	}
 }
 
-void fade(bool in, int screen) {
-	int frame = 16;
-	do {
+bool fadeUpdate() {
+	if (fadeFrame >= 0) {
 		int brightness;
-		if (in) {brightness = -frame;}
-		else {brightness = -16 + frame;}
-		setBrightness(screen, brightness);
-		if (!idleAudio()) {mmStreamUpdate();}
-		swiWaitForVBlank();
-		frame--;
-	} while (frame > -1);
+		if (fadeAnim == 1) {
+			brightness = -fadeFrame;
+		} else {
+			brightness = -16 + fadeFrame;
+		}
+		setBrightness(fadeScreen, brightness);
+		fadeFrame--;
+		return true;
+	}
+	return false;
 }
 
 void clearBitmapBg(int id) {
