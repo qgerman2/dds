@@ -86,7 +86,7 @@ void fadeOut(int screen, bool blocking) {
 	fadeScreen = screen;
 	setBrightness(fadeScreen, 0);
 	if (blocking) {
-		while (fadeFrame > 0) {
+		while (fadeFrame >= 0) {
 			fadeUpdate();
 			swiWaitForVBlank();
 		}
@@ -99,7 +99,7 @@ void fadeIn(int screen, bool blocking) {
 	fadeScreen = screen;
 	setBrightness(fadeScreen, -16);
 	if (blocking) {
-		while (fadeFrame > 0) {
+		while (fadeFrame >= 0) {
 			fadeUpdate();
 			swiWaitForVBlank();
 		}
