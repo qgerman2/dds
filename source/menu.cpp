@@ -75,10 +75,6 @@ void Menu::input() {
 	if (dif->active) {
 		dif->input();
 	} else {
-		if (keysDown() & KEY_B) {
-			state = 2;
-			return;
-		}
 		wheel->input();
 	}
 }

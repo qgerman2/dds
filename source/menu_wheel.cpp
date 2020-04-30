@@ -242,7 +242,22 @@ void MenuWheel::input() {
 					break;
 			}
 		}
+		else if (keysDown() & KEY_B) {
+			if (!upDirectory()) {
+				state = 2;
+			}
+		}
 	}
+}
+
+bool MenuWheel::upDirectory() {
+	string newpath = bufferpath.substr(0, bufferpath.find_last_of('/'));
+	cout << "\nnewpath " << newpath;
+	if (newpath != "") {
+		rebuildBuffer(newpath);
+		return true;
+	}
+	return false;
 }
 
 void MenuWheel::rebuildBuffer(string path) {

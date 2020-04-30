@@ -31,6 +31,7 @@ private:
 	void updateFrameBg();
 	void updateSong();
 	void rebuildBuffer(std::string path);
+	bool upDirectory();
 public:
 	MenuWheel(Menu* menu);
 	~MenuWheel();
