@@ -49,7 +49,7 @@ Notice::Notice() {
 		shared_buffer = new Buffer();
 		buffer = shared_buffer;
 		buffer->setRandom();
-		buffer->fill();
+		buffer->fill("");
 		songpath = buffer->items[BUFFERSIZE / 2].path;
 		simpath = buffer->items[BUFFERSIZE / 2].smpath;
 		songdata song;

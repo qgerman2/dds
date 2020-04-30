@@ -67,7 +67,7 @@ MenuWheel::MenuWheel(Menu* menu) {
 		buffer = shared_buffer;
 	} else {
 		buffer = new Buffer();
-		buffer->fill();
+		buffer->fill("");
 	}
 	updateSong();
 	loadSongFontGfx();
@@ -155,7 +155,7 @@ void MenuWheel::next() {
 		for (int i = buffer->cursor + WHEELVIEW / 2 + 1; i < BUFFERSIZE; i++) {
 			buffer->items[i].type = -1;
 		}
-		buffer->fill();
+		buffer->fill("");
 	}
 	//mover texto
 	u16* tempFontGfx[SONGSPRITES];
@@ -192,7 +192,7 @@ void MenuWheel::prev() {
 		for (int i = 0; i <= (buffer->cursor - WHEELVIEW / 2 - 1); i++) {
 			buffer->items[i].type = -1;
 		}
-		buffer->fill();
+		buffer->fill("");
 	}
 	//mover texto
 	u16* tempFontGfx[SONGSPRITES];
@@ -238,7 +238,7 @@ void MenuWheel::input() {
 					menu->dif->show(item);
 					break;
 				case 0:
-					rebuildBuffer(item->path);
+					rebuildBuffer(item->path, "");
 					break;
 			}
 		}
@@ -254,16 +254,16 @@ bool MenuWheel::upDirectory() {
 	string newpath = bufferpath.substr(0, bufferpath.find_last_of('/'));
 	cout << "\nnewpath " << newpath;
 	if (newpath != "") {
-		rebuildBuffer(newpath);
+		rebuildBuffer(newpath, bufferpath.substr(bufferpath.find_last_of('/') + 1));
 		return true;
 	}
 	return false;
 }
 
-void MenuWheel::rebuildBuffer(string path) {
+void MenuWheel::rebuildBuffer(string path, string focus) {
 	buffer->clear();
 	bufferpath = path;
-	buffer->fill();
+	buffer->fill(focus);
 	updateFrameBg();
 	int gfx = 0;
 	for (int i = buffer->cursor - WHEELVIEWCHAR / 2; i <= buffer->cursor + WHEELVIEWCHAR / 2; i++) {

@@ -11,10 +11,10 @@
 
 using namespace std;
 
-void Buffer::fill() {
-	cout << "\nbufferfill: " << bufferpath;
+void Buffer::fill(string focus) {
 	int dircount = -1;
 	int buffercount = 0;
+	int focuscount = -1;
 	//seleccion aleatoria de cancion
 	int songcount = 0;
 	map<int, int> songmap;
@@ -46,6 +46,10 @@ void Buffer::fill() {
 	        				}
 	        				buffercount++;
 	        			}
+	        		} else {
+	        			if (focus == pent->d_name) {
+        					focuscount = dircount;
+        				}
 	        		}
 	        		if (parse(dir + '/' + pent->d_name, depth + 1)) {
 	        			return true;
@@ -97,6 +101,9 @@ void Buffer::fill() {
 	} else {
 		center = buffer_center;
 		cursor = buffer_cursor;
+		if (focuscount != -1) {
+			center = focuscount;
+		}
 	}
 	//popular buffer
 	parse(bufferpath.c_str(), 0);

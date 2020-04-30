@@ -22,7 +22,7 @@ public:
 	int center;
 	int cursor = BUFFERSIZE / 2;
 	int size = -1;
-	void fill();
+	void fill(std::string focus);
 	int bufferToFile(int i);
 	int dircountToBuffer(int i);
 	void setRandom();
