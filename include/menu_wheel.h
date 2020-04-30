@@ -11,7 +11,6 @@ class Menu;
 class MenuWheel {
 private:
 	Menu* menu;
-	Buffer* buffer;
 	const int tilesYOffset[5] = {-1, 3, 9, 13, 15};
 	bufferitem wheelitems[WHEELVIEW];
 	u16* songFontGfx[SONGSPRITES * WHEELVIEWCHAR];
@@ -28,14 +27,17 @@ private:
 	void next();
 	void renderChar(int angle);
 	void updateColor();
-	void updateFrameBg();
 	void updateSong();
 	void rebuildBuffer(std::string path, std::string focus);
 	bool upDirectory();
+
 public:
 	MenuWheel(Menu* menu);
 	~MenuWheel();
+	Buffer* buffer;
 	void playAnim(int anim);
+	void rebuildSongGfx();
+	void updateFrameBg();
 	void input();
 	void render();
 	int frame = 0;

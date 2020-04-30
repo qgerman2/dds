@@ -58,6 +58,7 @@ Menu::~Menu() {
 void Menu::loop() {
 	while (1) {
 		loadBanner();
+		loadBuffer();
 		if (!idleAudio()) {mmStreamUpdate();}
 		if (state != 0) {
 			return;
@@ -73,11 +74,13 @@ void Menu::loop() {
 
 void Menu::frame() {
 	fadeUpdate();
-	scanKeys();
-	input();
-	render();
-	oamUpdate(&oamMain);
-	oamUpdate(&oamSub);
+	if (!bufferBlock) {
+		scanKeys();
+		input();
+		render();
+		oamUpdate(&oamMain);
+		oamUpdate(&oamSub);
+	}
 }
 
 void Menu::input() {
@@ -91,7 +94,6 @@ void Menu::input() {
 void Menu::render() {
 	wheel->render();
 	high->render();
-	bgUpdate();
 }
 
 void Menu::loadBanner() {
@@ -106,5 +108,15 @@ void Menu::loadBanner() {
 		if (!success) {
 			clearBitmapBg(bgid);
 		}
+	}
+}
+
+void Menu::loadBuffer() {
+	if (bufferBlock) {
+		wheel->buffer->fill("");
+		bgUpdate();
+		wheel->updateFrameBg();
+		wheel->rebuildSongGfx();
+		bufferBlock = false;
 	}
 }
