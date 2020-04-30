@@ -152,7 +152,6 @@ void MenuWheel::next() {
 			buffer->items[i].type = -1;
 		}
 		//buffer->fill("");
-		cout << "\nbufferblock";
 		buffer_center = buffer->center;
 		buffer_cursor = buffer->cursor;
 		menu->bufferBlock = true;
@@ -192,7 +191,6 @@ void MenuWheel::prev() {
 			buffer->items[i].type = -1;
 		}
 		//buffer->fill("");
-		cout << "\nbufferblock";
 		buffer_center = buffer->center;
 		buffer_cursor = buffer->cursor;
 		menu->bufferBlock = true;
@@ -255,12 +253,10 @@ bool MenuWheel::upDirectory() {
 }
 
 void MenuWheel::rebuildBuffer(string path, string focus) {
-	buffer->clear();
 	bufferpath = path;
-	buffer->fill(focus);
-	updateFrameBg();
-	rebuildSongGfx();
-	updateSong();
+	buffer->clear();
+	menu->bufferFocus = focus;
+	menu->bufferBlock = true;
 }
 
 void MenuWheel::rebuildSongGfx() {
@@ -281,6 +277,7 @@ void MenuWheel::render() {
 	}
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
+	bgUpdate();
 	if (frame == 22) {
 		if (anim > 0) {
 			next();
@@ -288,16 +285,11 @@ void MenuWheel::render() {
 		else {
 			prev();
 		}
-		if (!menu->bufferBlock) {
-			updateFrameBg();
-		}
+		updateFrameBg();
 		updateSong();
 		stopAudio();
 	}
-	if (!menu->bufferBlock) {
-		bgUpdate();
-		renderChar(angle);
-	}
+	renderChar(angle);
 	if (frame > 0) {
 		frame--;
 		frame--;

@@ -74,13 +74,13 @@ void Menu::loop() {
 
 void Menu::frame() {
 	fadeUpdate();
+	scanKeys();
+	input();
 	if (!bufferBlock) {
-		scanKeys();
-		input();
 		render();
-		oamUpdate(&oamMain);
-		oamUpdate(&oamSub);
 	}
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
 }
 
 void Menu::input() {
@@ -113,10 +113,11 @@ void Menu::loadBanner() {
 
 void Menu::loadBuffer() {
 	if (bufferBlock) {
-		wheel->buffer->fill("");
-		bgUpdate();
+		cout << "\nbufferblock focus: " << bufferFocus;
+		wheel->buffer->fill(bufferFocus);
 		wheel->updateFrameBg();
 		wheel->rebuildSongGfx();
 		bufferBlock = false;
+		bufferFocus = "";
 	}
 }

@@ -18,6 +18,7 @@ public:
 	std::string bannerQueue = "";
 	std::string bannerCurrent = "";
 	bool bufferBlock = false;
+	std::string bufferFocus = "";
 	Menu();
 	~Menu();
 	void loop();
