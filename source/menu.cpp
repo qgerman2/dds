@@ -13,6 +13,7 @@
 #include <font.h>
 #include <wheel_bg.h>
 #include <wheel_sub_bg.h>
+#include <wait.h>
 
 using namespace std;
 
@@ -21,6 +22,11 @@ Menu::Menu() {
 		pushSprite(i);
 		pushSpriteSub(i);
 	}
+	waitSprite = popSpriteSub();
+	waitGfx = oamAllocateGfx(&oamSub, SpriteSize_64x32, SpriteColorFormat_16Color);
+	dmaCopy(waitTiles, waitGfx, waitTilesLen);
+	dmaCopy(waitPal, SPRITE_PALETTE_SUB + 16 * 3, waitPalLen);
+
 	clearBitmapBg(bgid);
 	dif = new MenuDif();
 	high = new MenuHigh();
@@ -77,7 +83,10 @@ void Menu::frame() {
 	scanKeys();
 	input();
 	if (!bufferBlock) {
+		oamClearSprite(&oamSub, waitSprite);
 		render();
+	} else {
+		oamSet(&oamSub, waitSprite, 96, 80, 0, 3, SpriteSize_64x32, SpriteColorFormat_16Color, waitGfx, 0, false, false, false, false, false);
 	}
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);

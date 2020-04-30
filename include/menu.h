@@ -11,6 +11,8 @@ private:
 	bool ready = false;
 	void loadBanner();
 	void loadBuffer();
+	int waitSprite;
+	u16* waitGfx;
 public:
 	MenuDif* dif;
 	MenuWheel* wheel;
