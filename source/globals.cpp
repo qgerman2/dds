@@ -3,6 +3,7 @@
 #include "config.h"
 #include <string>
 #include "play.h"
+#include "menu.h"
 #include "buffer.h"
 #include "play_score.h"
 struct settings_t settings;
@@ -14,6 +15,7 @@ int bgid;
 int consoleid;
 Buffer* shared_buffer = NULL;
 Play* shared_play = NULL;
+Menu* shared_menu = NULL;
 int buffer_center = 0;
 int buffer_cursor = BUFFERSIZE / 2;
 bool nocash = false;

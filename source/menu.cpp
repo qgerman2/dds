@@ -1,6 +1,8 @@
 #include <nds.h>
 #include <iostream>
 #include "globals.h"
+#include "artwork.h"
+#include "cache.h"
 #include "menu.h"
 #include "menu_dif.h"
 #include "menu_wheel.h"
@@ -41,6 +43,7 @@ Menu::Menu() {
 }
 
 Menu::~Menu() {
+	shared_menu = NULL;
 	if (state == 1) {
 		stopAudio();
 	}
@@ -54,22 +57,27 @@ Menu::~Menu() {
 
 void Menu::loop() {
 	while (1) {
-		scanKeys();
-		input();
+		loadBanner();
 		if (!idleAudio()) {mmStreamUpdate();}
-		fadeUpdate();
-		render();
-		oamUpdate(&oamMain);
-		oamUpdate(&oamSub);
 		if (state != 0) {
 			return;
 		}
 		if (!ready) {
 			ready = true;
 			fadeIn(3, false);
+			shared_menu = this;
 		}
 		swiWaitForVBlank();
 	}
+}
+
+void Menu::frame() {
+	fadeUpdate();
+	scanKeys();
+	input();
+	render();
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
 }
 
 void Menu::input() {
@@ -84,4 +92,19 @@ void Menu::render() {
 	wheel->render();
 	high->render();
 	bgUpdate();
+}
+
+void Menu::loadBanner() {
+	if (bannerQueue != "" && bannerCurrent != bannerQueue) {
+		bannerCurrent = bannerQueue;
+		bool success = false;
+		if (settings.cache) {
+			success = loadCache(bannerCurrent, bgGetGfxPtr(bgid), 256, 80);
+		} else {
+			success = loadArtwork(bannerCurrent, bgGetGfxPtr(bgid), 256, 80);
+		}
+		if (!success) {
+			clearBitmapBg(bgid);
+		}
+	}
 }

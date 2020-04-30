@@ -24,6 +24,8 @@ using namespace std;
 void vblank_interrupt() {
 	if (shared_play) {
 		shared_play->frame();
+	} else if (shared_menu) {
+		shared_menu->frame();
 	}
 }
 

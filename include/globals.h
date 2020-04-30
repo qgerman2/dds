@@ -3,6 +3,7 @@
 #include "config.h"
 #include <string>
 #include "play.h"
+#include "menu.h"
 #include "buffer.h"
 //settings
 extern struct settings_t settings;
@@ -18,6 +19,8 @@ extern int bgid;
 extern int consoleid;
 //play pointer for vblank interrupt
 extern Play* shared_play;
+//same for menu
+extern Menu* shared_menu;
 //buffer pointer shared between wheel and main menu
 extern Buffer* shared_buffer;
 //wheel position after exiting song

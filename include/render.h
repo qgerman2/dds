@@ -16,7 +16,7 @@ void pushSpriteSub(int i);
 void printToBitmap(u16** gfx, int sprites, int y_offset, std::string str);
 void fadeIn(int screen, bool blocking);
 void fadeOut(int screen, bool blocking);
-bool fadeUpdate();
+void fadeUpdate();
 void clearBitmapBg(int id);
 void darkenBitmapBg(int id, int opacity);
 #endif

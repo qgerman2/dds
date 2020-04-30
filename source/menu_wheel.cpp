@@ -171,7 +171,6 @@ void MenuWheel::next() {
 		songFontGfx[(WHEELVIEWCHAR - 1) * SONGSPRITES + i] = tempFontGfx[i];
 	}
 	printToBitmap(&songFontGfx[(WHEELVIEWCHAR - 1) * SONGSPRITES], 3, 8, buffer->items[buffer->cursor + WHEELVIEWCHAR / 2].name + ' ');
-	updateFrameBg();
 }
 
 void MenuWheel::prev() {
@@ -208,7 +207,6 @@ void MenuWheel::prev() {
 		songFontGfx[i] = tempFontGfx[i];
 	}
 	printToBitmap(&songFontGfx[0], 3, 8, buffer->items[buffer->cursor - WHEELVIEWCHAR / 2].name + ' ');
-	updateFrameBg();
 }
 
 void MenuWheel::updateSong() {
@@ -216,15 +214,7 @@ void MenuWheel::updateSong() {
 	songpath = buffer->items[buffer->cursor].path;
 	menu->dif->hide();
 	menu->high->update(&buffer->items[buffer->cursor].scores);
-	bool success = false;
-	if (settings.cache) {
-		success = loadCache(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80);
-	} else {
-		success = loadArtwork(songpath + "/" + buffer->items[buffer->cursor].song.banner, bgGetGfxPtr(bgid), 256, 80);
-	}
-	if (!success) {
-		clearBitmapBg(bgid);
-	}
+	menu->bannerQueue = songpath + "/" + buffer->items[buffer->cursor].song.banner;
 }
 
 void MenuWheel::input() {
@@ -291,6 +281,7 @@ void MenuWheel::render() {
 			prev();
 		}
 		bgUpdate();
+		updateFrameBg();
 		updateSong();
 		stopAudio();
 	}
@@ -335,13 +326,13 @@ void MenuWheel::updateColor() {
 }
 
 void MenuWheel::updateFrameBg() {
-	cout << "\n--cursor: " << buffer->cursor << " center: " << buffer->center;
+	/*cout << "\n--cursor: " << buffer->cursor << " center: " << buffer->center;
 	for (int i = 0; i < BUFFERSIZE; i++) {
 		cout << "\n" << i << " " << buffer->items[i].name;
 		if (buffer->cursor == i) {
 			cout << "<-";
 		}
-	}
+	}*/
 	updateColor();
 	int tileOffset = 1;
 	int t = 0;

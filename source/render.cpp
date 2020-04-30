@@ -106,7 +106,7 @@ void fadeIn(int screen, bool blocking) {
 	}
 }
 
-bool fadeUpdate() {
+void fadeUpdate() {
 	if (fadeFrame >= 0) {
 		int brightness;
 		if (fadeAnim == 1) {
@@ -116,9 +116,7 @@ bool fadeUpdate() {
 		}
 		setBrightness(fadeScreen, brightness);
 		fadeFrame--;
-		return true;
 	}
-	return false;
 }
 
 void clearBitmapBg(int id) {
