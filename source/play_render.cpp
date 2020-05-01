@@ -159,7 +159,7 @@ void PlayRender::loadNumberGfx() {
 		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 256, numberGfx[n] + 128, 128);
 		dmaCopy(numbersTiles + (k * 512) + (p * 32) + 384, numberGfx[n] + 192, 128);
 	}
-	dmaCopy(numbersPal, SPRITE_PALETTE + 64, 64);
+	dmaCopy(numbersPal, SPRITE_PALETTE + 32, numbersPalLen);
 }
 
 void PlayRender::loadJudgmentGfx() {
@@ -300,24 +300,24 @@ void PlayRender::renderCombo() {
 	int d;
 	int c;
 	if (play->score->combo < 10) {
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[play->score->combo], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[play->score->combo], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 		oamClearSprite(&oamMain, comboSprite[1]);
 	}
 	else if (play->score->combo < 100) {
 		u = play->score->combo % 10;
 		d = play->score->combo / 10;
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 	}
 	else if (play->score->combo < 1000) {
 		u = (play->score->combo % 100) % 10;
 		d = (play->score->combo % 100) / 10;
 		c = play->score->combo / 100;
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[0], COMBOX - 40, COMBOY, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[0], COMBOX - 40, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 
@@ -377,8 +377,8 @@ void PlayRender::renderJudgment() {
 	if (size == 256) {f = 1;}
 	oamRotateScale(&oamMain, 5, 0, (1 << 16) / size, (1 << 16) / size);
 	offset = ((size - 256) * 32) / 256;
-	oamSet(&oamMain, judgeSprite[0], x - offset / 2, y, 0, 5, SpriteSize_64x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2], 5, true, false, false, false, false);
-	oamSet(&oamMain, judgeSprite[1], x - f + 81 + offset, y, 0, 5, SpriteSize_32x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2 + 1], 5, true, false, false, false, false);
+	oamSet(&oamMain, judgeSprite[0], x - offset / 2, y, 0, 3, SpriteSize_64x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2], 5, true, false, false, false, false);
+	oamSet(&oamMain, judgeSprite[1], x - f + 81 + offset, y, 0, 3, SpriteSize_32x32, SpriteColorFormat_16Color, judgeGfx[judgeAnim * 2 + 1], 5, true, false, false, false, false);
 }
 
 void PlayRender::renderSubScore() {
@@ -453,7 +453,7 @@ void PlayRender::renderReceptor() {
 void PlayRender::playJudgmentAnim(u8 anim) {
 	judgeFrame = 70;
 	if (judgeAnim != anim) {
-		dmaCopy(judgePal[anim / 2], SPRITE_PALETTE + 64 + 16, 64);
+		dmaCopy(judgePal[anim / 2], SPRITE_PALETTE + 48, 32);
 		judgeAnim = anim;
 	}
 }
