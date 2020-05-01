@@ -114,7 +114,6 @@ void PlayRender::loadHoldGfx() {
 	dmaCopy(hold_tail_upPal, SPRITE_PALETTE + 80, hold_tail_upPalLen);
 	dmaCopy(hold_tail_downPal, SPRITE_PALETTE + 96, hold_tail_downPalLen);
 	oamRotateScale(&oamMain, 1, 0, -1 << 8, 1 << 8);
-	cout << "\nrotate sclae";
 }
 
 void PlayRender::loadReceptorGfx() {
@@ -320,10 +319,10 @@ void PlayRender::renderSteps() {
 					break;
 				case (5):
 					if (i->gfx != NULL) {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 2, false, false, false, true, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 1, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, i->gfx, 2, false, false, false, true, false);
 					}
 					else {
-						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdGfx, 2, false, false, false, true, false);
+						oamSet(&oamMain, i->sprite, i->x, i->y, 1, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdGfx, 2, false, false, false, true, false);
 					}
 					break;
 				case (6):

@@ -73,7 +73,6 @@ void PlayScore::miss(step *s) {
 }
 
 void PlayScore::mine() {
-	cout << "\nlaminatenicida";
 	dropCombo();
 }
 
