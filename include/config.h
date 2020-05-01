@@ -1,7 +1,7 @@
 #ifndef CONFIG
 #define CONFIG
 #include <nds.h>
-#define CONFIGCOUNT 6
+#define CONFIGCOUNT 7
 #define CONFIGPATH "/dds/settings"
 struct settings_t {
 	int speed = 3;
@@ -9,6 +9,7 @@ struct settings_t {
 	bool intro = true;
 	bool cache = true;
 	bool cache_bg = false;
+	bool mines = false;
 	bool debug = false;
 };
 class Config {
@@ -17,7 +18,7 @@ private:
 	int y_f;
 	int y_dest;
 	const int y_min = -32;
-	const int y_max = -CONFIGCOUNT * 32 + 262;
+	const int y_max = 101;
 	int height;
 	int sub_bg;
 	int cursor_bg;

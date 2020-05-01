@@ -100,8 +100,8 @@ void MenuWheel::loadSongFontGfx() {
 }
 
 void MenuWheel::loadFrameBg() {
-	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 3, 4);
-	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 4, 4);
+	bg1 = bgInitSub(2, BgType_ExRotation, BgSize_ER_256x256, 6, 4);
+	bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 7, 4);
 	bgSetPriority(bg1, 2);
 	bgSetPriority(bg2, 2);
 	int g = 1;

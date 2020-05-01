@@ -11,7 +11,7 @@
 
 using namespace std;
 
-enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG, DEBUG};
+enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG, MINES, DEBUG};
 enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
 //todo: reduce verbosity
@@ -39,7 +39,7 @@ Config::~Config() {
 
 void Config::bg() {
 	vramSetBankH(VRAM_H_LCD);
-	sub_bg = bgInitSub(1, BgType_Text4bpp, BgSize_T_256x256, 3, 6);
+	sub_bg = bgInitSub(1, BgType_Text4bpp, BgSize_T_256x512, 3, 6);
 	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
 	dmaCopy(config_subMap, bgGetMapPtr(sub_bg), config_subMapLen);
 	dmaCopy(config_subPal, &BG_PALETTE_SUB[16], config_subPalLen);
@@ -201,11 +201,17 @@ void Config::updateSprites() {
 	} else {
 		oamClearSprite(&oamSub, valueSprites[4]);
 	}
-	//debug console
-	if (settings.debug && (-y + 40 + 32 * 5) < 192) { //fixme
+	//mines
+	if (settings.mines && (-y + 40 + 32 * 5) < 192) { //fixme
 		oamSet(&oamSub, valueSprites[5], 188, -y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
 	} else {
 		oamClearSprite(&oamSub, valueSprites[5]);
+	}
+	//debug console
+	if (settings.debug && (-y + 40 + 32 * 5) < 192) { //fixme
+		oamSet(&oamSub, valueSprites[6], 188, -y + 40 + 32 * 6, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
+	} else {
+		oamClearSprite(&oamSub, valueSprites[6]);
 	}
 }
 
@@ -225,6 +231,9 @@ void Config::toggle() {
 			break;
 		case CACHEBG:
 			settings.cache_bg = !settings.cache_bg;
+			break;
+		case MINES:
+			settings.mines = !settings.mines;
 			break;
 		case DEBUG:
 			settings.debug = !settings.debug;
@@ -267,10 +276,11 @@ void ConfigLoad() {
 		cout << "\nLoading config";
 		fread(&settings.speed, 4, 1, file);
 		fread(&settings.opacity, 4, 1, file);
-		fread(&settings.intro, 4, 1, file);
-		fread(&settings.cache, 4, 1, file);
-		fread(&settings.cache_bg, 4, 1, file);
-		fread(&settings.debug, 4, 1, file);
+		fread(&settings.intro, 1, 1, file);
+		fread(&settings.cache, 1, 1, file);
+		fread(&settings.cache_bg, 1, 1, file);
+		fread(&settings.debug, 1, 1, file);
+		fread(&settings.mines, 1, 1, file);
 		fclose(file);
 		ConfigCheck();
 	} else {
@@ -289,6 +299,7 @@ void ConfigSave() {
 		fwrite(&settings.cache, 1, 1, file);
 		fwrite(&settings.cache_bg, 1, 1, file);
 		fwrite(&settings.debug, 1, 1, file);
+		fwrite(&settings.mines, 1, 1, file);
 		fclose(file);
 	}
 }
