@@ -51,6 +51,7 @@ Play::Play() {
 		if (!keep_artwork) {
 			clearBitmapBg(bgid);
 			darkenBitmapBg(bgid, 0);
+		} else {
 			keep_artwork = false;
 		}
 	}
