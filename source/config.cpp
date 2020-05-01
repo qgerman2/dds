@@ -16,12 +16,6 @@ enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
 //todo: reduce verbosity
 Config::Config() {
-	sub_bg = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 7, 3);
-	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
-	dmaCopy(config_subMap, bgGetMapPtr(sub_bg), config_subMapLen);
-	dmaCopy(config_subPal, &VRAM_H[3*16*256], config_subPalLen);
-	bgSetPriority(sub_bg, 2);
-	bgHide(sub_bg);
 	for (int i = 0; i < 10; i++) {
 		numberGfx[i] = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_16Color);
 		dmaCopy(score_numbersTiles + i * 16, numberGfx[i], 64);
@@ -45,10 +39,16 @@ Config::~Config() {
 
 void Config::bg() {
 	vramSetBankH(VRAM_H_LCD);
-	cursor_bg = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 1, 2);
+	sub_bg = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 3, 6);
+	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
+	dmaCopy(config_subMap, bgGetMapPtr(sub_bg), config_subMapLen);
+	dmaCopy(config_subPal, &VRAM_H[1*16*256], config_subPalLen);
+	bgSetPriority(sub_bg, 2);
+	bgHide(sub_bg);
+	cursor_bg = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 2);
 	dmaCopy(config_cursorTiles, bgGetGfxPtr(cursor_bg), config_cursorTilesLen);
 	dmaCopy(config_cursorMap, bgGetMapPtr(cursor_bg), config_cursorMapLen);
-	dmaCopy(config_cursorPal, &VRAM_H[1*16*256], config_cursorPalLen);
+	dmaCopy(config_cursorPal, &VRAM_H[3*16*256], config_cursorPalLen);
 	bgHide(cursor_bg);
 	vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
 }
@@ -59,7 +59,7 @@ void Config::show() {
 	animFrame = 16;
 	cursor = 0;
 	bgShow(sub_bg);
-	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
+	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
 	REG_BLDALPHA_SUB = 16 << 8;
 }
 
@@ -67,7 +67,7 @@ void Config::hide() {
 	state = FADEOUT;
 	animFrame = 16;
 	bgHide(cursor_bg);
-	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG2;
+	REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
 	REG_BLDALPHA_SUB = 16;
 	ConfigSave();
 }
@@ -87,7 +87,7 @@ void Config::update() {
 				bgSetScroll(cursor_bg, 0, y - 32);
 				bgShow(cursor_bg);
 				state = IDLE;
-				REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG3;
+				REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG1;
 				cursorFrame = 0;
 				cursorAnim = 1;
 				REG_BLDALPHA_SUB = 16 << 8;
@@ -127,7 +127,7 @@ void Config::update() {
 					y = y_dest;
 					y_f = y << 8;
 					state = IDLE;
-					REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG3;
+					REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG3 | BLEND_DST_BG1;
 					REG_BLDALPHA_SUB = 16 << 8;
 				}
 				bgSetScroll(sub_bg, 0, y);
