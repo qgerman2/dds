@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "globals.h"
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
@@ -14,7 +15,7 @@
 #include <tap.h>
 #include <tail.h>
 #include <hold.h>
-#include <hit.h>
+#include <receptor.h>
 #include <pulse.h>
 #include <numbers.h>
 #include <font.h>
@@ -53,23 +54,19 @@ PlayRender::PlayRender(Play* play) {
 	dmaCopy(tapTiles, tapGfx, tapTilesLen);
 	dmaCopy(tailTiles, tailGfx, tailTilesLen);
 	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
-	dmaCopy(hitTiles, hitGfx, hitTilesLen);
+	dmaCopy(receptorTiles, hitGfx, receptorTilesLen);
 
 	dmaCopy(tapPal, SPRITE_PALETTE, tapPalLen);
-	dmaCopy(hitPal, SPRITE_PALETTE + 16, hitPalLen);
+	dmaCopy(receptorPal, SPRITE_PALETTE + 16, receptorPalLen);
 
 	u8 left = popSprite();
 	u8 up = popSprite();
 	u8 down = popSprite();
 	u8 right = popSprite();
-	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 20, false, false, false, false, false);
-	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 21, false, false, false, false, false);
-	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 22, false, false, false, false, false);
-	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 0, 0, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 23, false, false, false, false, false);
-	oamSetPalette(&oamMain, left, 1);
-	oamSetPalette(&oamMain, down, 1);
-	oamSetPalette(&oamMain, up, 1);
-	oamSetPalette(&oamMain, right, 1);
+	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 20, false, false, false, false, false);
+	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 21, false, false, false, false, false);
+	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 22, false, false, false, false, false);
+	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 23, false, false, false, false, false);
 
 	loadStepGfx();
 	loadNumberGfx();
@@ -208,12 +205,13 @@ void PlayRender::loadPulseGfx() {
 	for (int i = 0; i < 4; i++) {
 		pulseSprite[i] = popSprite();
 		pulseFrame[i] = 0;
-		oamSet(&oamMain, pulseSprite[i], (HITXOFFSET - 16) + 32 * i, HITYOFFSET - 16, 0, 7, SpriteSize_64x64, SpriteColorFormat_Bmp, pulseGfx, i + 24, false, false, false, false, false);
+		oamSet(&oamMain, pulseSprite[i], (HITXOFFSET - 16) + 32 * i, HITYOFFSET - 16, 1, 7, SpriteSize_64x64, SpriteColorFormat_Bmp, pulseGfx, i + 24, false, false, false, false, false);
 	}
 	oamRotateScale(&oamMain, 24, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 25, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 26, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 27, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
+	REG_BLDCNT = BLEND_ALPHA | BLEND_DST_BG2;
 }
 
 void PlayRender::loadSubBackground() {
@@ -437,7 +435,6 @@ void PlayRender::renderPulse() {
 			oamSetAlpha(&oamMain, pulseSprite[i], 0);
 		}
 	}
-	REG_BLDCNT = BLEND_ALPHA | BLEND_DST_BG2;
 }
 
 void PlayRender::playJudgmentAnim(u8 anim) {

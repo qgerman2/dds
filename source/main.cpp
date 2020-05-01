@@ -52,6 +52,7 @@ int main(){
 	setBackdropColor(ARGB16(1, 29, 29, 29));
 	setBackdropColorSub(ARGB16(1, 29, 29, 29));
 	bgid = bgInit(2, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
+	bgSetPriority(bgid, 2);
 
 	//set up debug console
 	PrintConsole *console = consoleInit(0, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 1, false, false);
