@@ -182,7 +182,7 @@ bool parseNotes(chart* chart) {
 	fseek(fp, chart->notes_offset, SEEK_SET);
 	while (nextChar(fp, &c)){
 		if (c == ';') {break;}
-		if ((c == '0') || (c == '1') || (c == '2') || (c == '3') || (c == '4') || (c == 'M')) {
+		if ((c == '0') || (c == '1') || (c == '2') || (c == '3') || (c == '4') || (c == 'M') || (c == 'L') || (c == 'F') || (c == 'K')) {
 			count++;
 			if (count > 3) {
 				count = 0;
