@@ -1,6 +1,7 @@
 #ifndef GLOBALS
 #define GLOBALS
 #include "config.h"
+#include <nds.h>
 #include <string>
 #include "play.h"
 #include "menu.h"
@@ -32,4 +33,6 @@ extern bool nocash;
 extern bool keep_artwork;
 //buffer wheel path
 extern std::string bufferpath;
+//time a beat takes
+extern u32 beatfperiod;
 #endif

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "globals.h"
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
@@ -63,6 +64,9 @@ PlayRender::PlayRender(Play* play) {
 
 	loadSubBackground();
 	loadSubScore();
+
+	REG_BLDCNT = BLEND_ALPHA | BLEND_DST_BG2;
+	REG_BLDALPHA = 12 | 4 << 8;
 }
 
 PlayRender::~PlayRender() {
@@ -95,7 +99,7 @@ void PlayRender::loadReceptorGfx() {
 	for (int i = 0; i < 4; i++) {
 		receptorSprite[i] = popSprite();
 		oamSet(&oamMain, receptorSprite[i], HITXOFFSET + i * 32, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, receptorGfx, 20 + i, false, false, false, false, false);
-	
+		oamMain.oamMemory[receptorSprite[i]].attribute[0] |= ATTR0_TYPE_BLENDED;
 	}	
 }
 
@@ -210,7 +214,6 @@ void PlayRender::loadPulseGfx() {
 	oamRotateScale(&oamMain, 25, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 26, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 27, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
-	REG_BLDCNT = BLEND_ALPHA | BLEND_DST_BG2;
 }
 
 void PlayRender::loadSubBackground() {
@@ -427,7 +430,7 @@ void PlayRender::renderPulse() {
 		}
 		if (pulseFrame[i] > 0) {
 			pulseFrame[i]--;
-			int size = 160 + pulseFrame[i] * 12;
+			int size = 208 + pulseFrame[i] * 6;
 			oamRotateScale(&oamMain, i + 24, degreesToAngle(deg), size, size);
 			oamSetAlpha(&oamMain, pulseSprite[i], pulseFrame[i] * 2);
 		} else {
@@ -438,7 +441,13 @@ void PlayRender::renderPulse() {
 }
 
 void PlayRender::renderReceptor() {
-	
+	u8 beatp = 15 - ((play->beatf % beatfperiod) >> (BPMFRAC + MINUTEFRAC - 4));
+	for (int i = 0; i < receptorPalLen / 2; i ++) {
+		u8 c = receptorPal[i] & 0b11111;
+		u8 r = (c + beatp) / 2;
+		if (r > 31) {r = 31;}
+		SPRITE_PALETTE[16 + i] = ARGB16(1, r, r, r);
+	}
 }
 
 void PlayRender::playJudgmentAnim(u8 anim) {

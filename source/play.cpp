@@ -19,8 +19,6 @@
 
 using namespace std;
 
-u32 beatfperiod = (1 << (BPMFRAC + MINUTEFRAC));
-
 Play::Play() {
 	for (int i = 0; i < 128; i++) {
 		pushSprite(i);
