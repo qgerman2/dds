@@ -406,6 +406,6 @@ u32 Play::millis() {
 
 int Play::beatfToY(u32 beatf1, u32 beatf2) {
 	int dif = beatf1 - beatf2;
-	dif = dif * settings.speed / 9;
+	dif = dif * settings.speed / 12;
 	return (dif >> BEATFSCREENYFRAC);
 }
