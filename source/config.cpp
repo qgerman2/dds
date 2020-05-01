@@ -180,9 +180,9 @@ void Config::prev() {
 
 void Config::updateSprites() {
 	//speed
-	oamSet(&oamSub, valueSprites[0], 188, -y + 40 , 0, 3, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
+	oamSet(&oamSub, valueSprites[0], 188, -y + 40 , 0, 4, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
 	//opacity
-	oamSet(&oamSub, valueSprites[1], 188, -y + 40 + 32, 0, 3, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
+	oamSet(&oamSub, valueSprites[1], 188, -y + 40 + 32, 0, 4, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
 	//startup song
 	if (settings.intro) {
 		oamSet(&oamSub, valueSprites[2], 188, -y + 40 + 32 * 2, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);

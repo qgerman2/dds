@@ -31,32 +31,40 @@ void Buffer::fill(string focus) {
 	    		if ((strcmp(".", pent->d_name) == 0) || (strcmp("..", pent->d_name) == 0)) {
 	        		continue;
 	    		}
-	    		if (depth == 0 && pent->d_type == DT_DIR) {
-	    			dircount++;
-	    			isgroup = true;
-	    			if (size != -1) {
-	    				pos = dircountToBuffer(dircount);
-	        			if (pos != -1) {
-	        				if (items[pos].type == -1) {
-	        					bufferitem group;
-		        				group.type = 0;
-		        				group.name = pent->d_name;
-		        				group.path = dir + '/' + pent->d_name;
-		        				items[pos] = group;
+	    		if (pent->d_type == DT_DIR) {
+	    			if (depth == 0) {
+		    			dircount++;
+		    			isgroup = true;
+		    			if (size != -1) {
+		    				pos = dircountToBuffer(dircount);
+		        			if (pos != -1) {
+		        				if (items[pos].type == -1) {
+		        					bufferitem group;
+			        				group.type = 0;
+			        				group.name = pent->d_name;
+			        				group.path = dir + '/' + pent->d_name;
+			        				items[pos] = group;
+		        				}
+		        				buffercount++;
+		        			}
+		        		} else {
+		        			if (focus == pent->d_name) {
+	        					focuscount = dircount;
 	        				}
-	        				buffercount++;
-	        			}
-	        		} else {
-	        			if (focus == pent->d_name) {
-        					focuscount = dircount;
-        				}
-	        		}
-	        		if (parse(dir + '/' + pent->d_name, depth + 1)) {
-	        			return true;
-	        		}
-	    			if (buffercount > BUFFERSIZE) {
-	    				return true;
-	    			}
+		        		}
+		        		if (parse(dir + '/' + pent->d_name, depth + 1)) {
+		        			return true;
+		        		}
+		    			if (buffercount > BUFFERSIZE) {
+		    				return true;
+		    			}
+		    		} else {
+		    			if (size != -1) {
+		    				pos = dircountToBuffer(dircount);
+		    				bufferitem* group = &items[pos];
+							group->type = 2;
+		    			}
+		    		}
 	    		}
 	    		else if (!isgroup) {
 	        		for (int i = 0; pent->d_name[i] != '\0'; i++) {

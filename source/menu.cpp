@@ -63,8 +63,10 @@ Menu::~Menu() {
 
 void Menu::loop() {
 	while (1) {
-		loadBanner();
-		loadBuffer();
+		if (ready) {
+			loadBanner();
+			loadBuffer();
+		}
 		if (!idleAudio()) {mmStreamUpdate();}
 		if (state != 0) {
 			return;
@@ -122,11 +124,10 @@ void Menu::loadBanner() {
 
 void Menu::loadBuffer() {
 	if (bufferBlock) {
-		cout << "\nbufferblock focus: " << bufferFocus;
 		wheel->buffer->fill(bufferFocus);
-		wheel->updateFrameBg();
 		wheel->rebuildSongGfx();
 		bufferBlock = false;
+		wheel->updateFrameBg();
 		bufferFocus = "";
 	}
 }

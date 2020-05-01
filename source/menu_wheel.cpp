@@ -125,12 +125,14 @@ void MenuWheel::loadFrameBg() {
 			g++;
 		}
 	}
-	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[2][0], song_framePalLen);
-	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[2][1], song_framePalLen);
-	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[2][2], group_framePalLen);
-	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][0], song_framePalLen);
-	dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[3][1], song_framePalLen);
-	dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[3][2], group_framePalLen);
+	for (int i = 2; i < 4; i++) {
+		dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[i][0], song_framePalLen);
+		dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[i][1], song_framePalLen);
+		VRAM_H_EXT_PALETTE[i][1][2] = ARGB16(1, 29, 29, 29);
+		dmaCopy(group_framePal, &VRAM_H_EXT_PALETTE[i][2], group_framePalLen);
+		dmaCopy(song_framePal, &VRAM_H_EXT_PALETTE[i][3], song_framePalLen);
+		VRAM_H_EXT_PALETTE[i][3][2] = ARGB16(1, 7, 7, 7);
+	}
 }
 
 void MenuWheel::next() {
@@ -229,7 +231,7 @@ void MenuWheel::input() {
 				case 1:
 					menu->dif->show(item);
 					break;
-				case 0:
+				case 2:
 					rebuildBuffer(item->path, "");
 					break;
 			}
@@ -244,7 +246,6 @@ void MenuWheel::input() {
 
 bool MenuWheel::upDirectory() {
 	string newpath = bufferpath.substr(0, bufferpath.find_last_of('/'));
-	cout << "\nnewpath " << newpath;
 	if (newpath != "") {
 		rebuildBuffer(newpath, bufferpath.substr(bufferpath.find_last_of('/') + 1));
 		return true;
@@ -319,20 +320,30 @@ void MenuWheel::updateColor() {
 	for (int i = buffer->cursor - WHEELVIEW / 2; i <= buffer->cursor + WHEELVIEW / 2; i++) {
 		switch (buffer->items[i].type) {
 			case 0:
-				songFrameColor[item] = 2;
+				songFrameColor[item] = 3;
 				break;
 			case 1:
-				songFrameColor[item] = 1;
+				if (colorSwap) {
+					songFrameColor[item] = item % 2;
+				} else {
+					songFrameColor[item] = (item + 1) % 2;
+				}
+				break;
+			case 2:
+				songFrameColor[item] = 2;
 				break;
 		}
 		item++;
+	}
+	if (!menu->bufferBlock) {
+		colorSwap = !colorSwap;
 	}
 }
 
 void MenuWheel::updateFrameBg() {
 	/*cout << "\n--cursor: " << buffer->cursor << " center: " << buffer->center;
 	for (int i = 0; i < BUFFERSIZE; i++) {
-		cout << "\n" << i << " " << buffer->items[i].name;
+		cout << "\n" << i << " " << buffer->items[i].name << " " << buffer->items[i].type;
 		if (buffer->cursor == i) {
 			cout << "<-";
 		}
