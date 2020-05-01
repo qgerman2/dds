@@ -26,6 +26,8 @@ Pause::Pause() {
 
 Pause::~Pause() {
 	fadeOut(3, true);
+	vramSetBankF(VRAM_F_LCD);
+	vramSetBankH(VRAM_H_LCD);
 	oamFreeGfx(&oamMain, cursorGfx);
 	oamFreeGfx(&oamMain, frameGfx);
 }
