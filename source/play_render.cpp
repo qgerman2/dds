@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "globals.h"
 #include "parse.h"
 #include "play.h"
 #include "play_render.h"
@@ -46,28 +45,17 @@ const u8 notetypePal[9] = {8, 9, 10, 11, 12, 13, 14, 15, 15};
 PlayRender::PlayRender(Play* play) {
 	this->play = play;
 	prevscore = 0;
+
 	tapGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	tailGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	holdGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
-	hitGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 
 	dmaCopy(tapTiles, tapGfx, tapTilesLen);
 	dmaCopy(tailTiles, tailGfx, tailTilesLen);
-	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
-	dmaCopy(receptorTiles, hitGfx, receptorTilesLen);
-
 	dmaCopy(tapPal, SPRITE_PALETTE, tapPalLen);
-	dmaCopy(receptorPal, SPRITE_PALETTE + 16, receptorPalLen);
-
-	u8 left = popSprite();
-	u8 up = popSprite();
-	u8 down = popSprite();
-	u8 right = popSprite();
-	oamSet(&oamMain, left, HITXOFFSET, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 20, false, false, false, false, false);
-	oamSet(&oamMain, up, HITXOFFSET + 32, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 21, false, false, false, false, false);
-	oamSet(&oamMain, down, HITXOFFSET + 64, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 22, false, false, false, false, false);
-	oamSet(&oamMain, right, HITXOFFSET + 96, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, hitGfx, 23, false, false, false, false, false);
-
+	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
+	
+	loadReceptorGfx();
 	loadStepGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
@@ -84,7 +72,7 @@ PlayRender::~PlayRender() {
 	oamFreeGfx(&oamMain, tapGfx);
 	oamFreeGfx(&oamMain, tailGfx);
 	oamFreeGfx(&oamMain, holdGfx);
-	oamFreeGfx(&oamMain, hitGfx);
+	oamFreeGfx(&oamMain, receptorGfx);
 	oamFreeGfx(&oamMain, pulseGfx);
 	for (int i = 0; i < 10; i++) {
 		oamFreeGfx(&oamMain, numberGfx[i]);
@@ -98,6 +86,17 @@ PlayRender::~PlayRender() {
 	for (int i = 0; i < 10; i++) {
 		oamFreeGfx(&oamSub, pointGfx[i]);
 	}
+}
+
+void PlayRender::loadReceptorGfx() {
+	receptorGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	dmaCopy(receptorTiles, receptorGfx, receptorTilesLen);
+	dmaCopy(receptorPal, SPRITE_PALETTE + 16, receptorPalLen);
+	for (int i = 0; i < 4; i++) {
+		receptorSprite[i] = popSprite();
+		oamSet(&oamMain, receptorSprite[i], HITXOFFSET + i * 32, HITYOFFSET, 2, 1, SpriteSize_32x32, SpriteColorFormat_16Color, receptorGfx, 20 + i, false, false, false, false, false);
+	
+	}	
 }
 
 void PlayRender::loadStepGfx() {
@@ -251,6 +250,7 @@ void PlayRender::update() {
 	renderJudgment();
 	renderSubScore();
 	renderPulse();
+	renderReceptor();
 }
 
 void PlayRender::renderSteps() {
@@ -435,6 +435,10 @@ void PlayRender::renderPulse() {
 			oamSetAlpha(&oamMain, pulseSprite[i], 0);
 		}
 	}
+}
+
+void PlayRender::renderReceptor() {
+	
 }
 
 void PlayRender::playJudgmentAnim(u8 anim) {
