@@ -46,6 +46,12 @@ Play::Play() {
 			}
 		} else {
 			keep_artwork = false;
+
+		}
+	} else {
+		if (!keep_artwork) {
+			clearBitmapBg(bgid);
+			darkenBitmapBg(bgid, 0);
 		}
 	}
 	swiWaitForVBlank();
