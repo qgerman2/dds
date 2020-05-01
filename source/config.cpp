@@ -39,10 +39,10 @@ Config::~Config() {
 
 void Config::bg() {
 	vramSetBankH(VRAM_H_LCD);
-	sub_bg = bgInitSub(1, BgType_Text8bpp, BgSize_T_256x256, 3, 6);
+	sub_bg = bgInitSub(1, BgType_Text4bpp, BgSize_T_256x256, 3, 6);
 	dmaCopy(config_subTiles, bgGetGfxPtr(sub_bg), config_subTilesLen);
 	dmaCopy(config_subMap, bgGetMapPtr(sub_bg), config_subMapLen);
-	dmaCopy(config_subPal, &VRAM_H[1*16*256], config_subPalLen);
+	dmaCopy(config_subPal, &BG_PALETTE_SUB[16], config_subPalLen);
 	bgSetPriority(sub_bg, 2);
 	bgHide(sub_bg);
 	cursor_bg = bgInitSub(3, BgType_ExRotation, BgSize_ER_256x256, 1, 2);
