@@ -363,7 +363,9 @@ void Play::newSteps(u16 data, u32 beatf, u8 notetype) {
 		}
 		if (data & mine[i]) {
 			s.type = 6;
-			newstep = true;
+			if (settings.mines) {
+				newstep = true;
+			}
 		}
 		if (newstep) {
 			s.x = (HITXOFFSET + 32 * i);
