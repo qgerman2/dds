@@ -12,12 +12,16 @@ private:
 	u16* tapGfx;
 	u16* tailGfx;
 	u16* holdGfx;
+	u16* holdSideGfx;
+	u16* holdUpGfx;
+	u16* holdDownGfx;
 	u16* receptorGfx;
 	u16* numberGfx[10];
 	u16* judgeGfx[24];
 	u16* scoreGfx[11];
 	u16* pointGfx[10];
 	u16* pulseGfx;
+	u8 holdTopSprite[4];
 	u8 receptorSprite[4];
 	u8 comboSprite[3];
 	u8 judgeSprite[2];
@@ -29,6 +33,7 @@ private:
 	u8 judgeFrame = 0;
 	u8 judgeAnim = 254;
 public:
+	int holdTop[4];
 	int newscore = 0;
 	int prevscore = 0;
 	int pulseFrame[4];
@@ -36,6 +41,7 @@ public:
 	~PlayRender();
 	void update();
 	void renderSteps();
+	void loadHoldGfx();
 	void loadReceptorGfx();
 	void loadStepGfx();
 	void loadNumberGfx();

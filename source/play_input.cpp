@@ -59,6 +59,7 @@ void PlayInput::update() {
 						if (s->type == 2) { //hold
 							stateCol[s->col] = 1;
 							play->score->add(&(*s), beatfdiff);
+							play->render->holdTop[s->col] = s->notetype;
 							s = play->removeStep(s);
 							mineCol[s->col].first = false;
 							continue;
@@ -90,6 +91,7 @@ void PlayInput::update() {
 						}
 						if (stateCol[s->col] == 1) {
 							if (s->type == 3) {
+								play->render->holdTop[s->col] = -1;
 								stateCol[s->col] = 2;
 								play->score->add(&(*s), 0);
 								s = play->removeStep(s);
@@ -99,6 +101,7 @@ void PlayInput::update() {
 					}
 					if (released) {
 						if (holdCol[s->col].first) {
+							play->render->holdTop[s->col] = -1;
 							if (s->type == 3) {
 								for (auto k = s; k != holdCol[s->col].second;) {
 									if (k->type == 5 && k->col == s->col) {

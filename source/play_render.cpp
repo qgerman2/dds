@@ -15,6 +15,9 @@
 #include <tap.h>
 #include <tail.h>
 #include <hold.h>
+#include <hold_tail_side.h>
+#include <hold_tail_up.h>
+#include <hold_tail_down.h>
 #include <receptor.h>
 #include <pulse.h>
 #include <numbers.h>
@@ -49,13 +52,12 @@ PlayRender::PlayRender(Play* play) {
 
 	tapGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
 	tailGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-	holdGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
 
 	dmaCopy(tapTiles, tapGfx, tapTilesLen);
 	dmaCopy(tailTiles, tailGfx, tailTilesLen);
 	dmaCopy(tapPal, SPRITE_PALETTE, tapPalLen);
-	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
 	
+	loadHoldGfx();
 	loadReceptorGfx();
 	loadStepGfx();
 	loadNumberGfx();
@@ -76,6 +78,9 @@ PlayRender::~PlayRender() {
 	oamFreeGfx(&oamMain, tapGfx);
 	oamFreeGfx(&oamMain, tailGfx);
 	oamFreeGfx(&oamMain, holdGfx);
+	oamFreeGfx(&oamMain, holdSideGfx);
+	oamFreeGfx(&oamMain, holdUpGfx);
+	oamFreeGfx(&oamMain, holdDownGfx);
 	oamFreeGfx(&oamMain, receptorGfx);
 	oamFreeGfx(&oamMain, pulseGfx);
 	for (int i = 0; i < 10; i++) {
@@ -90,6 +95,26 @@ PlayRender::~PlayRender() {
 	for (int i = 0; i < 10; i++) {
 		oamFreeGfx(&oamSub, pointGfx[i]);
 	}
+}
+
+void PlayRender::loadHoldGfx() {
+	for (int i = 0; i < 4; i++) {
+		holdTopSprite[i] = popSprite();
+		holdTop[i] = -1;
+	}
+	holdGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+	holdSideGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
+	holdUpGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	holdDownGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	dmaCopyHalfWords(3, holdBitmap, holdGfx, holdBitmapLen);
+	dmaCopy(hold_tail_sideTiles, holdSideGfx, hold_tail_sideTilesLen);
+	dmaCopy(hold_tail_upTiles, holdUpGfx, hold_tail_upTilesLen);
+	dmaCopy(hold_tail_downTiles, holdDownGfx, hold_tail_downTilesLen);
+	dmaCopy(hold_tail_sidePal, SPRITE_PALETTE + 64, hold_tail_sidePalLen);
+	dmaCopy(hold_tail_upPal, SPRITE_PALETTE + 80, hold_tail_upPalLen);
+	dmaCopy(hold_tail_downPal, SPRITE_PALETTE + 96, hold_tail_downPalLen);
+	oamRotateScale(&oamMain, 1, 0, -1 << 8, 1 << 8);
+	cout << "\nrotate sclae";
 }
 
 void PlayRender::loadReceptorGfx() {
@@ -257,7 +282,7 @@ void PlayRender::update() {
 }
 
 void PlayRender::renderSteps() {
-	for (auto i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (play->input->holdCol[i].first && (play->input->holdCol[i].second->y < (HITYOFFSET + 16))) {
 			if (play->input->holdCol[i].second->gfx == NULL) {
 				play->input->holdCol[i].second->gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_Bmp);
@@ -265,6 +290,11 @@ void PlayRender::renderSteps() {
 			}
 			u8 diff = min(HITYOFFSET + 16 - play->input->holdCol[i].second->y, 32);
 			dmaFillHalfWords(ARGB16(0,0,0,0), play->input->holdCol[i].second->gfx, 32 * diff * 2);
+		}
+		if (holdTop[i] != -1) {
+			oamSet(&oamMain, holdTopSprite[i], HITXOFFSET + i * 32, HITYOFFSET, 0, notetypePal[holdTop[i] - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i + 20, false, false, false, false, false);
+		} else {
+			oamClearSprite(&oamMain, holdTopSprite[i]);
 		}
 	}
 	for (auto i = play->steps.begin(); i != play->steps.end(); i++) {
@@ -275,7 +305,18 @@ void PlayRender::renderSteps() {
 					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
 					break;
 				case (3):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
+					switch (i->col) {
+						case 0:
+						case 3:
+							oamSet(&oamMain, i->sprite, i->x - int(i->col == 3), i->y - 1, 0, 4, SpriteSize_32x32, SpriteColorFormat_16Color, holdSideGfx, int(i->col == 3), false, false, false, false, false);
+							break;
+						case 1:
+							oamSet(&oamMain, i->sprite, i->x, i->y - 1, 0, 6, SpriteSize_32x32, SpriteColorFormat_16Color, holdDownGfx, 0, false, false, false, false, false);
+							break;
+						case 2:
+							oamSet(&oamMain, i->sprite, i->x, i->y - 1, 0, 5, SpriteSize_32x32, SpriteColorFormat_16Color, holdUpGfx, 0, false, false, false, false, false);
+							break;
+					}
 					break;
 				case (5):
 					if (i->gfx != NULL) {
