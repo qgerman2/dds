@@ -2,7 +2,7 @@
 #define PLAYRENDER
 #define HITXOFFSET 64
 #define HITYOFFSET 15
-#define COMBOX 100
+#define COMBOX 112
 #define COMBOY 150
 class Play;
 class PlayRender {

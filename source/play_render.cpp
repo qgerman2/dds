@@ -340,24 +340,24 @@ void PlayRender::renderCombo() {
 	int d;
 	int c;
 	if (play->score->combo < 10) {
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[play->score->combo], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[play->score->combo], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 		oamClearSprite(&oamMain, comboSprite[1]);
 	}
 	else if (play->score->combo < 100) {
 		u = play->score->combo % 10;
 		d = play->score->combo / 10;
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX + 10, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX - 10, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
 		oamClearSprite(&oamMain, comboSprite[0]);
 	}
 	else if (play->score->combo < 1000) {
 		u = (play->score->combo % 100) % 10;
 		d = (play->score->combo % 100) / 10;
 		c = play->score->combo / 100;
-		oamSet(&oamMain, comboSprite[2], COMBOX, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[1], COMBOX - 20, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
-		oamSet(&oamMain, comboSprite[0], COMBOX - 40, COMBOY, 0, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[2], COMBOX + 20, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[u], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[1], COMBOX, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[d], 2, false, false, false, true, false);			
+		oamSet(&oamMain, comboSprite[0], COMBOX - 20, COMBOY, 2, 2, SpriteSize_32x32, SpriteColorFormat_16Color, numberGfx[c], 2, false, false, false, true, false);			
 	}
 }
 
