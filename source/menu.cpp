@@ -129,5 +129,6 @@ void Menu::loadBuffer() {
 		bufferBlock = false;
 		wheel->updateFrameBg();
 		bufferFocus = "";
+		wheel->updateSong();
 	}
 }

@@ -27,7 +27,6 @@ private:
 	void next();
 	void renderChar(int angle);
 	void updateColor();
-	void updateSong();
 	void rebuildBuffer(std::string path, std::string focus);
 	bool upDirectory();
 	bool colorSwap = false;
@@ -38,6 +37,7 @@ public:
 	void playAnim(int anim);
 	void rebuildSongGfx();
 	void updateFrameBg();
+	void updateSong();
 	void input();
 	void render();
 	int frame = 0;
