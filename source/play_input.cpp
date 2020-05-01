@@ -29,13 +29,16 @@ PlayInput::~PlayInput() {
 }
 
 void PlayInput::update() {
-	for (int i = 0; i < 4; i++) {
-		stateCol[i] = 0;
-		mineCol[i].first = false;
-	}
 	keysPressed = keysDown();
 	keysReleased = keysUp();
 	keysHeldd = keysHeld();
+	for (int i = 0; i < 4; i++) {
+		stateCol[i] = 0;
+		mineCol[i].first = false;
+		if (keysPressed & colToKeys[i]) {
+			play->render->pulseFrame[i] = 8;
+		}
+	}
 	if (((keysPressed & stepKeys) > 0) || ((keysReleased & stepKeys) > 0) || ((keysHeldd & stepKeys) > 0)) {
 		for (auto s = play->steps.begin(); s != play->steps.end();) {
 			if (stateCol[s->col] == 2) {++s; continue;}

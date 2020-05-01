@@ -15,6 +15,7 @@
 #include <tail.h>
 #include <hold.h>
 #include <hit.h>
+#include <pulse.h>
 #include <numbers.h>
 #include <font.h>
 
@@ -73,10 +74,10 @@ PlayRender::PlayRender(Play* play) {
 	loadStepGfx();
 	loadNumberGfx();
 	loadJudgmentGfx();
+	loadPulseGfx();
 
 	loadSubBackground();
 	loadSubScore();
-	//loadFontGfx();
 }
 
 PlayRender::~PlayRender() {
@@ -87,6 +88,7 @@ PlayRender::~PlayRender() {
 	oamFreeGfx(&oamMain, tailGfx);
 	oamFreeGfx(&oamMain, holdGfx);
 	oamFreeGfx(&oamMain, hitGfx);
+	oamFreeGfx(&oamMain, pulseGfx);
 	for (int i = 0; i < 10; i++) {
 		oamFreeGfx(&oamMain, numberGfx[i]);
 	}
@@ -200,17 +202,18 @@ void PlayRender::loadJudgmentGfx() {
 	}
 }
 
-void PlayRender::loadFontGfx() {
-	PrintConsole *console = consoleInit(0, 2, BgType_Text4bpp, BgSize_T_256x256, 4, 1, true, false);
-	ConsoleFont font;
-	font.gfx = (u16*)fontTiles;
-	font.pal = (u16*)fontPal;
-	font.numChars = 95;
-	font.numColors = fontPalLen / 2;
-	font.bpp = 4;
-	font.asciiOffset = 32;
-	font.convertSingleColor = false;
-	consoleSetFont(console, &font);
+void PlayRender::loadPulseGfx() {
+	pulseGfx = oamAllocateGfx(&oamMain, SpriteSize_64x64, SpriteColorFormat_Bmp);
+	dmaCopy(pulseBitmap, pulseGfx, pulseBitmapLen);
+	for (int i = 0; i < 4; i++) {
+		pulseSprite[i] = popSprite();
+		pulseFrame[i] = 0;
+		oamSet(&oamMain, pulseSprite[i], (HITXOFFSET - 16) + 32 * i, HITYOFFSET - 16, 0, 7, SpriteSize_64x64, SpriteColorFormat_Bmp, pulseGfx, i + 24, false, false, false, false, false);
+	}
+	oamRotateScale(&oamMain, 24, degreesToAngle(90), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 25, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 26, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamMain, 27, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
 }
 
 void PlayRender::loadSubBackground() {
@@ -249,6 +252,7 @@ void PlayRender::update() {
 	renderCombo();
 	renderJudgment();
 	renderSubScore();
+	renderPulse();
 }
 
 void PlayRender::renderSteps() {
@@ -412,6 +416,28 @@ void PlayRender::renderSubScore() {
 			oamSet(&oamSub, pointSprite[i * 3 + x], 91 + col * 112 + (2 - x) * 8, 32 + row * 16, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, pointGfx[digit], 0, false, false, false, false, false);
 		}
 	}
+}
+
+void PlayRender::renderPulse() {
+	for (int i = 0; i < 4; i++) {
+		int deg;
+		switch (i) {
+			case 0: deg = 90; break;
+			case 1: deg = 180; break;
+			case 2: deg = 0; break;
+			case 3: deg = 270; break;
+		}
+		if (pulseFrame[i] > 0) {
+			pulseFrame[i]--;
+			int size = 160 + pulseFrame[i] * 12;
+			oamRotateScale(&oamMain, i + 24, degreesToAngle(deg), size, size);
+			oamSetAlpha(&oamMain, pulseSprite[i], pulseFrame[i] * 2);
+		} else {
+			oamRotateScale(&oamMain, i + 24, degreesToAngle(deg), 1 << 8, 1 << 8);
+			oamSetAlpha(&oamMain, pulseSprite[i], 0);
+		}
+	}
+	REG_BLDCNT = BLEND_ALPHA | BLEND_DST_BG2;
 }
 
 void PlayRender::playJudgmentAnim(u8 anim) {

@@ -17,10 +17,12 @@ private:
 	u16* judgeGfx[24];
 	u16* scoreGfx[11];
 	u16* pointGfx[10];
+	u16* pulseGfx;
 	u8 comboSprite[3];
 	u8 judgeSprite[2];
 	u8 scoreSprite[11];
 	u8 pointSprite[3 * 6];
+	u8 pulseSprite[4];
 	u8 scoreFrame = 0;
 	u8 segments = 0;
 	u8 judgeFrame = 0;
@@ -28,6 +30,7 @@ private:
 public:
 	int newscore = 0;
 	int prevscore = 0;
+	int pulseFrame[4];
 	PlayRender(Play* play);
 	~PlayRender();
 	void update();
@@ -36,13 +39,14 @@ public:
 	void loadLifebarGfx();
 	void loadNumberGfx();
 	void loadJudgmentGfx();
-	void loadFontGfx();
+	void loadPulseGfx();
 	void loadSubBackground();
 	void loadSubScore();
 	void renderLifebar();
 	void renderCombo();
 	void renderJudgment();
 	void renderSubScore();
+	void renderPulse();
 	void playJudgmentAnim(u8 anim);
 	void playScoreAnim();
 };
