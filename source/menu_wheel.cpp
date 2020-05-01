@@ -270,7 +270,7 @@ void MenuWheel::rebuildSongGfx() {
 
 void MenuWheel::render() {
 	int angle = 0;
-	if (frame > 22) {
+	if (frame > 23) {
 		angle = 12 * (45 - frame) * -anim;
 	}
 	else if (frame > 0) {
@@ -279,7 +279,7 @@ void MenuWheel::render() {
 	bgSet(bg1, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgSet(bg2, angle, 1 << 8, 1 << 8, 515 << 8, 128 << 8, 520 << 8, 96 << 8);
 	bgUpdate();
-	if (frame == 22) {
+	if (frame == 23) {
 		if (anim > 0) {
 			next();
 		}
@@ -292,8 +292,10 @@ void MenuWheel::render() {
 	}
 	renderChar(angle);
 	if (frame > 0) {
-		frame--;
-		frame--;
+		frame = frame - 3;
+		if (frame < 0) {
+			frame = 0;
+		}
 	}
 }
 
