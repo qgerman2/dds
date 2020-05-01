@@ -82,9 +82,9 @@ void Menu::loop() {
 
 void Menu::frame() {
 	fadeUpdate();
-	scanKeys();
-	input();
 	if (!bufferBlock) {
+		scanKeys();
+		input();
 		oamClearSprite(&oamSub, waitSprite);
 		render();
 	} else {

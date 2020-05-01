@@ -223,8 +223,8 @@ void MenuWheel::updateSong() {
 
 void MenuWheel::input() {
 	if (frame == 0) {
-		if (keysDown() & KEY_UP) {playAnim(-1);}
-		else if (keysDown() & KEY_DOWN) {playAnim(1);}
+		if (keysDown() & KEY_UP || keysHeld() & KEY_UP) {playAnim(-1);}
+		else if (keysDown() & KEY_DOWN || keysHeld() & KEY_DOWN) {playAnim(1);}
 		else if (keysDown() & KEY_A) {
 			bufferitem* item = &buffer->items[buffer->cursor];
 			switch (item->type) {
