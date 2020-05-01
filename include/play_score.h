@@ -30,6 +30,7 @@ public:
 	~PlayScore();
 	void add(step* s, u32 beatfdiff);
 	void miss(step* s);
+	void mine();
 	void updateJudgesWindow();
 };
 extern const int worth[6];

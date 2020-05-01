@@ -280,6 +280,9 @@ void PlayRender::renderSteps() {
 						oamSet(&oamMain, i->sprite, i->x, i->y, 0, 15, SpriteSize_32x32, SpriteColorFormat_Bmp, holdGfx, 2, false, false, false, true, false);
 					}
 					break;
+				case (6):
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[8], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
+					break;
 			}
 		} else {
 			oamClearSprite(&oamMain, i->sprite);

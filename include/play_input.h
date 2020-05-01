@@ -13,6 +13,7 @@ private:
 	u32 keysHeldd;
 	u32 beatfdiff;
 	u8 stateCol[4] = {0}; //0 aun no pasa, 1 buscar hold, 2 ta listo
+	std::pair<bool, std::list<step>::iterator> mineCol[4];
 	bool pressed = false;	//se apreto/solto teclas durante el frame
 	bool released = false;
 	bool held = false;

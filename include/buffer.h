@@ -1,6 +1,6 @@
 #ifndef BUFFER
 #define BUFFER
-#define BUFFERSIZE 19
+#define BUFFERSIZE 39
 #include <string>
 #include <vector>
 #include "parse.h"

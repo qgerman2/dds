@@ -31,6 +31,7 @@ PlayInput::~PlayInput() {
 void PlayInput::update() {
 	for (int i = 0; i < 4; i++) {
 		stateCol[i] = 0;
+		mineCol[i].first = false;
 	}
 	keysPressed = keysDown();
 	keysReleased = keysUp();
@@ -56,13 +57,21 @@ void PlayInput::update() {
 							stateCol[s->col] = 1;
 							play->score->add(&(*s), beatfdiff);
 							s = play->removeStep(s);
+							mineCol[s->col].first = false;
 							continue;
 						}
 						else if ((s->type != 3) && (s->type != 5)) {
-							stateCol[s->col] = 2;
-							play->score->add(&(*s), beatfdiff);
-							s = play->removeStep(s);
-							continue;
+							if (s->type != 6) {
+								stateCol[s->col] = 2;
+								play->score->add(&(*s), beatfdiff);
+								s = play->removeStep(s);
+								mineCol[s->col].first = false;
+								continue;
+							} else {
+								//mine
+								mineCol[s->col].first = true;
+								mineCol[s->col].second = s;
+							}
 						}
 					}
 					if (held && !pressed) {
@@ -113,6 +122,10 @@ void PlayInput::update() {
 			if ((keysHeldd & colToKeys[i]) == 0) {
 				holdCol[i].first = false;
 			}
+		}
+		if (mineCol[i].first) {
+			play->removeStep(mineCol[i].second);
+			play->score->mine();
 		}
 	}
 }
