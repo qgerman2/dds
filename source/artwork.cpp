@@ -26,8 +26,9 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 			if (!success) {
 				//some files lie in their extension
 				fclose(infile);
-				processFile(&infile, filepath);
-				success = fromPng(infile, &tinfo);
+				if (processFile(&infile, filepath)) {
+					success = fromPng(infile, &tinfo);
+				}
 			}
 		}
 	} else if (extension == "png") {
@@ -36,8 +37,9 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 			if (!success) {
 				//why would they do that?
 				fclose(infile);
-				processFile(&infile, filepath);
-				success = fromJpeg(infile, &tinfo);
+				if (processFile(&infile, filepath)) {
+					success = fromJpeg(infile, &tinfo);
+				}
 			}
 		}
 	} else if (extension == "dds") {
