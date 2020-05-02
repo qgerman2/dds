@@ -97,7 +97,11 @@ void Notice::loop() {
 		}
 		if (transition && transitionFrame > 0) {transitionMenuUpdate();}
 		scanKeys();
-		if (!config->active) {cursorUpdate();} 
+		if (!config->active &&
+			transitionTimer == 0 &&
+			transitionFrame == 0) {
+			cursorUpdate();
+		} 
 		if (config->active) {config->update();}
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
