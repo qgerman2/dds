@@ -1,24 +1,25 @@
 #include <nds.h>
+#include <time.h>
+
 #include <fat.h>
 #include <sys/dir.h>
 #include <unistd.h>
-#include <maxmod9.h>
+
+#include <mad.h>
+#include <tremor/ivorbiscodec.h>
+#include <tremor/ivorbisfile.h>
+#include <zlib.h>
+#include <png.h>
+#include <jpeglib.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
-#include <time.h>
+
 #include "main.h"
-#include "menu.h"
-#include "menu_wheel.h"
-#include "play.h"
-#include "parse.h"
-#include "sound.h"
-#include "artwork.h"
-#include "render.h"
-#include "notice.h"
-#include "config.h"
-#include "pause.h"
 #include "globals.h"
+#include "notice.h"
+#include "pause.h"
 #include <font.h>
 
 using namespace std;
@@ -72,6 +73,14 @@ int main(){
 		cout << "\nAlso check if your sd card is write protected";
 		error();
 	}
+
+	//library versions
+	cout << "\nlibmad " << MAD_VERSION_MAJOR << "." << MAD_VERSION_MINOR << "." << MAD_VERSION_PATCH;
+	cout << "\nlibogg 1.3.4";
+	cout << "\nlibtremor lowmem 1.0.2";
+	cout << "\nzlib " << ZLIB_VERSION;
+	cout << "\nlibpng " << PNG_LIBPNG_VER_STRING;
+	cout << "\nlibjpeg-turbo " << JPEG_LIB_VERSION;
 
 	setBackdropColor(ARGB16(1, 29, 29, 29));
 	setBackdropColorSub(ARGB16(1, 29, 29, 29));
