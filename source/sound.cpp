@@ -96,7 +96,6 @@ bool loadMp3() {
 			}
 		};
 	}
-	audio.stream.sampling_rate = 48000;
 	audio.stream.callback = mm_mp3_callback;
 	return true;
 }
