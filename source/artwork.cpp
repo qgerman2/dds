@@ -23,10 +23,18 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 	if (extension == "jpeg" || extension == "jpg") {
 		if (processFile(&infile, filepath)) {
 			success = fromJpeg(infile, &tinfo);
+			if (!success) {
+				//some files lie in their extension
+				success = fromPng(infile, &tinfo);
+			}
 		}
 	} else if (extension == "png") {
 		if (processFile(&infile, filepath)) {
 			success = fromPng(infile, &tinfo);
+			if (!success) {
+				//why would they do that?
+				success = fromJpeg(infile, &tinfo);
+			}
 		}
 	} else if (extension == "dds") {
 		if (processFile(&infile, filepath)) {
