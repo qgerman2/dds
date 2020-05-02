@@ -75,7 +75,7 @@ void Buffer::fill(string focus) {
 					}
 					if (fileext == "sm") {
 						pos = dircountToBuffer(dircount);
-						if (size != -1 && items[pos].type == 0 && pos != -1) {
+						if (size != -1 && pos != -1 && items[pos].type == 0) {
 							bufferitem* song = &items[pos];
 							song->type = 1;
 							song->smpath = dir + '/' + pent->d_name;
