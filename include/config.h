@@ -4,8 +4,8 @@
 #define CONFIGCOUNT 7
 #define CONFIGPATH "/dds/settings"
 struct settings_t {
-	int speed = 3;
-	int opacity = 9;
+	int speed = 4;
+	int opacity = 6;
 	bool intro = true;
 	bool cache = true;
 	bool cache_bg = false;
