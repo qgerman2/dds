@@ -1,5 +1,7 @@
 #include <nds.h>
 #include <fat.h>
+#include <sys/dir.h>
+#include <unistd.h>
 #include <maxmod9.h>
 #include <iostream>
 #include <string>
@@ -45,15 +47,6 @@ int main(){
 	oamInit(&oamMain, SpriteMapping_Bmp_1D_128, false);
 	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
 
-	if (!fatInitDefault()) {
-		sassert(0, "failed to load libfat");
-	}
-
-	setBackdropColor(ARGB16(1, 29, 29, 29));
-	setBackdropColorSub(ARGB16(1, 29, 29, 29));
-	bgid = bgInit(2, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
-	bgSetPriority(bgid, 2);
-
 	//set up debug console
 	PrintConsole *console = consoleInit(0, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 1, false, false);
 	ConsoleFont font;
@@ -67,12 +60,30 @@ int main(){
 	consoleSetFont(console, &font);
 	bgSetPriority(console->bgId, 0);
 	consoleid = console->bgId;
-	bgHide(consoleid);
+
+	if (!fatInitDefault()) {
+		cout << "\nFailed to load libfat";
+		cout << "\nIf you're using a flashcard, try to patch dds.nds with a DLDI patch";
+		error();
+	}
+
+	if (!ddsCheck()) {
+		cout << "\nTry placing dds.nds at root of your sdcard and create a dds folder";
+		cout << "\nAlso check if your sd card is write protected";
+		error();
+	}
+
+	setBackdropColor(ARGB16(1, 29, 29, 29));
+	setBackdropColorSub(ARGB16(1, 29, 29, 29));
+	bgid = bgInit(2, BgType_Bmp16, BgSize_B16_256x256, 16, 0);
+	bgSetPriority(bgid, 2);
 
 	ConfigLoad();
 
 	if (settings.debug) {
 		bgShow(consoleid);
+	} else {
+		bgHide(consoleid);
 	}
 
 	//check if running on no$gba
@@ -83,6 +94,7 @@ int main(){
 
 	//play frame
 	irqSet(IRQ_VBLANK, vblank_interrupt);
+
 
 	while (1) {
 		switch (state) {
@@ -109,4 +121,28 @@ int main(){
 		}
 	}
 	return 0;
+}
+
+void error() {
+	while (1) {
+		swiWaitForVBlank();
+	}
+}
+
+bool ddsCheck() {
+	DIR* dir = opendir("/dds");
+	if (!dir) {
+		cout << "\nCan't find dds folder";
+		cout << "\nTrying to create it";
+		mkdir("/dds",777);
+		dir = opendir("/dds"); 
+		if (!dir) {
+			cout << "\nCouldn't create dds folder";
+			return false;
+		} 
+	}
+	if (dir) {
+		closedir(dir);
+	}
+	return true;
 }

@@ -99,6 +99,14 @@ void Buffer::fill(string focus) {
 		parse(bufferpath.c_str(), 0);
 		size = dircount + 1;
 		dircount = -1;
+		if (size == 0) {
+			//no hay elementos
+			size = 1;
+			bufferitem empty;
+			empty.type = 0;
+			empty.name = "No songs found";
+			items[BUFFERSIZE / 2] = empty;
+		}
 	}
 	//seleccionar cancion al azar
 	if (random) {
