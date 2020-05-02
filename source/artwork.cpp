@@ -220,7 +220,7 @@ void errorPng(png_structp png_ptr, png_const_charp msg) {
 }
 
 void warningPng(png_structp png_ptr, png_const_charp msg) {
-	//cout << "\nlibpng warning: " << msg;
+	cout << "\nlibpng warning: " << msg;
 }
 
 bool fromBmp(FILE* bmp, u16* dest, uint width, uint height) {
@@ -230,7 +230,6 @@ bool fromBmp(FILE* bmp, u16* dest, uint width, uint height) {
 	uint offset = 0;
 	uint r_width = 0;
 	uint r_height = 0;
-	uint row = width * 2;
 	uint padding = (width * 2) % 4;
 	//BM signature
 	if (!fread(bm, 2, 1, bmp)) {
@@ -291,9 +290,17 @@ bool fromBmp(FILE* bmp, u16* dest, uint width, uint height) {
 		return false;
 	}
 	for (uint y = 0; y < height; y++) {
-		if (fread(&dest[(height - y - 1) * width], 1, row, bmp) != row) {
+		//fread straight into &dest only works in dsi mode
+		//i dont know why it doesnt work on twilight menu's ds mode
+		u16 buffer[width];
+		if (fread(&buffer, 2, width, bmp) != width) {
 			cout << "\nFailed to read pixel row";
 			return false;
+		} else {
+			//workaround
+			for (uint x = 0; x < width; x++) {
+				dest[(height - y - 1) * width + x] = ARGB16(1, buffer[x] & REDMASK, (buffer[x] & GREENMASK) >> 5, (buffer[x] & BLUEMASK) >> 10);
+			}
 		}
 		if (fseek(bmp, padding, SEEK_CUR) != 0) {
 			cout << "\nFailed to jump to next row";
