@@ -25,6 +25,8 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 			success = fromJpeg(infile, &tinfo);
 			if (!success) {
 				//some files lie in their extension
+				fclose(infile);
+				processFile(&infile, filepath);
 				success = fromPng(infile, &tinfo);
 			}
 		}
@@ -33,6 +35,8 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 			success = fromPng(infile, &tinfo);
 			if (!success) {
 				//why would they do that?
+				fclose(infile);
+				processFile(&infile, filepath);
 				success = fromJpeg(infile, &tinfo);
 			}
 		}
