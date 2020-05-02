@@ -126,11 +126,13 @@ void Play::updateBeat() {
 	if (offset < 0) {
 		if (time > uint(-offset)) {
 			time = time + offset;
+			offset_done = true;
 		} else {
-			time = 0;
+			time = uint(-offset) - time;
 		}
 	} else {
 		time = time + offset;
+		offset_done = true;
 	}
 	minutef = (time * (1 << MINUTEFRAC)) / 60000;
 	beatf = 0;
@@ -318,7 +320,7 @@ void Play::updateSteps() {
 		i->y = beatfToY(i->beatf, beatf) + HITYOFFSET;
 		if (((i->type == 1) || (i->type == 2)) && !i->disabled && (i->beatf < beatf)) {
 			u32 beatfdiff = beatf - i->beatf;
-			if (beatfdiff > score->judgesWindow[4] || i->y < -32) {
+			if ((beatfdiff > score->judgesWindow[4] && offset_done) || i->y < -32) {
 				//se paso una nota
 				score->miss(&(*i));
 				i->disabled = true;
@@ -406,6 +408,9 @@ u32 Play::millis() {
 
 int Play::beatfToY(u32 beatf1, u32 beatf2) {
 	int dif = beatf1 - beatf2;
+	if (!offset_done) {
+		dif = beatf1 + beatf2;
+	}
 	dif = dif * settings.speed / 12;
 	return (dif >> BEATFSCREENYFRAC);
 }

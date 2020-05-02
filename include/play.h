@@ -52,6 +52,7 @@ private:
 	int offset;
 	bool cursor_end = false;
 	int beat_end = 0;
+	bool offset_done = false;
 public:
 	PlayRender* render;
 	PlayScore* score;
