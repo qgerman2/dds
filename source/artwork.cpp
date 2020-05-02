@@ -47,7 +47,7 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 			success = fromBmp(infile, dest, width, height);
 		}
 	} else {
-		//cout << "\nNot a supported image file " << filepath;
+		cout << "\nNot a supported image file (" << extension << ")";
 		success = false;
 	}
 	if (infile != NULL) {
@@ -59,7 +59,7 @@ bool loadArtwork(string filepath, u16* dest, uint width, uint height) {
 bool processFile(FILE** infile, string filepath) {
 	*infile = fopen(filepath.c_str(), "rb");
 	if (*infile == NULL) {
-		//cout << "\nCouldn't open image";
+		cout << "\nCouldn't open image";
 		return false;
 	}
 	return true;
