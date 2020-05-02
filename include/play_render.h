@@ -33,7 +33,9 @@ private:
 	u8 segments = 0;
 	u8 judgeFrame = 0;
 	u8 judgeAnim = 254;
+	int lastbeat = 0;
 public:
+	bool swapStepGfx = false;
 	int holdTop[4];
 	int newscore = 0;
 	int prevscore = 0;

@@ -36,7 +36,6 @@ private:
 	u32 time;
 	int bpmindex = -1;
 	u32 minutef;
-	int beat;					//beat global
 	int firstbeat = -1;			//primer beat del measure global
 	int count = 0; 				//beat relativo al primer beat de measure global
 	int sets;					//cantidad de sets en measure
@@ -57,6 +56,7 @@ public:
 	PlayRender* render;
 	PlayScore* score;
 	PlayInput* input;
+	int beat;					//beat global
 	songdata* song;
 	u32 beatf;
 	u32 bpmf = 0;

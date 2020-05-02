@@ -285,6 +285,11 @@ void PlayRender::update() {
 }
 
 void PlayRender::renderSteps() {
+	u8 beatp = (play->beatf % beatfperiod) >> (BPMFRAC + MINUTEFRAC - 2);
+	if (play->beat > lastbeat) {
+		swapStepGfx = !swapStepGfx;
+		lastbeat = play->beat;
+	}
 	for (int i = 0; i < 4; i++) {
 		if (play->input->holdCol[i].first && (play->input->holdCol[i].second->y < (HITYOFFSET + 16))) {
 			if (play->input->holdCol[i].second->gfx == NULL) {
@@ -305,7 +310,7 @@ void PlayRender::renderSteps() {
 			switch (i->type) {
 				case (1):
 				case (2):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[i->notetype - 1], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[beatp + int(swapStepGfx) * 4], i->col + 20, false, false, false, false, false);
 					break;
 				case (3):
 					switch (i->col) {
