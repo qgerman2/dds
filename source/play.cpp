@@ -140,7 +140,7 @@ void Play::updateBeat() {
 		if (i < song->bpms.size() - 1) {
 			minutefbpm = (song->bpms[i + 1].beatf - song->bpms[i].beatf) / song->bpms[i].bpmf;
 			for (uint s = 0; s < song->stops.size(); s++) {
-				if ((song->stops[s].beatf > song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
+				if ((song->stops[s].beatf >= song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
 					minutefbpm = minutefbpm + song->stops[s].bpmf;
 					lostbeatsbpm = TRUE;
 				}
