@@ -84,10 +84,10 @@ bool loadMp3() {
 	while (1) {
 		if (mad_frame_decode(&audio.mp3->frame, &audio.mp3->stream) == 0) {
 			audio.stream.sampling_rate = audio.mp3->frame.header.samplerate;
-			//cout << "\nsample rate " << audio.stream.sampling_rate;
+			cout << "\nsample rate " << audio.stream.sampling_rate;
 			break;
 		} else if (audio.mp3->stream.error != MAD_ERROR_LOSTSYNC) {
-			//cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);
+			cout << "\nlibmad error: " << mad_stream_errorstr(&audio.mp3->stream);
 			if (audio.mp3->stream.this_frame == audio.mp3->guard) {
 				audio.end();
 				return false;
@@ -96,6 +96,7 @@ bool loadMp3() {
 			}
 		};
 	}
+	audio.stream.sampling_rate = 48000;
 	audio.stream.callback = mm_mp3_callback;
 	return true;
 }
@@ -149,8 +150,14 @@ mm_word mm_mp3_callback(mm_word length, mm_addr dest, mm_stream_formats format) 
 					audio.end();
 					samples = 0;
 					break;
-				} else {
+				} else if (audio.mp3->guard == NULL) {
 					fillMp3();
+				} else {
+					//something is wrong
+					//im not sure but it shouldnt be too bad
+					audio.end();
+					samples = 0;
+					break;
 				}
 			}
 		}
