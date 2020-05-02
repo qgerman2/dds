@@ -11,7 +11,7 @@
 
 using namespace std;
 
-enum SETTING {SPEED, BGOPACITY, STARTUPSONG, CACHEBANNERS, CACHEBG, MINES, DEBUG};
+enum SETTING {SPEED, BGOPACITY, MINES, CACHEBANNERS, CACHEBG, DEBUG};
 enum STATE {IDLE, FADEIN, FADEOUT, NEXT, PREV};
 
 //todo: reduce verbosity
@@ -183,8 +183,8 @@ void Config::updateSprites() {
 	oamSet(&oamSub, valueSprites[0], 188, -y + 40 , 0, 4, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.speed], 0, false, false, false, false, false);
 	//opacity
 	oamSet(&oamSub, valueSprites[1], 188, -y + 40 + 32, 0, 4, SpriteSize_16x16, SpriteColorFormat_16Color, numberGfx[settings.opacity], 0, false, false, false, false, false);
-	//startup song
-	if (settings.intro) {
+	//mines
+	if (settings.mines) { //fixme
 		oamSet(&oamSub, valueSprites[2], 188, -y + 40 + 32 * 2, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
 	} else {
 		oamClearSprite(&oamSub, valueSprites[2]);
@@ -201,17 +201,11 @@ void Config::updateSprites() {
 	} else {
 		oamClearSprite(&oamSub, valueSprites[4]);
 	}
-	//mines
-	if (settings.mines && (-y + 40 + 32 * 5) < 192) { //fixme
+	//debug console
+	if (settings.debug && (-y + 40 + 32 * 5) < 192) { //fixme
 		oamSet(&oamSub, valueSprites[5], 188, -y + 40 + 32 * 5, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
 	} else {
 		oamClearSprite(&oamSub, valueSprites[5]);
-	}
-	//debug console
-	if (settings.debug && (-y + 40 + 32 * 5) < 192) { //fixme
-		oamSet(&oamSub, valueSprites[6], 188, -y + 40 + 32 * 6, 0, 1, SpriteSize_16x16, SpriteColorFormat_16Color, markGfx, 0, false, false, false, false, false);
-	} else {
-		oamClearSprite(&oamSub, valueSprites[6]);
 	}
 }
 
@@ -223,9 +217,6 @@ void Config::hideSprites() {
 
 void Config::toggle() {
 	switch (cursor) {
-		case STARTUPSONG:
-			settings.intro = !settings.intro;
-			break;
 		case CACHEBANNERS:
 			settings.cache = !settings.cache;
 			break;
@@ -276,7 +267,6 @@ void ConfigLoad() {
 		cout << "\nLoading config";
 		fread(&settings.speed, 4, 1, file);
 		fread(&settings.opacity, 4, 1, file);
-		fread(&settings.intro, 1, 1, file);
 		fread(&settings.cache, 1, 1, file);
 		fread(&settings.cache_bg, 1, 1, file);
 		fread(&settings.debug, 1, 1, file);
@@ -295,7 +285,6 @@ void ConfigSave() {
 		cout << "\nSaving config";
 		fwrite(&settings.speed, 4, 1, file);
 		fwrite(&settings.opacity, 4, 1, file);
-		fwrite(&settings.intro, 1, 1, file);
 		fwrite(&settings.cache, 1, 1, file);
 		fwrite(&settings.cache_bg, 1, 1, file);
 		fwrite(&settings.debug, 1, 1, file);
