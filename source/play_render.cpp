@@ -22,6 +22,7 @@
 #include <pulse.h>
 #include <numbers.h>
 #include <font.h>
+#include <mine.h>
 
 #include <marvelous.h>
 #include <perfect.h>
@@ -168,6 +169,9 @@ void PlayRender::loadStepGfx() {
 	oamRotateScale(&oamMain, 21, degreesToAngle(180), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 22, degreesToAngle(0), intToFixed(1, 8), intToFixed(1, 8));
 	oamRotateScale(&oamMain, 23, degreesToAngle(270), intToFixed(1, 8), intToFixed(1, 8));
+	mineGfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+	dmaCopy(mineTiles, mineGfx, mineTilesLen);
+	dmaCopy(minePal, SPRITE_PALETTE + 112, minePalLen);
 }
 
 void PlayRender::loadNumberGfx() {
@@ -326,7 +330,7 @@ void PlayRender::renderSteps() {
 					}
 					break;
 				case (6):
-					oamSet(&oamMain, i->sprite, i->x, i->y, 0, notetypePal[8], SpriteSize_32x32, SpriteColorFormat_16Color, stepGfx[0], i->col + 20, false, false, false, false, false);
+					oamSet(&oamMain, i->sprite, i->x, i->y, 0, 7, SpriteSize_32x32, SpriteColorFormat_16Color, mineGfx, i->col + 20, false, false, false, false, false);
 					break;
 			}
 		} else {

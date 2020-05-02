@@ -21,6 +21,7 @@ private:
 	u16* scoreGfx[11];
 	u16* pointGfx[10];
 	u16* pulseGfx;
+	u16* mineGfx;
 	u8 holdTopSprite[4];
 	u8 receptorSprite[4];
 	u8 comboSprite[3];
