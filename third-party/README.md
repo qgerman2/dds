@@ -5,7 +5,9 @@ keep in mind that these steps might stop working at anytime devkitpro updates
 
 ## enable windows symlink support
 at default symlinks just fail to get created by ln -s, this makes them work
+
 edit msys2_shell.bat at devkitpro/msys2 directory
+
 edit the line
 ```
 rem set MSYS=winsymlinks:nativestrict
@@ -15,6 +17,7 @@ into
 set MSYS=winsymlinks:nativestrict
 ```
 save, and start msys2_shell.bat as admin
+
 navigate to the third-party directory and build all the libs
 
 # libjpeg-turbo 1.5.3
@@ -60,6 +63,9 @@ the Makefile might get rebuilt after the make install and fail because of the --
 
 # done
 if everything went right all the libs got installed at $DEVKITARM/portlibs/arm
+
 to use them in your homebrew, link the libraries at LIBS :=
+
 and add the path $(DEVKITPRO)/portlibs/arm to LIBDIRS :=
+
 check out the Makefile for dds.nds for an example
