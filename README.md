@@ -1,4 +1,4 @@
-# dds - an stepmania / ddr clone for the nintendo ds
+# dds - a stepmania / ddr clone for the nintendo ds
 this project aims to recreate a game experience with **minimal compromises** such as not requiring a specific sound file format or specific image dimentions, every song should work drag and drop just like the other games that support them, the only limitations being video backgrounds or lua scripts.
 
 # building
