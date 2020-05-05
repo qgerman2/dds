@@ -1,0 +1,23 @@
+--------------------
+./configure
+lun 04 may 2020 22:42:43 -04
+=== ztest33043.c ===
+extern int getchar();
+int hello() {return getchar();}
+===
+arm-eabi-gcc -c ztest33043.c
+./configure: línea 182: arm-eabi-gcc: orden no encontrada
+... using arm-eabi-gcc
+
+Checking for obsessive-compulsive compiler options...
+=== ztest33043.c ===
+int foo() { return 0; }
+===
+arm-eabi-gcc -c -O ztest33043.c
+./configure: línea 370: arm-eabi-gcc: orden no encontrada
+(exit code 127)
+Compiler error reporting is too harsh for ./configure (perhaps remove -Werror).
+** ./configure aborting.
+--------------------
+
+
