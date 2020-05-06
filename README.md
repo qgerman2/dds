@@ -14,3 +14,9 @@ check out the third-party directory for building the required third-party librar
 
 
 with everything set up, make should generate a working .nds file
+
+# license
+
+i haven't bothered with figuring out which license to use, i realize that the game currently uses some assets ripped from other games and the fact that the third-party libraries should be compatible with whatever license i choose puts some constraints in my options.
+
+if possible the code for dds should be considered public domain or WTFPL.
