@@ -48,7 +48,6 @@ private:
 	u16 *set;
 	u32 minutefbpm;
 	u32 minutefsum;
-	bool lostbeatsbpm;
 	int offset;
 	bool cursor_end = false;
 	int beat_end = 0;

@@ -138,37 +138,38 @@ void Play::updateBeat() {
 	beatf = 0;
 	minutefsum = 0;
 	for (uint i = 0; i < song->bpms.size(); i++) {
-		lostbeatsbpm = FALSE;
+		//add stops during this bpm to minutefbpm / minutefsum
 		if (i < song->bpms.size() - 1) {
 			minutefbpm = (song->bpms[i + 1].beatf - song->bpms[i].beatf) / song->bpms[i].bpmf;
 			for (uint s = 0; s < song->stops.size(); s++) {
 				if ((song->stops[s].beatf >= song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
 					minutefbpm = minutefbpm + song->stops[s].bpmf;
-					lostbeatsbpm = TRUE;
 				}
 			}
 		} else {
 			minutefbpm = 0;
 		}
 		if ((minutefbpm > 0) && ((minutefsum + minutefbpm) < minutef)) {
+			//previous bpms
 			beatf = song->bpms[i + 1].beatf - song->bpms[i].beatf + beatf;
 			minutefsum = minutefsum + minutefbpm;
 		} else {
+			//last/current bpm
 			beatf = beatf + ((minutef - minutefsum) * song->bpms[i].bpmf);
 			if (bpmf != song->bpms[i].bpmf) {
 				bpmf = song->bpms[i].bpmf;
 				score->updateJudgesWindow();
 			}
-			if (lostbeatsbpm) {
-				for (uint s = 0; s < song->stops.size(); s++) {
-					if ((song->stops[s].beatf >= song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf)) {
-						if (beatf >= song->stops[s].beatf) {
-							u32 offset = song->stops[s].bpmf * song->bpms[i].bpmf;
-							if (beatf - song->stops[s].beatf < offset){
-								beatf = song->stops[s].beatf;
-							} else {
-								beatf = beatf - offset;
-							}
+			//subtract all stops from beatf
+			for (uint s = 0; s < song->stops.size(); s++) {
+				if ((song->bpms.size() == 1) ||
+					((song->stops[s].beatf >= song->bpms[i].beatf) && (song->stops[s].beatf < song->bpms[i + 1].beatf))) {
+					if (beatf >= song->stops[s].beatf) {
+						u32 offset = song->stops[s].bpmf * song->bpms[i].bpmf;
+						if (beatf - song->stops[s].beatf < offset){
+							beatf = song->stops[s].beatf;
+						} else {
+							beatf = beatf - offset;
 						}
 					}
 				}
